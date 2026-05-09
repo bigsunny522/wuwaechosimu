@@ -1,4 +1,4 @@
-import type { CharacterBuild } from '@/types/character';
+﻿import type { CharacterBuild } from '@/types/character';
 import { HARMONY_SETS as HS } from '@/data/echoes';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -155,7 +155,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'linne', name: 'リンネー', element: '不明', weapon: '拳銃',
+    id: 'linne', name: 'リンネー', element: '回折', weapon: '拳銃',
     role: 'サポート（協奏効率・全ダメバフ）',
     substats: {
       recommended: [
@@ -181,20 +181,21 @@ export const CHARACTERS: CharacterBuild[] = [
     role: '耐久・回復、防御力デバフ',
     substats: {
       recommended: [
-        { key: 'hpPercent' },
         { key: 'energyRegen' },
         { key: 'critRate' },
         { key: 'critDmg' },
+        { key: 'atkPercent' },
+        {key:'resonanceSkillDmg'},     
       ],
       preferred:   [],
-      acceptable: [{ key: 'atkPercent' }, { key: 'defPercent' }],
+      acceptable: [ { key: 'defPercent' }],
     },
     mainstat: {
-      cost4: { recommended: ['healingBonus', 'hpPercent'],    acceptable: ['atkPercent'] },
-      cost3: { recommended: ['hpPercent', 'Resonanceeff'],    acceptable: ['HavocDmg', 'atkPercent'] },
-      cost1: { recommended: ['hpPercent'],                    acceptable: ['atkPercent'] },
+      cost4: { recommended: ['critRate', 'critDmg'],    acceptable: ['atkPercent'] },
+      cost3: { recommended: ['HavocDmg', 'atkPercent'],    acceptable: [] },
+      cost1: { recommended: ['atkPercent'],                    acceptable: [] },
     },
-    harmonySets: { recommended: [SET.HEALER], acceptable: [SET.MIDNIGHT, SET.HAVOC_OLD] },
+    harmonySets: { recommended: [SET.THREAD_FATE], acceptable: [] },
   },
 
   {
@@ -263,7 +264,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'augusta', name: 'オーガスタ', element: '不明', weapon: '長刃',
+    id: 'augusta', name: 'オーガスタ', element: '電導', weapon: '長刃',
     role: 'メインアタッカー（全ダメバフ）',
     substats: {
       recommended: [
@@ -338,7 +339,7 @@ export const CHARACTERS: CharacterBuild[] = [
         { key: 'critDmg' },
         { key: 'hpPercent' },
         { key: 'basicAttackDmg' },
-        { key: 'resonanceeff' },
+        { key: 'energyRegen' },
       ],
       preferred:   [],
       acceptable: [],
