@@ -43,7 +43,6 @@ export interface EchoState {
   cost: EchoCost;
   echoId: string;
   echoName: string;
-  echoNameEn?: string;
   activeHarmonySet: string; // randomly selected set name at creation
   level: number; // 0-25
   substats: Substat[];
