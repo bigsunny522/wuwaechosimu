@@ -69,27 +69,6 @@ export const CHARACTERS: CharacterBuild[] = [
     harmonySets: { recommended: [SET.SNOWY], acceptable: [SET.FROST,SET.FROSTY] },
   },
 
-  //実装前
-  // {
-  //   id: 'dania', name: 'ダーニャ', element: '不明', weapon: '不明',
-  //   role: 'メインアタッカー',
-  //   substats: {
-  //     recommended: [
-  //       { key: 'critRate' },
-  //       { key: 'critDmg' },
-  //       { key: 'energyRegen' },
-  //       { key: 'atkPercent' },
-  //     ],
-  //     acceptable: [{ key: 'resonanceLibDmg' }, { key: 'resonanceSkillDmg' }],
-  //   },
-  //   mainstat: {
-  //     cost4: { recommended: ['critRate', 'critDmg'],          acceptable: ['atkPercent'] },
-  //     cost3: { recommended: ['atkPercent', 'Resonanceeff'],   acceptable: [] },
-  //     cost1: { recommended: ['atkPercent'],                   acceptable: [] },
-  //   },
-  //   harmonySets: { recommended: [SET.LINGERING], acceptable: [] },
-  // },
-
   {
     id: 'jinhsi', name: '今汐', element: '回折', weapon: '長刃',
     role: 'メインアタッカー（共鳴スキル重視）',
@@ -739,18 +718,19 @@ export const CHARACTERS: CharacterBuild[] = [
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
-        { key: 'energyRegen' },
-        { key: 'atkPercent' },
+        { key: 'hpPercent' },
+        { key: 'basicAttackDmg' },
+        { key: 'resonanceeff' },
       ],
       preferred:   [],
-      acceptable: [{ key: 'resonanceSkillDmg' }, { key: 'resonanceLibDmg' }],
+      acceptable: [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
-      cost3: { recommended: ['AeroDmg'],               acceptable: ['atkPercent', 'Resonanceeff'] },
-      cost1: { recommended: ['atkPercent'],            acceptable: [] },
+      cost3: { recommended: ['AeroDmg'],               acceptable: ['atkPercent'] },
+      cost1: { recommended: ['hpPercent'],            acceptable: ['atkPercent'] },
     },
-    harmonySets: { recommended: [SET.GALE, SET.GLORY_WIND], acceptable: [SET.LINGERING] },
+    harmonySets: { recommended: [ SET.GLORY_WIND], acceptable: [SET.GALE] },
   },
 
   {
@@ -762,16 +742,17 @@ export const CHARACTERS: CharacterBuild[] = [
         { key: 'critDmg' },
         { key: 'energyRegen' },
         { key: 'atkPercent' },
+        { key: 'resonanceLibDmg' },
       ],
-      preferred:   [],
-      acceptable: [{ key: 'basicAttackDmg' }],
+      preferred:   [{ key: 'basicAttackDmg' }],
+      acceptable: [],
     },
     mainstat: {
-      cost4: { recommended: ['critRate', 'critDmg'],               acceptable: ['atkPercent', 'hpPercent'] },
-      cost3: { recommended: ['Resonanceeff', 'FusionDmg'],         acceptable: ['atkPercent', 'hpPercent'] },
-      cost1: { recommended: ['atkPercent', 'hpPercent'],           acceptable: [] },
+      cost4: { recommended: ['critRate', 'critDmg'],               acceptable: ['atkPercent'] },
+      cost3: { recommended: ['FusionDmg'],         acceptable: ['atkPercent'] },
+      cost1: { recommended: ['atkPercent'],           acceptable: [] },
     },
-    harmonySets: { recommended: [SET.MOLTEN, SET.FLAMING], acceptable: [SET.LINGERING] },
+    harmonySets: { recommended: [SET.FLAMING], acceptable: [SET.MOLTEN] },
   },
 
   {
@@ -789,10 +770,10 @@ export const CHARACTERS: CharacterBuild[] = [
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],          acceptable: ['atkPercent'] },
-      cost3: { recommended: ['atkPercent', 'Resonanceeff'],   acceptable: [] },
-      cost1: { recommended: ['atkPercent'],                   acceptable: [] },
+      cost3: { recommended: ['ElectroDmg'],   acceptable: [] },
+      cost1: { recommended: ['atkPercent'],   acceptable: [] },
     },
-    harmonySets: { recommended: [SET.LINGERING], acceptable: [] },
+    harmonySets: { recommended: [SET.GLORY_CROWN], acceptable: [] },
   },
 
   {

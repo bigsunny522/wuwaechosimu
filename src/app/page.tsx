@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import type { EchoCost, EchoState, ScoreResult, Theme } from '@/types/echo';
 import { createEcho, upgradeEcho } from '@/lib/simulator';
 import { scoreEcho } from '@/lib/scorer';
 import { SUBSTAT_COUNT } from '@/data/mainstats';
-import { ECHOES_BY_COST, DEFAULT_ECHO_ID } from '@/data/echoes';
+import { ECHOES_BY_COST, ECHOES, DEFAULT_ECHO_ID, HARMONY_SETS } from '@/data/echoes';
 import { CHARACTER_LIST, CHARACTER_MAP } from '@/data/characters';
 import EchoCard from '@/components/EchoCard';
 import ResourceCounter from '@/components/ResourceCounter';
@@ -19,6 +19,7 @@ const COST_OPTIONS: EchoCost[] = [4, 3, 1];
 export default function Home() {
   const [cost, setCost] = useState<EchoCost>(4);
   const [selectedEchoId, setSelectedEchoId] = useState<string>(DEFAULT_ECHO_ID[4]);
+  const [selectedHarmonySet, setSelectedHarmonySet] = useState<string>('');
   const [echo, setEcho] = useState<EchoState | null>(null);
   const [score, setScore] = useState<ScoreResult | null>(null);
   const [theme, setTheme] = useState<Theme>('default');
@@ -31,17 +32,35 @@ export default function Home() {
   const accent = THEME_ACCENT[theme];
   const isMaxLevel = echo?.level === 25;
 
+  // コストごとに存在するハーモニーセット一覧（HARMONY_SETS の定義順を維持）
+  const harmonySetOptions = useMemo(() => {
+    if (cost === 4) return [];
+    const available = new Set(ECHOES.filter(e => e.cost === cost).flatMap(e => e.sets));
+    return Object.values(HARMONY_SETS).filter(s => available.has(s));
+  }, [cost]);
+
   const handleCostChange = useCallback((c: EchoCost) => {
     setCost(c);
     setSelectedEchoId(DEFAULT_ECHO_ID[c]);
+    if (c !== 4) {
+      const available = new Set(ECHOES.filter(e => e.cost === c).flatMap(e => e.sets));
+      const first = Object.values(HARMONY_SETS).find(s => available.has(s)) ?? '';
+      setSelectedHarmonySet(first);
+    }
     setEcho(null);
     setScore(null);
   }, []);
 
   const handleStart = useCallback(() => {
-    setEcho(createEcho(cost, selectedEchoId));
+    let echoId = selectedEchoId;
+    if (cost !== 4) {
+      const pool = ECHOES.filter(e => e.cost === cost && e.sets.includes(selectedHarmonySet));
+      if (pool.length === 0) return;
+      echoId = pool[Math.floor(Math.random() * pool.length)].id;
+    }
+    setEcho(createEcho(cost, echoId));
     setScore(null);
-  }, [cost, selectedEchoId]);
+  }, [cost, selectedEchoId, selectedHarmonySet]);
 
   const handleUpgrade = useCallback(() => {
     if (!echo || echo.level >= 25) return;
@@ -107,7 +126,7 @@ export default function Home() {
               <option value="generic" style={{ background: '#0f1117' }}>汎用スコア（キャラ指定なし）</option>
               {CHARACTER_LIST.map((c) => (
                 <option key={c.id} value={c.id} style={{ background: '#0f1117' }}>
-                  {c.name}（{c.element}・{c.role.split('。')[0]}）
+                  {c.name}（{c.element}）
                 </option>
               ))}
             </select>
@@ -137,29 +156,47 @@ export default function Home() {
           <div className="text-center text-xs text-slate-600">サブステ最大 {SUBSTAT_COUNT[cost]} 個</div>
         </div>
 
-        {/* Echo selector */}
-        <div className="flex flex-col gap-2">
-          <div className="text-xs text-slate-600 text-center tracking-wider uppercase">音骸を選択</div>
-          <div className="relative">
-            <select
-              value={selectedEchoId}
-              onChange={(e) => { setSelectedEchoId(e.target.value); setEcho(null); setScore(null); }}
-              className="w-full px-4 py-2.5 rounded-xl text-sm text-slate-200 appearance-none cursor-pointer transition-colors"
-              style={{
-                background: 'rgba(15,17,23,0.8)',
-                border: `1px solid ${accent}44`,
-                outline: 'none',
-              }}
-            >
-              {echoList.map((e) => (
-                <option key={e.id} value={e.id} style={{ background: '#0f1117' }}>
-                  {e.name}（{e.nameEn}）
-                </option>
-              ))}
-            </select>
-            <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">▼</div>
+        {/* Echo / Harmony selector */}
+        {cost === 4 ? (
+          <div className="flex flex-col gap-2">
+            <div className="text-xs text-slate-600 text-center tracking-wider uppercase">音骸を選択</div>
+            <div className="relative">
+              <select
+                value={selectedEchoId}
+                onChange={(e) => { setSelectedEchoId(e.target.value); setEcho(null); setScore(null); }}
+                className="w-full px-4 py-2.5 rounded-xl text-sm text-slate-200 appearance-none cursor-pointer transition-colors"
+                style={{ background: 'rgba(15,17,23,0.8)', border: `1px solid ${accent}44`, outline: 'none' }}
+              >
+                {echoList.map((e) => (
+                  <option key={e.id} value={e.id} style={{ background: '#0f1117' }}>
+                    {e.name}（{e.nameEn}）
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">▼</div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <div className="text-xs text-slate-600 text-center tracking-wider uppercase">ハーモニーセットを選択</div>
+            <div className="relative">
+              <select
+                value={selectedHarmonySet}
+                onChange={(e) => { setSelectedHarmonySet(e.target.value); setEcho(null); setScore(null); }}
+                className="w-full px-4 py-2.5 rounded-xl text-sm text-slate-200 appearance-none cursor-pointer transition-colors"
+                style={{ background: 'rgba(15,17,23,0.8)', border: `1px solid ${accent}44`, outline: 'none' }}
+              >
+                {harmonySetOptions.map((s) => (
+                  <option key={s} value={s} style={{ background: '#0f1117' }}>{s}</option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">▼</div>
+            </div>
+            <div className="text-center text-xs text-slate-600">
+              該当音骸 {ECHOES.filter(e => e.cost === cost && e.sets.includes(selectedHarmonySet)).length} 体からランダム抽選
+            </div>
+          </div>
+        )}
 
         {/* Action buttons */}
         <div className="flex gap-3 justify-center">
