@@ -42,3 +42,13 @@ next-env.d.ts
 
 # Claude Code session data
 .claude/
+
+# OpenNext
+.open-next
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+
+!.env.example
