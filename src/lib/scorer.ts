@@ -29,15 +29,15 @@ export function normalizedTier(tier: number): number {
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  理論最大値
-//  「推奨3枠＋優先2枠 を Tier4 で埋めた = 100点（上限）」を基準とする。
+//  「推奨3枠＋優先2枠 を Tier5 で埋めた = 100点（上限）」を基準とする。
 //  加重平均倍率 IDEAL_MULT = (3×rec + 2×pref) / 5 でコストに応じてスケール。
 //
 //  IDEAL_MULT = (3×2.0 + 2×1.8) / 5 = 9.6/5 = 1.92
-//  cost4: 5 × normTier(4) × 1.92 ≈ 8.00
-//  cost3: 3 × normTier(4) × 1.92 ≈ 4.80
+//  cost4: 5 × normTier(5) × 1.92 ≈ 10.00
+//  cost3: 3 × normTier(5) × 1.92 ≈ 6.00
 //  cost1: 1 × normTier(4) × 1.92 ≈ 1.60
 // ═══════════════════════════════════════════════════════════════════════════
-export const REFERENCE_TIER = 4;
+export const REFERENCE_TIER = 5;
 
 // 理想構成（推奨3・優先2）の加重平均倍率
 export const IDEAL_MULT = (3 * MULT.recommended + 2 * MULT.preferred) / 5;
