@@ -9,7 +9,6 @@ import { ECHOES_BY_COST, ECHOES, DEFAULT_ECHO_ID, HARMONY_SETS } from '@/data/ec
 import { CHARACTER_LIST, CHARACTER_MAP } from '@/data/characters';
 import EchoCard from '@/components/EchoCard';
 import ResourceCounter from '@/components/ResourceCounter';
-import ResultCard from '@/components/ResultCard';
 import BulkSimModal from '@/components/BulkSimModal';
 import ScoreDebugPanel from '@/components/ScoreDebugPanel';
 import AdBonusModal from '@/components/AdBonusModal';
@@ -436,10 +435,6 @@ export default function Home() {
             {score && isMaxLevel && (
               <>
                 <ScoreDebugPanel echo={echo} score={score} />
-                <div className="w-full flex flex-col items-center gap-2">
-                  <div className="text-xs text-slate-600 text-center tracking-wider uppercase">結果をシェア</div>
-                  <ResultCard echo={echo} score={score} />
-                </div>
 
                 {/* Save result */}
                 <div className="flex flex-col items-center gap-2">
