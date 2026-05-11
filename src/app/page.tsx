@@ -302,7 +302,7 @@ export default function Home() {
               <option value="generic" style={{ background: '#0f1117' }}>汎用スコア（キャラ指定なし）</option>
               {CHARACTER_LIST.map((c) => (
                 <option key={c.id} value={c.id} style={{ background: '#0f1117' }}>
-                  {c.name}（{c.element}）
+                  {c.name}
                 </option>
               ))}
             </select>
@@ -373,7 +373,7 @@ export default function Home() {
               >
                 {echoList.map((e) => (
                   <option key={e.id} value={e.id} style={{ background: '#0f1117' }}>
-                    {e.name}（{e.nameEn}）
+                    {e.name}
                   </option>
                 ))}
               </select>
