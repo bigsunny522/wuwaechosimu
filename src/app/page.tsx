@@ -2,10 +2,9 @@
 
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import type { EchoCost, EchoState, ScoreResult, MainstatInfo } from '@/types/echo';
-import { createEcho, upgradeEcho, rerollSubstats } from '@/lib/simulator';
+import { createEcho, upgradeEcho, upgradeToFull, rerollSubstats } from '@/lib/simulator';
 import { scoreEcho } from '@/lib/scorer';
-import { SUBSTAT_COUNT } from '@/data/mainstats';
-import { MAINSTAT_POOLS } from '@/data/mainstats';
+import { SUBSTAT_COUNT, MAINSTAT_POOLS } from '@/data/mainstats';
 import { ECHOES_BY_COST, ECHOES, DEFAULT_ECHO_ID, HARMONY_SETS } from '@/data/echoes';
 import { CHARACTER_LIST, CHARACTER_MAP } from '@/data/characters';
 import EchoCard from '@/components/EchoCard';
@@ -14,11 +13,32 @@ import ResultCard from '@/components/ResultCard';
 import BulkSimModal from '@/components/BulkSimModal';
 import ScoreDebugPanel from '@/components/ScoreDebugPanel';
 import AdBonusModal from '@/components/AdBonusModal';
+import SavedResultsModal, { type SavedResult } from '@/components/SavedResultsModal';
 
 const COST_OPTIONS: EchoCost[] = [4, 3, 1];
 const ACCENT = '#7c3aed';
 const BONUS_DURATION_MS = 5 * 60 * 1000;
 const MAX_REROLL = 3;
+const SAVE_PER_AD = 10;
+
+type AdPurpose = 'bonus' | 'saves';
+
+const AD_CONFIGS: Record<AdPurpose, { title: string; items: string[] }> = {
+  bonus: {
+    title: 'ボーナスタイム獲得',
+    items: [
+      'メインステータスを自由に固定して音骸を引ける（5分間）',
+      '+25音骸のサブステを最大3個まで1回だけ再抽選できる（5分間）',
+    ],
+  },
+  saves: {
+    title: '保存枠を獲得',
+    items: [
+      `音骸の計算結果を${SAVE_PER_AD}件まで保存できます`,
+      '再度広告を視聴するとさらに追加できます',
+    ],
+  },
+};
 
 export default function Home() {
   const [cost, setCost] = useState<EchoCost>(4);
@@ -34,12 +54,9 @@ export default function Home() {
   // ── Bonus time ──────────────────────────────────────────────────────────
   const [bonusEndTime, setBonusEndTime] = useState<number | null>(null);
   const [adModalOpen, setAdModalOpen] = useState(false);
+  const [adPurpose, setAdPurpose] = useState<AdPurpose>('bonus');
   const [timeLeft, setTimeLeft] = useState(0);
-
-  // Main stat lock
   const [lockedMainstatKey, setLockedMainstatKey] = useState<string>('');
-
-  // Substat reroll
   const [rerollUsed, setRerollUsed] = useState(false);
   const [rerollIndices, setRerollIndices] = useState<Set<number>>(new Set());
 
@@ -57,14 +74,27 @@ export default function Home() {
     return () => clearInterval(id);
   }, [bonusEndTime]);
 
+  // ── Save slots ─────────────────────────────────────────────────────────
+  const [saveSlots, setSaveSlots] = useState(0);
+  const [savedResults, setSavedResults] = useState<SavedResult[]>([]);
+  const [historyOpen, setHistoryOpen] = useState(false);
+
+  // ── Ad grant handler ───────────────────────────────────────────────────
   const handleGrantBonus = useCallback(() => {
-    const end = Date.now() + BONUS_DURATION_MS;
-    setBonusEndTime(end);
-    // Default to first available main stat for current cost
-    setLockedMainstatKey(MAINSTAT_POOLS[cost][0].key);
-    setRerollUsed(false);
-    setRerollIndices(new Set());
-  }, [cost]);
+    if (adPurpose === 'bonus') {
+      setBonusEndTime(Date.now() + BONUS_DURATION_MS);
+      setLockedMainstatKey(MAINSTAT_POOLS[cost][0].key);
+      setRerollUsed(false);
+      setRerollIndices(new Set());
+    } else {
+      setSaveSlots((prev) => prev + SAVE_PER_AD);
+    }
+  }, [adPurpose, cost]);
+
+  const openAdModal = useCallback((purpose: AdPurpose) => {
+    setAdPurpose(purpose);
+    setAdModalOpen(true);
+  }, []);
 
   // ── Harmony set options ────────────────────────────────────────────────
   const harmonySetOptions = useMemo(() => {
@@ -73,7 +103,7 @@ export default function Home() {
     return Object.values(HARMONY_SETS).filter(s => available.has(s));
   }, [cost]);
 
-  // ── Handlers ────────────────────────────────────────────────────────────
+  // ── Core handlers ──────────────────────────────────────────────────────
   const handleCostChange = useCallback((c: EchoCost) => {
     setCost(c);
     setSelectedEchoId(DEFAULT_ECHO_ID[c]);
@@ -82,7 +112,6 @@ export default function Home() {
       const first = Object.values(HARMONY_SETS).find(s => available.has(s)) ?? '';
       setSelectedHarmonySet(first);
     }
-    // Reset lock to first stat of new cost
     setLockedMainstatKey(MAINSTAT_POOLS[c][0].key);
     setEcho(null);
     setScore(null);
@@ -95,13 +124,10 @@ export default function Home() {
       if (pool.length === 0) return;
       echoId = pool[Math.floor(Math.random() * pool.length)].id;
     }
-
-    // Use locked main stat during bonus
     let fixedMain: MainstatInfo | undefined;
     if (bonusEndTime && Date.now() < bonusEndTime && lockedMainstatKey) {
       fixedMain = MAINSTAT_POOLS[cost].find(m => m.key === lockedMainstatKey);
     }
-
     setEcho(createEcho(cost, echoId, fixedMain));
     setScore(null);
     setRerollUsed(false);
@@ -116,6 +142,15 @@ export default function Home() {
     setScore(scoreEcho(next, build));
   }, [echo, selectedCharId]);
 
+  // ワンクリック最大強化
+  const handleMaxUpgrade = useCallback(() => {
+    if (!echo || echo.level >= 25) return;
+    const maxed = upgradeToFull(echo);
+    setEcho(maxed);
+    const build = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
+    setScore(scoreEcho(maxed, build));
+  }, [echo, selectedCharId]);
+
   const handleReset = useCallback(() => {
     setEcho(null);
     setScore(null);
@@ -123,6 +158,7 @@ export default function Home() {
     setRerollIndices(new Set());
   }, []);
 
+  // サブステ再抽選 (bonus)
   const handleReroll = useCallback(() => {
     if (!echo || rerollUsed || rerollIndices.size === 0) return;
     const newEcho = rerollSubstats(echo, Array.from(rerollIndices));
@@ -136,24 +172,28 @@ export default function Home() {
   const toggleRerollIndex = useCallback((idx: number) => {
     setRerollIndices(prev => {
       const next = new Set(prev);
-      if (next.has(idx)) {
-        next.delete(idx);
-      } else if (next.size < MAX_REROLL) {
-        next.add(idx);
-      }
+      if (next.has(idx)) { next.delete(idx); }
+      else if (next.size < MAX_REROLL) { next.add(idx); }
       return next;
     });
   }, []);
 
+  // 結果保存
+  const handleSave = useCallback(() => {
+    if (!echo || !score || echo.level < 25 || saveSlots <= 0) return;
+    setSavedResults(prev => [{ id: Date.now(), echo, score }, ...prev]);
+    setSaveSlots(prev => prev - 1);
+  }, [echo, score, saveSlots]);
+
+  const handleClearSaved = useCallback((id: number) => {
+    setSavedResults(prev => prev.filter(r => r.id !== id));
+  }, []);
+
   const isMaxLevel = echo?.level === 25;
   const echoList = ECHOES_BY_COST[cost];
-  const formatTime = (s: number) =>
-    `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-
-  // Reroll panel: visible only when bonus active + level 25 + not yet used
   const showRerollPanel = bonusActive && echo?.level === 25 && !rerollUsed;
-  // Main stat lock: visible when bonus active
   const showMainstatLock = bonusActive;
+  const formatTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
   return (
     <div
@@ -162,8 +202,8 @@ export default function Home() {
     >
       {/* Header */}
       <header className="border-b border-slate-800/60 sticky top-0 z-30" style={{ background: 'rgba(10,12,20,0.85)' }}>
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <div
               className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold"
               style={{ background: `${ACCENT}33`, border: `1px solid ${ACCENT}66`, color: ACCENT }}
@@ -171,34 +211,49 @@ export default function Home() {
               ◈
             </div>
             <span className="font-bold text-white text-sm tracking-wide">音骸シミュレーター</span>
-            <span className="text-[10px] text-slate-600 hidden sm:inline">鳴潮 / Wuthering Waves</span>
           </div>
-          <div className="flex items-center gap-2">
-            {/* Bonus status in header */}
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            {/* Bonus status */}
             {bonusActive ? (
               <div
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border"
                 style={{ borderColor: '#f59e0b44', color: '#fbbf24', background: '#f59e0b11' }}
               >
                 <span className="animate-pulse">✨</span>
-                <span>ボーナス</span>
                 <span className="font-mono">{formatTime(timeLeft)}</span>
               </div>
             ) : (
               <button
-                onClick={() => setAdModalOpen(true)}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border"
+                onClick={() => openAdModal('bonus')}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors border"
                 style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: `${ACCENT}11` }}
               >
-                🎁 ボーナス獲得
+                🎁 ボーナス
               </button>
             )}
+            {/* History */}
             <button
-              onClick={() => setBulkOpen(true)}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border"
+              onClick={() => setHistoryOpen(true)}
+              className="relative flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors border"
               style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: `${ACCENT}11` }}
             >
-              ⚡ 100連厳選
+              📋 履歴
+              {savedResults.length > 0 && (
+                <span
+                  className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center text-white"
+                  style={{ background: ACCENT }}
+                >
+                  {savedResults.length}
+                </span>
+              )}
+            </button>
+            {/* Bulk sim */}
+            <button
+              onClick={() => setBulkOpen(true)}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors border"
+              style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: `${ACCENT}11` }}
+            >
+              ⚡ 100連
             </button>
           </div>
         </div>
@@ -213,7 +268,7 @@ export default function Home() {
             <select
               value={selectedCharId}
               onChange={(e) => { setSelectedCharId(e.target.value); setScore(null); }}
-              className="w-full px-4 py-2.5 rounded-xl text-sm text-slate-200 appearance-none cursor-pointer transition-colors"
+              className="w-full px-4 py-2.5 rounded-xl text-sm text-slate-200 appearance-none cursor-pointer"
               style={{ background: 'rgba(15,17,23,0.8)', border: `1px solid ${ACCENT}44`, outline: 'none' }}
             >
               <option value="generic" style={{ background: '#0f1117' }}>汎用スコア（キャラ指定なし）</option>
@@ -285,7 +340,7 @@ export default function Home() {
               <select
                 value={selectedEchoId}
                 onChange={(e) => { setSelectedEchoId(e.target.value); setEcho(null); setScore(null); }}
-                className="w-full px-4 py-2.5 rounded-xl text-sm text-slate-200 appearance-none cursor-pointer transition-colors"
+                className="w-full px-4 py-2.5 rounded-xl text-sm text-slate-200 appearance-none cursor-pointer"
                 style={{ background: 'rgba(15,17,23,0.8)', border: `1px solid ${ACCENT}44`, outline: 'none' }}
               >
                 {echoList.map((e) => (
@@ -304,7 +359,7 @@ export default function Home() {
               <select
                 value={selectedHarmonySet}
                 onChange={(e) => { setSelectedHarmonySet(e.target.value); setEcho(null); setScore(null); }}
-                className="w-full px-4 py-2.5 rounded-xl text-sm text-slate-200 appearance-none cursor-pointer transition-colors"
+                className="w-full px-4 py-2.5 rounded-xl text-sm text-slate-200 appearance-none cursor-pointer"
                 style={{ background: 'rgba(15,17,23,0.8)', border: `1px solid ${ACCENT}44`, outline: 'none' }}
               >
                 {harmonySetOptions.map((s) => (
@@ -320,7 +375,7 @@ export default function Home() {
         )}
 
         {/* Action buttons */}
-        <div className="flex gap-3 justify-center">
+        <div className="flex gap-2 justify-center flex-wrap">
           {!echo ? (
             <button
               onClick={handleStart}
@@ -334,14 +389,27 @@ export default function Home() {
               <button
                 onClick={handleUpgrade}
                 disabled={isMaxLevel}
-                className="px-6 py-2.5 rounded-xl font-bold text-sm text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-5 py-2.5 rounded-xl font-bold text-sm text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 style={
                   !isMaxLevel
                     ? { background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT}aa)`, boxShadow: `0 4px 16px ${ACCENT}44` }
                     : { background: 'rgba(148,163,184,0.1)' }
                 }
               >
-                {isMaxLevel ? '✓ MAX強化済み' : `+5 強化 → +${echo.level + 5}`}
+                {isMaxLevel ? '✓ MAX' : `+5 → +${echo.level + 5}`}
+              </button>
+              {/* ワンクリック最大強化 */}
+              <button
+                onClick={handleMaxUpgrade}
+                disabled={isMaxLevel}
+                className="px-5 py-2.5 rounded-xl font-bold text-sm text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed border"
+                style={
+                  !isMaxLevel
+                    ? { borderColor: `${ACCENT}66`, color: ACCENT, background: `${ACCENT}11` }
+                    : { background: 'rgba(148,163,184,0.06)', borderColor: 'rgba(148,163,184,0.12)', color: '#94a3b8' }
+                }
+              >
+                ⚡ +25まで強化
               </button>
               <button
                 onClick={handleReset}
@@ -357,12 +425,14 @@ export default function Home() {
         {echo && (
           <div className="flex flex-col items-center gap-4">
             <EchoCard echo={echo} score={score} cardRef={cardRef} />
+
             {echo.totalCost.shellCoins > 0 && (
               <div className="w-full">
                 <div className="text-xs text-slate-600 text-center tracking-wider uppercase mb-2">累計消費リソース</div>
                 <ResourceCounter totalCost={echo.totalCost} />
               </div>
             )}
+
             {score && isMaxLevel && (
               <>
                 <ScoreDebugPanel echo={echo} score={score} />
@@ -370,8 +440,31 @@ export default function Home() {
                   <div className="text-xs text-slate-600 text-center tracking-wider uppercase">結果をシェア</div>
                   <ResultCard echo={echo} score={score} />
                 </div>
+
+                {/* Save result */}
+                <div className="flex flex-col items-center gap-2">
+                  {saveSlots > 0 ? (
+                    <button
+                      onClick={handleSave}
+                      className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-medium text-white border transition-all"
+                      style={{ borderColor: '#22c55e44', background: '#22c55e11', color: '#4ade80' }}
+                    >
+                      📋 この結果を保存する
+                      <span className="text-xs opacity-60">（残り {saveSlots} 枠）</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => openAdModal('saves')}
+                      className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-medium border transition-all"
+                      style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: `${ACCENT}11` }}
+                    >
+                      📺 広告を見て保存枠を {SAVE_PER_AD} 枠獲得
+                    </button>
+                  )}
+                </div>
               </>
             )}
+
             {!isMaxLevel && echo.level > 0 && (
               <p className="text-xs text-slate-600 text-center">あと {(25 - echo.level) / 5} 回強化でMAX (+25)</p>
             )}
@@ -429,11 +522,8 @@ export default function Home() {
           </div>
         )}
 
-        {/* Reroll done notice */}
         {bonusActive && echo?.level === 25 && rerollUsed && (
-          <div className="text-center text-xs text-amber-600/70">
-            ✓ この音骸の再抽選は使用済みです
-          </div>
+          <div className="text-center text-xs text-amber-600/70">✓ この音骸の再抽選は使用済みです</div>
         )}
 
         {/* Empty state */}
@@ -450,7 +540,7 @@ export default function Home() {
             </p>
             {!bonusActive && (
               <button
-                onClick={() => setAdModalOpen(true)}
+                onClick={() => openAdModal('bonus')}
                 className="mt-2 px-5 py-2 rounded-xl text-sm font-medium border transition-colors"
                 style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: `${ACCENT}11` }}
               >
@@ -478,8 +568,17 @@ export default function Home() {
 
       {adModalOpen && (
         <AdBonusModal
+          {...AD_CONFIGS[adPurpose]}
           onGrantBonus={handleGrantBonus}
           onClose={() => setAdModalOpen(false)}
+        />
+      )}
+
+      {historyOpen && (
+        <SavedResultsModal
+          results={savedResults}
+          onClear={handleClearSaved}
+          onClose={() => setHistoryOpen(false)}
         />
       )}
     </div>
