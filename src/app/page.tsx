@@ -240,11 +240,11 @@ export default function Home() {
             </div>
             <span className="font-bold text-white text-sm tracking-wide">音骸シミュレーター</span>
           </div>
-          <div className="flex items-center gap-2 flex-wrap justify-end">
+          <div className="flex items-center gap-1.5 shrink-0">
             {/* Bonus status */}
             {bonusActive ? (
               <div
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border"
+                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium border"
                 style={{ borderColor: '#f59e0b44', color: '#fbbf24', background: '#f59e0b11' }}
               >
                 <span className="animate-pulse">✨</span>
@@ -253,19 +253,19 @@ export default function Home() {
             ) : (
               <button
                 onClick={() => openAdModal('bonus')}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors border"
+                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border"
                 style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: `${ACCENT}11` }}
               >
-                🎁 ボーナス
+                🎁<span className="hidden sm:inline"> ボーナス</span>
               </button>
             )}
             {/* History */}
             <button
               onClick={() => setHistoryOpen(true)}
-              className="relative flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors border"
+              className="relative flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border"
               style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: `${ACCENT}11` }}
             >
-              📋 履歴
+              📋<span className="hidden sm:inline"> 履歴</span>
               {savedResults.length > 0 && (
                 <span
                   className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center text-white"
@@ -278,10 +278,10 @@ export default function Home() {
             {/* Bulk sim */}
             <button
               onClick={() => setBulkOpen(true)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors border"
+              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border"
               style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: `${ACCENT}11` }}
             >
-              ⚡ 100連
+              ⚡<span className="hidden sm:inline"> 100連</span>
             </button>
           </div>
         </div>
