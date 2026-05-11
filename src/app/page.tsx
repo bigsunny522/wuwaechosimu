@@ -11,8 +11,10 @@ import EchoCard from '@/components/EchoCard';
 import ResourceCounter from '@/components/ResourceCounter';
 import BulkSimModal from '@/components/BulkSimModal';
 import ScoreDebugPanel from '@/components/ScoreDebugPanel';
+import ResultCardVisual from '@/components/ResultCardVisual';
 import AdBonusModal from '@/components/AdBonusModal';
 import SavedResultsModal, { type SavedResult } from '@/components/SavedResultsModal';
+import { generateResultCard, buildShareText } from '@/lib/imageGen';
 
 const COST_OPTIONS: EchoCost[] = [4, 3, 1];
 const ACCENT = '#7c3aed';
@@ -48,7 +50,9 @@ export default function Home() {
   const [selectedCharId, setSelectedCharId] = useState<string>('generic');
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkUnlocked, setBulkUnlocked] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const resultCardRef = useRef<HTMLDivElement>(null);
 
   // ── Bonus time ──────────────────────────────────────────────────────────
   const [bonusEndTime, setBonusEndTime] = useState<number | null>(null);
@@ -436,24 +440,62 @@ export default function Home() {
               <>
                 <ScoreDebugPanel echo={echo} score={score} />
 
-                {/* Save result */}
-                <div className="flex flex-col items-center gap-2">
+                {/* Hidden card for image capture */}
+                <div className="absolute -left-[9999px] -top-[9999px] pointer-events-none" aria-hidden>
+                  <ResultCardVisual echo={echo} score={score} cardRef={resultCardRef} />
+                </div>
+
+                {/* Download + Share + Save */}
+                <div className="flex flex-wrap items-center justify-center gap-2 w-full">
+                  <button
+                    onClick={async () => {
+                      if (!resultCardRef.current) return;
+                      setDownloading(true);
+                      try {
+                        const dataUrl = await generateResultCard(resultCardRef.current);
+                        const a = document.createElement('a');
+                        a.href = dataUrl;
+                        a.download = `echo-${score.rank}-${score.score}pt.png`;
+                        a.click();
+                      } finally {
+                        setDownloading(false);
+                      }
+                    }}
+                    disabled={downloading}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-white border transition-all disabled:opacity-50"
+                    style={{ borderColor: '#64748b44', background: 'rgba(100,116,139,0.12)', color: '#cbd5e1' }}
+                  >
+                    {downloading ? '⏳' : '💾'} 画像保存
+                  </button>
+                  <button
+                    onClick={() => {
+                      const text = buildShareText(echo, score);
+                      window.open(
+                        `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
+                        '_blank', 'noopener,noreferrer'
+                      );
+                    }}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-white border transition-all"
+                    style={{ background: '#1a1a2e', border: '1px solid #334155' }}
+                  >
+                    𝕏 シェア
+                  </button>
                   {saveSlots > 0 ? (
                     <button
                       onClick={handleSave}
-                      className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-medium text-white border transition-all"
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border transition-all"
                       style={{ borderColor: '#22c55e44', background: '#22c55e11', color: '#4ade80' }}
                     >
-                      📋 この結果を保存する
+                      📋 保存
                       <span className="text-xs opacity-60">（残り {saveSlots} 枠）</span>
                     </button>
                   ) : (
                     <button
                       onClick={() => openAdModal('saves')}
-                      className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-medium border transition-all"
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border transition-all"
                       style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: `${ACCENT}11` }}
                     >
-                      📺 広告を見て保存枠を {SAVE_PER_AD} 枠獲得
+                      📺 広告で保存枠 +{SAVE_PER_AD}
                     </button>
                   )}
                 </div>

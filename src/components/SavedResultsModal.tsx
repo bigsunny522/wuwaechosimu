@@ -17,6 +17,16 @@ interface Props {
   onClose: () => void;
 }
 
+function formatSavedDate(id: number): string {
+  const d = new Date(id);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `${yyyy}/${mm}/${dd} ${hh}:${min}`;
+}
+
 function SavedCard({ result, onClear }: { result: SavedResult; onClear: () => void }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
@@ -45,6 +55,9 @@ function SavedCard({ result, onClear }: { result: SavedResult; onClear: () => vo
 
   return (
     <div className="flex flex-col items-center gap-2">
+      {/* Date/time */}
+      <div className="text-xs text-slate-600 font-mono">{formatSavedDate(result.id)}</div>
+
       {/* Same visual as ResultCard */}
       <div className="scale-[0.72] origin-top">
         <ResultCardVisual echo={result.echo} score={result.score} cardRef={cardRef} />
