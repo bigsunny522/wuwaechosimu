@@ -1,20 +1,24 @@
 'use client';
 
-import { useState, useRef, useCallback, useMemo } from 'react';
-import type { EchoCost, EchoState, ScoreResult, Theme } from '@/types/echo';
-import { createEcho, upgradeEcho } from '@/lib/simulator';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import type { EchoCost, EchoState, ScoreResult, MainstatInfo } from '@/types/echo';
+import { createEcho, upgradeEcho, rerollSubstats } from '@/lib/simulator';
 import { scoreEcho } from '@/lib/scorer';
 import { SUBSTAT_COUNT } from '@/data/mainstats';
+import { MAINSTAT_POOLS } from '@/data/mainstats';
 import { ECHOES_BY_COST, ECHOES, DEFAULT_ECHO_ID, HARMONY_SETS } from '@/data/echoes';
 import { CHARACTER_LIST, CHARACTER_MAP } from '@/data/characters';
 import EchoCard from '@/components/EchoCard';
 import ResourceCounter from '@/components/ResourceCounter';
 import ResultCard from '@/components/ResultCard';
 import BulkSimModal from '@/components/BulkSimModal';
-import ThemeSelector, { THEME_ACCENT } from '@/components/ThemeSelector';
 import ScoreDebugPanel from '@/components/ScoreDebugPanel';
+import AdBonusModal from '@/components/AdBonusModal';
 
 const COST_OPTIONS: EchoCost[] = [4, 3, 1];
+const ACCENT = '#7c3aed';
+const BONUS_DURATION_MS = 5 * 60 * 1000;
+const MAX_REROLL = 3;
 
 export default function Home() {
   const [cost, setCost] = useState<EchoCost>(4);
@@ -22,23 +26,54 @@ export default function Home() {
   const [selectedHarmonySet, setSelectedHarmonySet] = useState<string>('');
   const [echo, setEcho] = useState<EchoState | null>(null);
   const [score, setScore] = useState<ScoreResult | null>(null);
-  const [theme, setTheme] = useState<Theme>('default');
   const [selectedCharId, setSelectedCharId] = useState<string>('generic');
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkUnlocked, setBulkUnlocked] = useState(false);
-  const [premiumUnlocked, setPremiumUnlocked] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const accent = THEME_ACCENT[theme];
-  const isMaxLevel = echo?.level === 25;
+  // ── Bonus time ──────────────────────────────────────────────────────────
+  const [bonusEndTime, setBonusEndTime] = useState<number | null>(null);
+  const [adModalOpen, setAdModalOpen] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(0);
 
-  // コストごとに存在するハーモニーセット一覧（HARMONY_SETS の定義順を維持）
+  // Main stat lock
+  const [lockedMainstatKey, setLockedMainstatKey] = useState<string>('');
+
+  // Substat reroll
+  const [rerollUsed, setRerollUsed] = useState(false);
+  const [rerollIndices, setRerollIndices] = useState<Set<number>>(new Set());
+
+  const bonusActive = bonusEndTime !== null && Date.now() < bonusEndTime;
+
+  useEffect(() => {
+    if (!bonusEndTime) return;
+    const tick = () => {
+      const left = Math.max(0, bonusEndTime - Date.now());
+      setTimeLeft(Math.ceil(left / 1000));
+      if (left === 0) setBonusEndTime(null);
+    };
+    tick();
+    const id = setInterval(tick, 500);
+    return () => clearInterval(id);
+  }, [bonusEndTime]);
+
+  const handleGrantBonus = useCallback(() => {
+    const end = Date.now() + BONUS_DURATION_MS;
+    setBonusEndTime(end);
+    // Default to first available main stat for current cost
+    setLockedMainstatKey(MAINSTAT_POOLS[cost][0].key);
+    setRerollUsed(false);
+    setRerollIndices(new Set());
+  }, [cost]);
+
+  // ── Harmony set options ────────────────────────────────────────────────
   const harmonySetOptions = useMemo(() => {
     if (cost === 4) return [];
     const available = new Set(ECHOES.filter(e => e.cost === cost).flatMap(e => e.sets));
     return Object.values(HARMONY_SETS).filter(s => available.has(s));
   }, [cost]);
 
+  // ── Handlers ────────────────────────────────────────────────────────────
   const handleCostChange = useCallback((c: EchoCost) => {
     setCost(c);
     setSelectedEchoId(DEFAULT_ECHO_ID[c]);
@@ -47,6 +82,8 @@ export default function Home() {
       const first = Object.values(HARMONY_SETS).find(s => available.has(s)) ?? '';
       setSelectedHarmonySet(first);
     }
+    // Reset lock to first stat of new cost
+    setLockedMainstatKey(MAINSTAT_POOLS[c][0].key);
     setEcho(null);
     setScore(null);
   }, []);
@@ -58,15 +95,23 @@ export default function Home() {
       if (pool.length === 0) return;
       echoId = pool[Math.floor(Math.random() * pool.length)].id;
     }
-    setEcho(createEcho(cost, echoId));
+
+    // Use locked main stat during bonus
+    let fixedMain: MainstatInfo | undefined;
+    if (bonusEndTime && Date.now() < bonusEndTime && lockedMainstatKey) {
+      fixedMain = MAINSTAT_POOLS[cost].find(m => m.key === lockedMainstatKey);
+    }
+
+    setEcho(createEcho(cost, echoId, fixedMain));
     setScore(null);
-  }, [cost, selectedEchoId, selectedHarmonySet]);
+    setRerollUsed(false);
+    setRerollIndices(new Set());
+  }, [cost, selectedEchoId, selectedHarmonySet, bonusEndTime, lockedMainstatKey]);
 
   const handleUpgrade = useCallback(() => {
     if (!echo || echo.level >= 25) return;
     const next = upgradeEcho(echo);
     setEcho(next);
-    // レベルに関わらず常にスコアを計算してカテゴリ情報をサブステ色付けに使う
     const build = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
     setScore(scoreEcho(next, build));
   }, [echo, selectedCharId]);
@@ -74,9 +119,41 @@ export default function Home() {
   const handleReset = useCallback(() => {
     setEcho(null);
     setScore(null);
+    setRerollUsed(false);
+    setRerollIndices(new Set());
   }, []);
 
+  const handleReroll = useCallback(() => {
+    if (!echo || rerollUsed || rerollIndices.size === 0) return;
+    const newEcho = rerollSubstats(echo, Array.from(rerollIndices));
+    setEcho(newEcho);
+    const build = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
+    setScore(scoreEcho(newEcho, build));
+    setRerollUsed(true);
+    setRerollIndices(new Set());
+  }, [echo, rerollUsed, rerollIndices, selectedCharId]);
+
+  const toggleRerollIndex = useCallback((idx: number) => {
+    setRerollIndices(prev => {
+      const next = new Set(prev);
+      if (next.has(idx)) {
+        next.delete(idx);
+      } else if (next.size < MAX_REROLL) {
+        next.add(idx);
+      }
+      return next;
+    });
+  }, []);
+
+  const isMaxLevel = echo?.level === 25;
   const echoList = ECHOES_BY_COST[cost];
+  const formatTime = (s: number) =>
+    `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
+  // Reroll panel: visible only when bonus active + level 25 + not yet used
+  const showRerollPanel = bonusActive && echo?.level === 25 && !rerollUsed;
+  // Main stat lock: visible when bonus active
+  const showMainstatLock = bonusActive;
 
   return (
     <div
@@ -89,29 +166,45 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <div
               className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold"
-              style={{ background: `${accent}33`, border: `1px solid ${accent}66`, color: accent }}
+              style={{ background: `${ACCENT}33`, border: `1px solid ${ACCENT}66`, color: ACCENT }}
             >
               ◈
             </div>
             <span className="font-bold text-white text-sm tracking-wide">音骸シミュレーター</span>
             <span className="text-[10px] text-slate-600 hidden sm:inline">鳴潮 / Wuthering Waves</span>
           </div>
-          <button
-            onClick={() => setBulkOpen(true)}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border"
-            style={{ borderColor: `${accent}44`, color: accent, background: `${accent}11` }}
-          >
-            ⚡ 100連厳選
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Bonus status in header */}
+            {bonusActive ? (
+              <div
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border"
+                style={{ borderColor: '#f59e0b44', color: '#fbbf24', background: '#f59e0b11' }}
+              >
+                <span className="animate-pulse">✨</span>
+                <span>ボーナス</span>
+                <span className="font-mono">{formatTime(timeLeft)}</span>
+              </div>
+            ) : (
+              <button
+                onClick={() => setAdModalOpen(true)}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border"
+                style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: `${ACCENT}11` }}
+              >
+                🎁 ボーナス獲得
+              </button>
+            )}
+            <button
+              onClick={() => setBulkOpen(true)}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border"
+              style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: `${ACCENT}11` }}
+            >
+              ⚡ 100連厳選
+            </button>
+          </div>
         </div>
       </header>
 
       <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-6 flex flex-col gap-6">
-        {/* Theme */}
-        <div className="flex flex-col gap-2">
-          <div className="text-xs text-slate-600 text-center tracking-wider uppercase">テーマ</div>
-          <ThemeSelector current={theme} unlocked={premiumUnlocked} onSelect={setTheme} onUnlock={() => setPremiumUnlocked(true)} />
-        </div>
 
         {/* Character selector */}
         <div className="flex flex-col gap-2">
@@ -121,7 +214,7 @@ export default function Home() {
               value={selectedCharId}
               onChange={(e) => { setSelectedCharId(e.target.value); setScore(null); }}
               className="w-full px-4 py-2.5 rounded-xl text-sm text-slate-200 appearance-none cursor-pointer transition-colors"
-              style={{ background: 'rgba(15,17,23,0.8)', border: `1px solid ${accent}44`, outline: 'none' }}
+              style={{ background: 'rgba(15,17,23,0.8)', border: `1px solid ${ACCENT}44`, outline: 'none' }}
             >
               <option value="generic" style={{ background: '#0f1117' }}>汎用スコア（キャラ指定なし）</option>
               {CHARACTER_LIST.map((c) => (
@@ -145,7 +238,7 @@ export default function Home() {
                 className="px-6 py-2.5 rounded-xl font-bold text-sm transition-all"
                 style={
                   cost === c
-                    ? { background: accent, color: '#fff', boxShadow: `0 0 16px ${accent}66` }
+                    ? { background: ACCENT, color: '#fff', boxShadow: `0 0 16px ${ACCENT}66` }
                     : { background: 'rgba(148,163,184,0.06)', border: '1px solid rgba(148,163,184,0.12)', color: '#94a3b8' }
                 }
               >
@@ -156,6 +249,34 @@ export default function Home() {
           <div className="text-center text-xs text-slate-600">サブステ最大 {SUBSTAT_COUNT[cost]} 個</div>
         </div>
 
+        {/* Main stat lock (bonus only) */}
+        {showMainstatLock && (
+          <div
+            className="flex flex-col gap-2 rounded-xl p-4 border"
+            style={{ borderColor: '#f59e0b44', background: '#f59e0b08' }}
+          >
+            <div className="text-xs text-amber-500 text-center tracking-wider uppercase">
+              ✨ ボーナス：メインステータス固定
+            </div>
+            <div className="relative">
+              <select
+                value={lockedMainstatKey}
+                onChange={(e) => setLockedMainstatKey(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-xl text-sm text-slate-200 appearance-none cursor-pointer"
+                style={{ background: 'rgba(15,17,23,0.8)', border: '1px solid #f59e0b44', outline: 'none' }}
+              >
+                {MAINSTAT_POOLS[cost].map((m) => (
+                  <option key={m.key} value={m.key} style={{ background: '#0f1117' }}>
+                    {m.label}（+25: {m.value}{m.unit}）
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">▼</div>
+            </div>
+            <p className="text-xs text-amber-600/80 text-center">次に引く音骸のメインステがこの値に固定されます</p>
+          </div>
+        )}
+
         {/* Echo / Harmony selector */}
         {cost === 4 ? (
           <div className="flex flex-col gap-2">
@@ -165,7 +286,7 @@ export default function Home() {
                 value={selectedEchoId}
                 onChange={(e) => { setSelectedEchoId(e.target.value); setEcho(null); setScore(null); }}
                 className="w-full px-4 py-2.5 rounded-xl text-sm text-slate-200 appearance-none cursor-pointer transition-colors"
-                style={{ background: 'rgba(15,17,23,0.8)', border: `1px solid ${accent}44`, outline: 'none' }}
+                style={{ background: 'rgba(15,17,23,0.8)', border: `1px solid ${ACCENT}44`, outline: 'none' }}
               >
                 {echoList.map((e) => (
                   <option key={e.id} value={e.id} style={{ background: '#0f1117' }}>
@@ -184,7 +305,7 @@ export default function Home() {
                 value={selectedHarmonySet}
                 onChange={(e) => { setSelectedHarmonySet(e.target.value); setEcho(null); setScore(null); }}
                 className="w-full px-4 py-2.5 rounded-xl text-sm text-slate-200 appearance-none cursor-pointer transition-colors"
-                style={{ background: 'rgba(15,17,23,0.8)', border: `1px solid ${accent}44`, outline: 'none' }}
+                style={{ background: 'rgba(15,17,23,0.8)', border: `1px solid ${ACCENT}44`, outline: 'none' }}
               >
                 {harmonySetOptions.map((s) => (
                   <option key={s} value={s} style={{ background: '#0f1117' }}>{s}</option>
@@ -204,7 +325,7 @@ export default function Home() {
             <button
               onClick={handleStart}
               className="px-8 py-3 rounded-xl font-bold text-base text-white transition-all"
-              style={{ background: `linear-gradient(135deg, ${accent}, ${accent}cc)`, boxShadow: `0 4px 20px ${accent}55` }}
+              style={{ background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT}cc)`, boxShadow: `0 4px 20px ${ACCENT}55` }}
             >
               ✦ 音骸を入手
             </button>
@@ -216,7 +337,7 @@ export default function Home() {
                 className="px-6 py-2.5 rounded-xl font-bold text-sm text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 style={
                   !isMaxLevel
-                    ? { background: `linear-gradient(135deg, ${accent}, ${accent}aa)`, boxShadow: `0 4px 16px ${accent}44` }
+                    ? { background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT}aa)`, boxShadow: `0 4px 16px ${ACCENT}44` }
                     : { background: 'rgba(148,163,184,0.1)' }
                 }
               >
@@ -257,18 +378,85 @@ export default function Home() {
           </div>
         )}
 
+        {/* Substat reroll panel (bonus + level 25 + not used) */}
+        {showRerollPanel && echo && (
+          <div
+            className="rounded-xl border p-4 flex flex-col gap-3"
+            style={{ borderColor: '#f59e0b44', background: '#f59e0b08' }}
+          >
+            <div className="text-xs text-amber-500 text-center tracking-wider uppercase">
+              ✨ ボーナス：サブステ再抽選（最大 {MAX_REROLL} 個・1回限り）
+            </div>
+            <div className="space-y-2">
+              {echo.substats.map((s, i) => {
+                const selected = rerollIndices.has(i);
+                const disabled = !selected && rerollIndices.size >= MAX_REROLL;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => !disabled && toggleRerollIndex(i)}
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all"
+                    style={{
+                      background: selected ? '#f59e0b22' : 'rgba(15,17,23,0.6)',
+                      border: selected ? '1px solid #f59e0b66' : '1px solid rgba(148,163,184,0.12)',
+                      opacity: disabled ? 0.4 : 1,
+                      cursor: disabled ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    <span className="text-slate-300">{s.label}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-white font-medium">{s.value}{s.unit}</span>
+                      {selected && <span className="text-amber-400 text-xs">再抽選</span>}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              onClick={handleReroll}
+              disabled={rerollIndices.size === 0}
+              className="w-full py-2.5 rounded-xl font-bold text-sm text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              style={
+                rerollIndices.size > 0
+                  ? { background: 'linear-gradient(135deg, #f59e0b, #d97706)', boxShadow: '0 4px 16px #f59e0b44' }
+                  : { background: 'rgba(148,163,184,0.1)' }
+              }
+            >
+              {rerollIndices.size > 0
+                ? `🎲 ${rerollIndices.size}個を再抽選する`
+                : '再抽選するサブステを選択してください'}
+            </button>
+          </div>
+        )}
+
+        {/* Reroll done notice */}
+        {bonusActive && echo?.level === 25 && rerollUsed && (
+          <div className="text-center text-xs text-amber-600/70">
+            ✓ この音骸の再抽選は使用済みです
+          </div>
+        )}
+
         {/* Empty state */}
         {!echo && (
           <div className="flex flex-col items-center gap-3 py-8 text-center">
             <div
               className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl border"
-              style={{ background: `${accent}11`, borderColor: `${accent}33` }}
+              style={{ background: `${ACCENT}11`, borderColor: `${ACCENT}33` }}
             >
               ◈
             </div>
             <p className="text-slate-500 text-sm max-w-xs">
               音骸とコストを選んで「音骸を入手」から強化シミュレーションを開始できます
             </p>
+            {!bonusActive && (
+              <button
+                onClick={() => setAdModalOpen(true)}
+                className="mt-2 px-5 py-2 rounded-xl text-sm font-medium border transition-colors"
+                style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: `${ACCENT}11` }}
+              >
+                🎁 広告を見てボーナスタイムを獲得
+              </button>
+            )}
           </div>
         )}
       </main>
@@ -285,6 +473,13 @@ export default function Home() {
           unlocked={bulkUnlocked}
           onUnlock={() => setBulkUnlocked(true)}
           onClose={() => setBulkOpen(false)}
+        />
+      )}
+
+      {adModalOpen && (
+        <AdBonusModal
+          onGrantBonus={handleGrantBonus}
+          onClose={() => setAdModalOpen(false)}
         />
       )}
     </div>

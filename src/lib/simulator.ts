@@ -40,7 +40,7 @@ function pickMainstat(cost: EchoCost): MainstatInfo {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-export function createEcho(cost: EchoCost, echoId?: string): EchoState {
+export function createEcho(cost: EchoCost, echoId?: string, fixedMainstat?: MainstatInfo): EchoState {
   const id = echoId ?? DEFAULT_ECHO_ID[cost];
   const echoInfo = ECHOES_BY_COST[cost].find((e) => e.id === id);
   const sets = echoInfo?.sets ?? [];
@@ -53,9 +53,24 @@ export function createEcho(cost: EchoCost, echoId?: string): EchoState {
     activeHarmonySet,
     level: 0,
     substats: [],
-    mainstat: pickMainstat(cost),
+    mainstat: fixedMainstat ?? pickMainstat(cost),
     totalCost: { shellCoins: 0, tunerBasic: 0, tunerAdvanced: 0, expMaterial: 0 },
   };
+}
+
+export function rerollSubstats(echo: EchoState, indices: number[]): EchoState {
+  if (indices.length === 0) return echo;
+  const newSubstats = [...echo.substats];
+  // Keep non-rerolled keys in the exclusion set so duplicates can't appear
+  const excluded = new Set(
+    newSubstats.filter((_, i) => !indices.includes(i)).map((s) => s.key)
+  );
+  for (const idx of [...indices].sort((a, b) => a - b)) {
+    const s = pickSubstat(excluded);
+    newSubstats[idx] = s;
+    excluded.add(s.key);
+  }
+  return { ...echo, substats: newSubstats };
 }
 
 export function upgradeEcho(echo: EchoState): EchoState {
