@@ -7,9 +7,20 @@ interface Props {
   echo: EchoState;
   score: ScoreResult;
   cardRef?: React.RefObject<HTMLDivElement | null>;
+  maxedAt?: number;
 }
 
-export default function ResultCardVisual({ echo, score, cardRef }: Props) {
+function formatMaxedDate(ts: number): string {
+  const d = new Date(ts);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `${yyyy}/${mm}/${dd} ${hh}:${min}`;
+}
+
+export default function ResultCardVisual({ echo, score, cardRef, maxedAt }: Props) {
   const color = RANK_COLORS[score.rank];
   const isCursed = score.score < 20;
 
@@ -40,6 +51,11 @@ export default function ResultCardVisual({ echo, score, cardRef }: Props) {
       {isCursed && (
         <div className="mt-3 text-center text-red-400 text-xs font-bold">
           ⚠️ 呪いの音骸 ⚠️
+        </div>
+      )}
+      {maxedAt && (
+        <div className="mt-3 text-center text-slate-600 text-[10px] font-mono tracking-wide">
+          +25達成: {formatMaxedDate(maxedAt)}
         </div>
       )}
     </div>

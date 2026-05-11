@@ -9,6 +9,7 @@ export interface SavedResult {
   id: number;
   echo: EchoState;
   score: ScoreResult;
+  maxedAt: number;
 }
 
 interface Props {
@@ -17,8 +18,8 @@ interface Props {
   onClose: () => void;
 }
 
-function formatSavedDate(id: number): string {
-  const d = new Date(id);
+function formatDate(ts: number): string {
+  const d = new Date(ts);
   const yyyy = d.getFullYear();
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const dd = String(d.getDate()).padStart(2, '0');
@@ -55,12 +56,12 @@ function SavedCard({ result, onClear }: { result: SavedResult; onClear: () => vo
 
   return (
     <div className="flex flex-col items-center gap-2">
-      {/* Date/time */}
-      <div className="text-xs text-slate-600 font-mono">{formatSavedDate(result.id)}</div>
+      {/* +25達成日時 */}
+      <div className="text-xs text-slate-600 font-mono">+25: {formatDate(result.maxedAt)}</div>
 
       {/* Same visual as ResultCard */}
       <div className="scale-[0.72] origin-top">
-        <ResultCardVisual echo={result.echo} score={result.score} cardRef={cardRef} />
+        <ResultCardVisual echo={result.echo} score={result.score} cardRef={cardRef} maxedAt={result.maxedAt} />
       </div>
 
       {/* Buttons */}

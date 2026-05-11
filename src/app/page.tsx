@@ -11,7 +11,6 @@ import EchoCard from '@/components/EchoCard';
 import ResourceCounter from '@/components/ResourceCounter';
 import BulkSimModal from '@/components/BulkSimModal';
 import ScoreDebugPanel from '@/components/ScoreDebugPanel';
-import ResultCardVisual from '@/components/ResultCardVisual';
 import AdBonusModal from '@/components/AdBonusModal';
 import SavedResultsModal, { type SavedResult } from '@/components/SavedResultsModal';
 import { generateResultCard, buildShareText } from '@/lib/imageGen';
@@ -51,8 +50,8 @@ export default function Home() {
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkUnlocked, setBulkUnlocked] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [maxedAt, setMaxedAt] = useState<number | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
-  const resultCardRef = useRef<HTMLDivElement>(null);
 
   // ── Bonus time ──────────────────────────────────────────────────────────
   const [bonusEndTime, setBonusEndTime] = useState<number | null>(null);
@@ -133,6 +132,7 @@ export default function Home() {
     }
     setEcho(createEcho(cost, echoId, fixedMain));
     setScore(null);
+    setMaxedAt(null);
     setRerollUsed(false);
     setRerollIndices(new Set());
   }, [cost, selectedEchoId, selectedHarmonySet, bonusEndTime, lockedMainstatKey]);
@@ -143,6 +143,7 @@ export default function Home() {
     setEcho(next);
     const build = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
     setScore(scoreEcho(next, build));
+    if (next.level === 25) setMaxedAt(Date.now());
   }, [echo, selectedCharId]);
 
   // ワンクリック最大強化
@@ -152,11 +153,13 @@ export default function Home() {
     setEcho(maxed);
     const build = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
     setScore(scoreEcho(maxed, build));
+    setMaxedAt(Date.now());
   }, [echo, selectedCharId]);
 
   const handleReset = useCallback(() => {
     setEcho(null);
     setScore(null);
+    setMaxedAt(null);
     setRerollUsed(false);
     setRerollIndices(new Set());
   }, []);
@@ -184,9 +187,10 @@ export default function Home() {
   // 結果保存
   const handleSave = useCallback(() => {
     if (!echo || !score || echo.level < 25 || saveSlots <= 0) return;
-    setSavedResults(prev => [{ id: Date.now(), echo, score }, ...prev]);
+    const ts = maxedAt ?? Date.now();
+    setSavedResults(prev => [{ id: Date.now(), echo, score, maxedAt: ts }, ...prev]);
     setSaveSlots(prev => prev - 1);
-  }, [echo, score, saveSlots]);
+  }, [echo, score, saveSlots, maxedAt]);
 
   const handleClearSaved = useCallback((id: number) => {
     setSavedResults(prev => prev.filter(r => r.id !== id));
@@ -427,7 +431,7 @@ export default function Home() {
         {/* Echo card */}
         {echo && (
           <div className="flex flex-col items-center gap-4">
-            <EchoCard echo={echo} score={score} cardRef={cardRef} />
+            <EchoCard echo={echo} score={score} cardRef={cardRef} maxedAt={maxedAt} />
 
             {echo.totalCost.shellCoins > 0 && (
               <div className="w-full">
@@ -440,19 +444,14 @@ export default function Home() {
               <>
                 <ScoreDebugPanel echo={echo} score={score} />
 
-                {/* Hidden card for image capture */}
-                <div className="absolute -left-[9999px] -top-[9999px] pointer-events-none" aria-hidden>
-                  <ResultCardVisual echo={echo} score={score} cardRef={resultCardRef} />
-                </div>
-
                 {/* Download + Share + Save */}
                 <div className="flex flex-wrap items-center justify-center gap-2 w-full">
                   <button
                     onClick={async () => {
-                      if (!resultCardRef.current) return;
+                      if (!cardRef.current) return;
                       setDownloading(true);
                       try {
-                        const dataUrl = await generateResultCard(resultCardRef.current);
+                        const dataUrl = await generateResultCard(cardRef.current);
                         const a = document.createElement('a');
                         a.href = dataUrl;
                         a.download = `echo-${score.rank}-${score.score}pt.png`;

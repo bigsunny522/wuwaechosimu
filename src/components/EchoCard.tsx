@@ -10,6 +10,17 @@ interface Props {
   echo: EchoState;
   score: ScoreResult | null;
   cardRef?: React.RefObject<HTMLDivElement | null>;
+  maxedAt?: number | null;
+}
+
+function formatMaxedDate(ts: number): string {
+  const d = new Date(ts);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `${yyyy}/${mm}/${dd} ${hh}:${min}`;
 }
 
 const COST_LABEL: Record<number, string> = { 4: 'COST 4', 3: 'COST 3', 1: 'COST 1' };
@@ -19,7 +30,7 @@ const COST_COLOR: Record<number, string> = {
   1: 'text-teal-400',
 };
 
-export default function EchoCard({ echo, score, cardRef }: Props) {
+export default function EchoCard({ echo, score, cardRef, maxedAt }: Props) {
   // ランク色はMAXレベル到達後のみ適用（中間段階ではニュートラル色）
   const isMax = echo.level === 25;
   const rankColor = (score && isMax) ? RANK_COLORS[score.rank] : '#94A3B8';
@@ -111,6 +122,11 @@ export default function EchoCard({ echo, score, cardRef }: Props) {
       {score && isMax && (
         <div className="px-5 py-4" style={{ borderBottom: '1px solid rgba(148,163,184,0.1)' }}>
           <ScoreBadge result={score} />
+          {maxedAt && (
+            <div className="mt-2 text-center text-[11px] text-slate-600 font-mono tracking-wide">
+              +25達成: {formatMaxedDate(maxedAt)}
+            </div>
+          )}
         </div>
       )}
 
