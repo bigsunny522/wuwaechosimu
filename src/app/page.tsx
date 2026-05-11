@@ -21,6 +21,18 @@ const BONUS_DURATION_MS = 5 * 60 * 1000;
 const MAX_REROLL = 3;
 const SAVE_PER_AD = 10;
 
+const ZERO_COST = { shellCoins: 0, tunerBasic: 0, tunerAdvanced: 0, expMaterial: 0 };
+type TotalCost = typeof ZERO_COST;
+
+function addCost(a: TotalCost, b: TotalCost): TotalCost {
+  return {
+    shellCoins:    a.shellCoins    + b.shellCoins,
+    tunerBasic:    a.tunerBasic    + b.tunerBasic,
+    tunerAdvanced: a.tunerAdvanced + b.tunerAdvanced,
+    expMaterial:   a.expMaterial   + b.expMaterial,
+  };
+}
+
 type AdPurpose = 'bonus' | 'saves';
 
 const AD_CONFIGS: Record<AdPurpose, { title: string; items: string[] }> = {
@@ -51,6 +63,7 @@ export default function Home() {
   const [bulkUnlocked, setBulkUnlocked] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [maxedAt, setMaxedAt] = useState<number | null>(null);
+  const [lifetimeCost, setLifetimeCost] = useState<TotalCost>(ZERO_COST);
   const cardRef = useRef<HTMLDivElement>(null);
 
   // ── Bonus time ──────────────────────────────────────────────────────────
@@ -120,6 +133,9 @@ export default function Home() {
   }, []);
 
   const handleStart = useCallback(() => {
+    // 前の音骸のコストを累計に加算してから新しい音骸を生成
+    if (echo) setLifetimeCost(prev => addCost(prev, echo.totalCost));
+
     let echoId = selectedEchoId;
     if (cost !== 4) {
       const pool = ECHOES.filter(e => e.cost === cost && e.sets.includes(selectedHarmonySet));
@@ -135,7 +151,7 @@ export default function Home() {
     setMaxedAt(null);
     setRerollUsed(false);
     setRerollIndices(new Set());
-  }, [cost, selectedEchoId, selectedHarmonySet, bonusEndTime, lockedMainstatKey]);
+  }, [echo, cost, selectedEchoId, selectedHarmonySet, bonusEndTime, lockedMainstatKey]);
 
   const handleUpgrade = useCallback(() => {
     if (!echo || echo.level >= 25) return;
@@ -157,12 +173,13 @@ export default function Home() {
   }, [echo, selectedCharId]);
 
   const handleReset = useCallback(() => {
+    if (echo) setLifetimeCost(prev => addCost(prev, echo.totalCost));
     setEcho(null);
     setScore(null);
     setMaxedAt(null);
     setRerollUsed(false);
     setRerollIndices(new Set());
-  }, []);
+  }, [echo]);
 
   // サブステ再抽選 (bonus)
   const handleReroll = useCallback(() => {
@@ -197,6 +214,10 @@ export default function Home() {
   }, []);
 
   const isMaxLevel = echo?.level === 25;
+
+  // 累計コスト = セッション全体の過去分 + 現在の音骸分
+  const displayCost = addCost(lifetimeCost, echo?.totalCost ?? ZERO_COST);
+  const hasAnyCost = displayCost.shellCoins > 0;
   const echoList = ECHOES_BY_COST[cost];
   const showRerollPanel = bonusActive && echo?.level === 25 && !rerollUsed;
   const showMainstatLock = bonusActive;
@@ -428,17 +449,26 @@ export default function Home() {
           )}
         </div>
 
+        {/* 累計消費リソース（セッション全体） */}
+        {hasAnyCost && (
+          <div className="w-full">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <span className="text-xs text-slate-600 tracking-wider uppercase">累計消費リソース</span>
+              <button
+                onClick={() => setLifetimeCost(ZERO_COST)}
+                className="text-[10px] text-slate-700 hover:text-slate-400 border border-slate-800 hover:border-slate-600 px-1.5 py-0.5 rounded transition-colors"
+              >
+                リセット
+              </button>
+            </div>
+            <ResourceCounter totalCost={displayCost} />
+          </div>
+        )}
+
         {/* Echo card */}
         {echo && (
           <div className="flex flex-col items-center gap-4">
             <EchoCard echo={echo} score={score} cardRef={cardRef} maxedAt={maxedAt} />
-
-            {echo.totalCost.shellCoins > 0 && (
-              <div className="w-full">
-                <div className="text-xs text-slate-600 text-center tracking-wider uppercase mb-2">累計消費リソース</div>
-                <ResourceCounter totalCost={echo.totalCost} />
-              </div>
-            )}
 
             {score && isMaxLevel && (
               <>
