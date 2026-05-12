@@ -2,6 +2,8 @@
 
 import type { Substat, SubstatCategory } from '@/types/echo';
 import { CATEGORY_COLORS } from '@/lib/scorer';
+import { useLocale } from '@/lib/locale';
+import { SUBSTAT_LABEL_EN } from '@/data/translations';
 
 interface Props {
   substat: Substat;
@@ -42,6 +44,8 @@ function resolveGoldBorder(tier: number, category: SubstatCategory | undefined):
 }
 
 export default function SubstatRow({ substat, index, animated = true, category }: Props) {
+  const { locale } = useLocale();
+  const label = locale === 'en' ? (SUBSTAT_LABEL_EN[substat.key] ?? substat.label) : substat.label;
   const pct = Math.round((substat.value / substat.maxValue) * 100);
   const color  = resolveColor(substat.tier, category);
   const catColor = category ? CATEGORY_COLORS[category] : undefined;
@@ -65,7 +69,7 @@ export default function SubstatRow({ substat, index, animated = true, category }
 
       {/* Label + bar + value */}
       <div className="flex-1 min-w-0">
-        <div className="text-sm text-slate-200 leading-snug mb-1">{substat.label}</div>
+        <div className="text-sm text-slate-200 leading-snug mb-1">{label}</div>
 
         {/* Bar + value row */}
         <div className="flex items-center gap-2">

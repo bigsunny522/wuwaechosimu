@@ -2,9 +2,12 @@
 
 import type { EchoState, ScoreResult } from '@/types/echo';
 import { SUBSTAT_COUNT } from '@/data/mainstats';
+import { HARMONY_SETS_EN } from '@/data/echoes';
 import SubstatRow from './SubstatRow';
 import ScoreBadge from './ScoreBadge';
 import { RANK_COLORS } from '@/lib/scorer';
+import { useLocale } from '@/lib/locale';
+import { TRANSLATIONS, MAINSTAT_LABEL_EN } from '@/data/translations';
 
 interface Props {
   echo: EchoState;
@@ -23,7 +26,6 @@ function formatMaxedDate(ts: number): string {
   return `${yyyy}/${mm}/${dd} ${hh}:${min}`;
 }
 
-const COST_LABEL: Record<number, string> = { 4: 'COST 4', 3: 'COST 3', 1: 'COST 1' };
 const COST_COLOR: Record<number, string> = {
   4: 'text-amber-400',
   3: 'text-violet-400',
@@ -31,11 +33,22 @@ const COST_COLOR: Record<number, string> = {
 };
 
 export default function EchoCard({ echo, score, cardRef, maxedAt }: Props) {
-  // ランク色はMAXレベル到達後のみ適用（中間段階ではニュートラル色）
+  const { locale } = useLocale();
+  const T = TRANSLATIONS[locale];
+
   const isMax = echo.level === 25;
   const rankColor = (score && isMax) ? RANK_COLORS[score.rank] : '#94A3B8';
   const maxSubs = SUBSTAT_COUNT[echo.cost];
   const emptyCount = Math.max(0, maxSubs - echo.substats.length);
+
+  // ロケール対応の名前・ラベル
+  const echoDisplayName = locale === 'en' ? (echo.echoNameEn ?? echo.echoName) : echo.echoName;
+  const mainstatLabel   = locale === 'en'
+    ? (MAINSTAT_LABEL_EN[echo.mainstat.key] ?? echo.mainstat.label)
+    : echo.mainstat.label;
+  const harmonyDisplay  = echo.activeHarmonySet
+    ? (locale === 'en' ? (HARMONY_SETS_EN[echo.activeHarmonySet] ?? echo.activeHarmonySet) : echo.activeHarmonySet)
+    : '';
 
   return (
     <div
@@ -60,24 +73,22 @@ export default function EchoCard({ echo, score, cardRef, maxedAt }: Props) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
               <span className={`text-xs font-bold tracking-widest ${COST_COLOR[echo.cost]}`}>
-                {COST_LABEL[echo.cost]}
+                COST {echo.cost}
               </span>
-              <span className="text-xs text-slate-500">音骸</span>
+              <span className="text-xs text-slate-500">{T.echoType}</span>
             </div>
-            {/* Echo name */}
             <div className="text-base font-bold text-slate-100 leading-snug mb-1">
-              {echo.echoName}
+              {echoDisplayName}
             </div>
-            {/* Main stat */}
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-sm text-slate-400">{echo.mainstat.label}</span>
+              <span className="text-sm text-slate-400">{mainstatLabel}</span>
               <span className="text-sm font-bold text-amber-300">
                 {echo.mainstat.value}{echo.mainstat.unit}
               </span>
             </div>
           </div>
           <div className="text-right shrink-0">
-            <div className="text-xs text-slate-500 mb-0.5">強化レベル</div>
+            <div className="text-xs text-slate-500 mb-0.5">{T.levelLabel}</div>
             <div className="text-2xl font-black text-white">+{echo.level}</div>
           </div>
         </div>
@@ -99,12 +110,12 @@ export default function EchoCard({ echo, score, cardRef, maxedAt }: Props) {
       </div>
 
       {/* Harmony Set */}
-      {echo.activeHarmonySet && (
+      {harmonyDisplay && (
         <div
           className="px-5 py-2.5 flex items-center gap-2"
           style={{ borderBottom: '1px solid rgba(148,163,184,0.08)' }}
         >
-          <span className="text-[10px] text-slate-600 uppercase tracking-widest shrink-0">ハーモニー</span>
+          <span className="text-[10px] text-slate-600 uppercase tracking-widest shrink-0">{T.harmonyBadge}</span>
           <span
             className="text-xs font-semibold px-2 py-0.5 rounded-full"
             style={{
@@ -113,18 +124,18 @@ export default function EchoCard({ echo, score, cardRef, maxedAt }: Props) {
               color: '#c4b5fd',
             }}
           >
-            {echo.activeHarmonySet}
+            {harmonyDisplay}
           </span>
         </div>
       )}
 
-      {/* Score section - MAX到達後のみ表示 */}
+      {/* Score section */}
       {score && isMax && (
         <div className="px-5 py-4" style={{ borderBottom: '1px solid rgba(148,163,184,0.1)' }}>
           <ScoreBadge result={score} />
           {maxedAt && (
             <div className="mt-2 text-center text-[11px] text-slate-600 font-mono tracking-wide">
-              +25達成: {formatMaxedDate(maxedAt)}
+              {T.maxedAt}: {formatMaxedDate(maxedAt)}
             </div>
           )}
         </div>
@@ -134,7 +145,7 @@ export default function EchoCard({ echo, score, cardRef, maxedAt }: Props) {
       <div className="px-3 py-3 flex flex-col gap-0.5">
         {echo.substats.length === 0 ? (
           <div className="text-center text-slate-600 text-sm py-4">
-            「+5強化」でサブステータスが解放されます
+            {T.levelHint}
           </div>
         ) : (
           echo.substats.map((sub, i) => {
@@ -148,7 +159,7 @@ export default function EchoCard({ echo, score, cardRef, maxedAt }: Props) {
             className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-slate-700/40"
           >
             <span className="text-xs text-slate-700 w-4">{echo.substats.length + i + 1}</span>
-            <span className="flex-1 text-sm text-slate-700 italic">未解放</span>
+            <span className="flex-1 text-sm text-slate-700 italic">{T.unlockedSlot}</span>
           </div>
         ))}
       </div>

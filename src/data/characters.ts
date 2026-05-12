@@ -49,7 +49,7 @@ export const CHARACTERS: CharacterBuild[] = [
   // ── 5★ キャラクター（実装降順）────────────────────────────────────────
 
   {
-    id: 'hiyuki', name: '緋雪', element: '凝縮', weapon: '迅刀',
+    id: 'hiyuki', name: '緋雪', nameEn: 'Hiyuki', element: '凝縮', weapon: '迅刀',
     role: 'メイン/サブ火力',
     substats: {
       recommended: [
@@ -70,7 +70,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'sigrid', name: 'シグリカ', element: '気動', weapon: '手甲',
+    id: 'sigrid', name: 'シグリカ', nameEn: 'Sigrika', element: '気動', weapon: '手甲',
     role: 'メインアタッカー（牽引）',
     substats: {
       recommended: [
@@ -91,7 +91,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'ryuk', name: 'リューク・ヘルセン', element: '回折', weapon: '手甲',
+    id: 'ryuk', name: 'リューク・ヘルセン', nameEn: 'Luuk Herssen', element: '回折', weapon: '手甲',
     role: 'メインアタッカー（回折ダメージ重視）',
     substats: {
       recommended: [
@@ -113,7 +113,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'aimes', name: 'エイメス', element: '焦熱', weapon: '迅刀',
+    id: 'aimes', name: 'エイメス', nameEn: 'Aemeath', element: '焦熱', weapon: '迅刀',
     role: 'メインアタッカー（全ダメバフ）',
     substats: {
       recommended: [
@@ -134,7 +134,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'mortefi', name: 'モーニエ', element: '焦熱', weapon: '長刃',
+    id: 'mortefi', name: 'モーニエ', nameEn: 'Mornye', element: '焦熱', weapon: '長刃',
     role: '耐久・回復サポーター',
     substats: {
       recommended: [
@@ -155,7 +155,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'linne', name: 'リンネー', element: '回折', weapon: '拳銃',
+    id: 'linne', name: 'リンネー', nameEn: 'Lynae', element: '回折', weapon: '拳銃',
     role: 'サポート（協奏効率・全ダメバフ）',
     substats: {
       recommended: [
@@ -177,7 +177,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'chixia_sanhua', name: '千咲', element: '消滅', weapon: '長刃',
+    id: 'chixia_sanhua', name: '千咲', nameEn: 'Chisa', element: '消滅', weapon: '長刃',
     role: '耐久・回復、防御力デバフ',
     substats: {
       recommended: [
@@ -199,7 +199,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'quyuan', name: '仇遠', element: '気動', weapon: '迅刀',
+    id: 'quyuan', name: '仇遠', nameEn: 'Qiuyuan', element: '気動', weapon: '迅刀',
     role: 'メインアタッカー（重撃・スキルダメ）',
     substats: {
       recommended: [
@@ -221,7 +221,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'galbrena', name: 'ガルブレーナ', element: '焦熱', weapon: '拳銃',
+    id: 'galbrena', name: 'ガルブレーナ', nameEn: 'Galbrena', element: '焦熱', weapon: '拳銃',
     role: 'メインアタッカー（重撃重視）',
     substats: {
       recommended: [
@@ -243,7 +243,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'yuanwu', name: 'ユーノ', element: '気動', weapon: '手甲',
+    id: 'yuanwu', name: 'ユーノ', nameEn: 'Iuno', element: '気動', weapon: '手甲',
     role: '耐久・回復サポート（重撃バフ）',
     substats: {
       recommended: [
@@ -264,7 +264,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'augusta', name: 'オーガスタ', element: '電導', weapon: '長刃',
+    id: 'augusta', name: 'オーガスタ', nameEn: 'Augusta', element: '電導', weapon: '長刃',
     role: 'メインアタッカー（全ダメバフ）',
     substats: {
       recommended: [
@@ -285,7 +285,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'flova', name: 'フローヴァ', element: '消滅', weapon: '増幅器',
+    id: 'flova', name: 'フローヴァ', nameEn: 'Phrolova', element: '消滅', weapon: '増幅器',
     role: 'メインアタッカー（重撃重視）',
     substats: {
       recommended: [
@@ -309,7 +309,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'lupa', name: 'ルパ', element: '焦熱', weapon: '長刃',
+    id: 'lupa', name: 'ルパ', nameEn: 'Lupa', element: '焦熱', weapon: '長刃',
     role: 'サポート（協奏効率・通常攻撃バフ）',
     substats: {
       recommended: [
@@ -331,7 +331,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'cartethia', name: 'カルテジア', element: '気動', weapon: '迅刀',
+    id: 'cartethia', name: 'カルテジア', nameEn: 'Cartethyia', element: '気動', weapon: '迅刀',
     role: 'メインアタッカー（風蝕効果）',
     substats: {
       recommended: [
@@ -353,7 +353,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'shaconne', name: 'シャコンヌ', element: '気動', weapon: '拳銃',
+    id: 'shaconne', name: 'シャコンヌ', nameEn: 'Ciaccona', element: '気動', weapon: '拳銃',
     role: '牽引・風蝕バフサポート',
     substats: {
       recommended: [
@@ -374,7 +374,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'zanni', name: 'ザンニー', element: '回折', weapon: '手甲',
+    id: 'zanni', name: 'ザンニー', nameEn: 'Zani', element: '回折', weapon: '手甲',
     role: 'メインアタッカー（回折ダメバフ）',
     substats: {
       recommended: [
@@ -396,7 +396,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'cantarella', name: 'カンタレラ', element: '消滅', weapon: '増幅器',
+    id: 'cantarella', name: 'カンタレラ', nameEn: 'Cantarella', element: '消滅', weapon: '増幅器',
     role: '耐久・回復、消滅ダメバフ',
     substats: {
       recommended: [
@@ -418,7 +418,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'brant', name: 'ブラント', element: '焦熱', weapon: '迅刀',
+    id: 'brant', name: 'ブラント', nameEn: 'Brant', element: '焦熱', weapon: '迅刀',
     role: '耐久・回復、共鳴スキルバフ',
     substats: {
       recommended: [
@@ -440,7 +440,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'phoebe', name: 'フィービー', element: '回折', weapon: '増幅器',
+    id: 'phoebe', name: 'フィービー', nameEn: 'Phoebe', element: '回折', weapon: '増幅器',
     role: 'メインアタッカー（協奏効率）',
     substats: {
       recommended: [
@@ -464,7 +464,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'rococo', name: 'ロココ', element: '消滅', weapon: '手甲',
+    id: 'rococo', name: 'ロココ', nameEn: 'Roccia', element: '消滅', weapon: '手甲',
     role: 'サブアタッカー（通常攻撃バフ）',
     substats: {
       recommended: [
@@ -486,7 +486,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'carlotta', name: 'カルロッタ', element: '凝縮', weapon: '拳銃',
+    id: 'carlotta', name: 'カルロッタ', nameEn: 'Carlotta', element: '凝縮', weapon: '拳銃',
     role: 'メインアタッカー（共鳴スキル重視）',
     substats: {
       recommended: [
@@ -510,7 +510,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'camellya', name: 'ツバキ', element: '消滅', weapon: '迅刀',
+    id: 'camellya', name: 'ツバキ', nameEn: 'Camellya', element: '消滅', weapon: '迅刀',
     role: 'メインアタッカー（通常攻撃重視）',
     substats: {
       recommended: [
@@ -532,7 +532,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'shorekeeper', name: 'ショアキーパー', element: '回折', weapon: '増幅器',
+    id: 'shorekeeper', name: 'ショアキーパー', nameEn: 'Shorekeeper', element: '回折', weapon: '増幅器',
     role: '耐久・回復サポート',
     substats: {
       recommended: [
@@ -553,7 +553,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'xiangli_yao', name: '相里要', element: '電導', weapon: '手甲',
+    id: 'xiangli_yao', name: '相里要', nameEn: 'Xiangli Yao', element: '電導', weapon: '手甲',
     role: 'メインアタッカー（共鳴解放重視）',
     substats: {
       recommended: [
@@ -575,7 +575,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'zhezhi', name: '折枝', element: '凝縮', weapon: '増幅器',
+    id: 'zhezhi', name: '折枝', nameEn: 'Zhezhi', element: '凝縮', weapon: '増幅器',
     role: 'サブアタッカー（共鳴スキルバフ）',
     substats: {
       recommended: [
@@ -599,7 +599,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'changli', name: '長離', element: '焦熱', weapon: '迅刀',
+    id: 'changli', name: '長離', nameEn: 'Changli', element: '焦熱', weapon: '迅刀',
     role: 'メインアタッカー（焦熱・共鳴解放）',
     substats: {
       recommended: [
@@ -621,7 +621,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'jinhsi', name: '今汐', element: '回折', weapon: '長刃',
+    id: 'jinhsi', name: '今汐', nameEn: 'Jinhsi', element: '回折', weapon: '長刃',
     role: 'メインアタッカー（共鳴スキル重視）',
     substats: {
       recommended: [
@@ -646,7 +646,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'yinlin', name: '吟霖', element: '電導', weapon: '増幅器',
+    id: 'yinlin', name: '吟霖', nameEn: 'Yinlin', element: '電導', weapon: '増幅器',
     role: 'サブアタッカー（共鳴解放バフ）',
     substats: {
       recommended: [
@@ -668,7 +668,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'jiyan', name: '忌炎', element: '気動', weapon: '長刃',
+    id: 'jiyan', name: '忌炎', nameEn: 'Jiyan', element: '気動', weapon: '長刃',
     role: 'メインアタッカー（重撃重視）',
     substats: {
       recommended: [
@@ -690,7 +690,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'lingyang', name: '凌陽', element: '凝縮', weapon: '手甲',
+    id: 'lingyang', name: '凌陽', nameEn: 'Lingyang', element: '凝縮', weapon: '手甲',
     role: 'メインアタッカー（凝縮ダメージ重視）',
     substats: {
       recommended: [
@@ -712,7 +712,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'encore', name: 'アンコ', element: '焦熱', weapon: '増幅器',
+    id: 'encore', name: 'アンコ', nameEn: 'Encore', element: '焦熱', weapon: '増幅器',
     role: 'メインアタッカー（通常攻撃重視）',
     substats: {
       recommended: [
@@ -734,7 +734,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'calcharo', name: 'カカロ', element: '電導', weapon: '長刃',
+    id: 'calcharo', name: 'カカロ', nameEn: 'Calcharo', element: '電導', weapon: '長刃',
     role: 'メインアタッカー（共鳴解放重視）',
     substats: {
       recommended: [
@@ -756,7 +756,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'jianxin', name: '鑑心', element: '気動', weapon: '手甲',
+    id: 'jianxin', name: '鑑心', nameEn: 'Jianxin', element: '気動', weapon: '手甲',
     role: '耐久・回復、共鳴解放バフ',
     substats: {
       recommended: [
@@ -784,7 +784,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'verina', name: 'ヴェリーナ', element: '回折', weapon: '増幅器',
+    id: 'verina', name: 'ヴェリーナ', nameEn: 'Verina', element: '回折', weapon: '増幅器',
     role: '継続回復サポート',
     substats: {
       recommended: [
@@ -805,7 +805,7 @@ export const CHARACTERS: CharacterBuild[] = [
   // ── 漂泊者 ────────────────────────────────────────────────────────────────
 
   {
-    id: 'rover_spectro', name: '漂泊者(回折)', element: '回折', weapon: '迅刀',
+    id: 'rover_spectro', name: '漂泊者(回折)', nameEn: 'Rover (Spectro)', element: '回折', weapon: '迅刀',
     role: 'サポート・サブ火力',
     substats: {
       recommended: [
@@ -826,7 +826,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'rover_havoc', name: '漂泊者(消滅)', element: '消滅', weapon: '迅刀',
+    id: 'rover_havoc', name: '漂泊者(消滅)', nameEn: 'Rover (Havoc)', element: '消滅', weapon: '迅刀',
     role: 'メインアタッカー',
     substats: {
       recommended: [
@@ -847,7 +847,7 @@ export const CHARACTERS: CharacterBuild[] = [
   },
 
   {
-    id: 'rover_aero', name: '漂泊者(気動)', element: '気動', weapon: '迅刀',
+    id: 'rover_aero', name: '漂泊者(気動)', nameEn: 'Rover (Aero)', element: '気動', weapon: '迅刀',
     role: '耐久・回復サポート',
     substats: {
       recommended: [
@@ -1131,6 +1131,7 @@ export const CHARACTER_MAP: Record<string, CharacterBuild> = Object.fromEntries(
   CHARACTERS.map((c) => [c.id, c])
 );
 
-export const CHARACTER_LIST = CHARACTERS.map(({ id, name, element, role }) => ({
-  id, name, element, role,
+export const CHARACTER_LIST = CHARACTERS.map(({ id, name, nameEn, element, role }) => ({
+  id, name, nameEn, element, role,
 }));
+

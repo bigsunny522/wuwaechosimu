@@ -5,6 +5,8 @@ import type { EchoCost, EchoState, ScoreResult } from '@/types/echo';
 import { bulkSimulate } from '@/lib/simulator';
 import { scoreEcho, RANK_COLORS } from '@/lib/scorer';
 import { RANK_GLOW } from '@/lib/scorer';
+import { useLocale } from '@/lib/locale';
+import { TRANSLATIONS, SUBSTAT_LABEL_EN, interpolate } from '@/data/translations';
 
 interface Props {
   cost: EchoCost;
@@ -22,6 +24,8 @@ export default function BulkSimModal({ cost, unlocked, onUnlock, onClose }: Prop
   const [results, setResults] = useState<BulkResult[] | null>(null);
   const [running, setRunning] = useState(false);
   const [watchingAd, setWatchingAd] = useState(false);
+  const { locale } = useLocale();
+  const T = TRANSLATIONS[locale];
 
   const handleWatchAd = () => {
     setWatchingAd(true);
@@ -51,33 +55,33 @@ export default function BulkSimModal({ cost, unlocked, onUnlock, onClose }: Prop
     >
       <div className="w-full max-w-lg mx-4 rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-white">100連一括厳選</h2>
+          <h2 className="text-lg font-bold text-white">{T.bulkTitle}</h2>
           <button onClick={onClose} className="text-slate-500 hover:text-white text-xl leading-none">✕</button>
         </div>
 
         {!unlocked ? (
           <div className="text-center py-6">
             <div className="text-4xl mb-3">🔒</div>
-            <div className="text-slate-300 text-sm mb-1">この機能は広告視聴で解放できます</div>
-            <div className="text-slate-500 text-xs mb-5">一度解放すると無制限に使用可能</div>
+            <div className="text-slate-300 text-sm mb-1">{T.bulkLocked}</div>
+            <div className="text-slate-500 text-xs mb-5">{T.bulkLockedSub}</div>
             {watchingAd ? (
               <div className="flex flex-col items-center gap-3">
                 <div className="w-12 h-12 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
-                <span className="text-violet-400 text-sm">広告再生中… (3秒)</span>
+                <span className="text-violet-400 text-sm">{T.bulkWatching}</span>
               </div>
             ) : (
               <button
                 onClick={handleWatchAd}
                 className="px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold transition-colors"
               >
-                📺 広告を視聴して解放
+                {T.bulkUnlockBtn}
               </button>
             )}
           </div>
         ) : (
           <div>
             <p className="text-slate-400 text-sm mb-4">
-              COST {cost} の音骸を100個シミュレートし、最高スコアを表示します。
+              {interpolate(T.bulkDesc, [cost])}
             </p>
             {!results && (
               <button
@@ -85,7 +89,7 @@ export default function BulkSimModal({ cost, unlocked, onUnlock, onClose }: Prop
                 disabled={running}
                 className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold transition-colors disabled:opacity-50"
               >
-                {running ? '⚡ シミュレーション中…' : '⚡ 100連スタート'}
+                {running ? T.bulkRunning : T.bulkStart}
               </button>
             )}
             {results && best && (
@@ -103,19 +107,24 @@ export default function BulkSimModal({ cost, unlocked, onUnlock, onClose }: Prop
                   >
                     {best.score.rank}
                   </div>
-                  <div className="text-white text-lg font-bold">スコア {best.score.score} / 100</div>
+                  <div className="text-white text-lg font-bold">
+                    {interpolate(T.bulkScoreOf, [best.score.score])}
+                  </div>
                   <div className="mt-2 space-y-1">
-                    {best.echo.substats.map((s) => (
-                      <div key={s.key} className="flex justify-between text-sm">
-                        <span className="text-slate-400">{s.label}</span>
-                        <span className="text-white">{s.value}{s.unit}</span>
-                      </div>
-                    ))}
+                    {best.echo.substats.map((s) => {
+                      const label = locale === 'en' ? (SUBSTAT_LABEL_EN[s.key] ?? s.label) : s.label;
+                      return (
+                        <div key={s.key} className="flex justify-between text-sm">
+                          <span className="text-slate-400">{label}</span>
+                          <span className="text-white">{s.value}{s.unit}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
                 {/* Distribution */}
                 <div className="text-xs text-slate-500">
-                  ランク分布：
+                  {T.bulkDist}
                   {(['S+', 'S', 'A', 'B', 'C', 'D'] as const).map((r) => {
                     const cnt = results.filter((x) => x.score.rank === r).length;
                     if (cnt === 0) return null;
@@ -130,7 +139,7 @@ export default function BulkSimModal({ cost, unlocked, onUnlock, onClose }: Prop
                   onClick={() => setResults(null)}
                   className="w-full py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-sm text-white transition-colors"
                 >
-                  再シミュレーション
+                  {T.bulkRetry}
                 </button>
               </div>
             )}

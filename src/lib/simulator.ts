@@ -49,7 +49,8 @@ export function createEcho(cost: EchoCost, echoId?: string, fixedMainstat?: Main
   return {
     cost,
     echoId: id,
-    echoName: echoInfo?.name ?? id,
+    echoName:   echoInfo?.name   ?? id,
+    echoNameEn: echoInfo?.nameEn ?? id,
     activeHarmonySet,
     level: 0,
     substats: [],

@@ -1,5 +1,8 @@
 'use client';
 
+import { useLocale } from '@/lib/locale';
+import { TRANSLATIONS } from '@/data/translations';
+
 interface Cost {
   shellCoins: number;
   tunerBasic: number;
@@ -26,11 +29,14 @@ function Stat({ label, value, icon }: { label: string; value: number; icon: stri
 }
 
 export default function ResourceCounter({ totalCost }: Props) {
+  const { locale } = useLocale();
+  const T = TRANSLATIONS[locale];
+
   return (
     <div className="flex flex-wrap gap-2 justify-center">
-      <Stat label="シェルコイン" value={totalCost.shellCoins} icon="💰" />
-      <Stat label="高級チューナー" value={totalCost.tunerAdvanced} icon="🔧" />
-      <Stat label="秘音筒" value={totalCost.expMaterial} icon="📦" />
+      <Stat label={T.shellCoin}  value={totalCost.shellCoins}    icon="💰" />
+      <Stat label={T.tunerAdv}   value={totalCost.tunerAdvanced} icon="🔧" />
+      <Stat label={T.expMat}     value={totalCost.expMaterial}   icon="📦" />
     </div>
   );
 }

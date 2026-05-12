@@ -4,6 +4,8 @@ import { useRef, useState } from 'react';
 import type { EchoState, ScoreResult } from '@/types/echo';
 import { generateResultCard, buildShareText } from '@/lib/imageGen';
 import ResultCardVisual from './ResultCardVisual';
+import { useLocale } from '@/lib/locale';
+import { TRANSLATIONS, interpolate } from '@/data/translations';
 
 export interface SavedResult {
   id: number;
@@ -31,6 +33,8 @@ function formatDate(ts: number): string {
 function SavedCard({ result, onClear }: { result: SavedResult; onClear: () => void }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
+  const { locale } = useLocale();
+  const T = TRANSLATIONS[locale];
 
   const handleDownload = async () => {
     if (!cardRef.current) return;
@@ -57,7 +61,9 @@ function SavedCard({ result, onClear }: { result: SavedResult; onClear: () => vo
   return (
     <div className="flex flex-col items-center gap-2">
       {/* +25達成日時 */}
-      <div className="text-xs text-slate-600 font-mono">+25: {formatDate(result.maxedAt)}</div>
+      <div className="text-xs text-slate-600 font-mono">
+        {interpolate(T.savedDateLabel, [formatDate(result.maxedAt)])}
+      </div>
 
       {/* Same visual as ResultCard */}
       <div className="scale-[0.72] origin-top">
@@ -71,7 +77,7 @@ function SavedCard({ result, onClear }: { result: SavedResult; onClear: () => vo
           disabled={downloading}
           className="flex-1 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-xs font-medium text-white transition-colors disabled:opacity-50"
         >
-          {downloading ? '⏳' : '💾'} 保存
+          {downloading ? '⏳' : T.savedSaveBtn}
         </button>
         <button
           onClick={handleShare}
@@ -92,6 +98,9 @@ function SavedCard({ result, onClear }: { result: SavedResult; onClear: () => vo
 }
 
 export default function SavedResultsModal({ results, onClear, onClose }: Props) {
+  const { locale } = useLocale();
+  const T = TRANSLATIONS[locale];
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
@@ -103,9 +112,9 @@ export default function SavedResultsModal({ results, onClear, onClose }: Props) 
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800">
-          <h2 className="text-base font-bold text-white">📋 保存済み結果</h2>
+          <h2 className="text-base font-bold text-white">{T.savedTitle}</h2>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-slate-500">{results.length} 件</span>
+            <span className="text-xs text-slate-500">{interpolate(T.savedCount, [results.length])}</span>
             <button onClick={onClose} className="text-slate-500 hover:text-white text-xl leading-none">✕</button>
           </div>
         </div>
@@ -114,7 +123,7 @@ export default function SavedResultsModal({ results, onClear, onClose }: Props) 
         <div className="overflow-y-auto flex-1 p-4">
           {results.length === 0 ? (
             <div className="text-center py-12 text-slate-500 text-sm">
-              保存された結果がありません
+              {T.savedEmpty}
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-6">

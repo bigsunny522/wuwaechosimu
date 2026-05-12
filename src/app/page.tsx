@@ -5,7 +5,7 @@ import type { EchoCost, EchoState, ScoreResult, MainstatInfo } from '@/types/ech
 import { createEcho, upgradeEcho, upgradeToFull, rerollSubstats } from '@/lib/simulator';
 import { scoreEcho } from '@/lib/scorer';
 import { SUBSTAT_COUNT, MAINSTAT_POOLS } from '@/data/mainstats';
-import { ECHOES_BY_COST, ECHOES, DEFAULT_ECHO_ID, HARMONY_SETS } from '@/data/echoes';
+import { ECHOES_BY_COST, ECHOES, DEFAULT_ECHO_ID, HARMONY_SETS, HARMONY_SETS_EN } from '@/data/echoes';
 import { CHARACTER_LIST, CHARACTER_MAP } from '@/data/characters';
 import EchoCard from '@/components/EchoCard';
 import ResourceCounter from '@/components/ResourceCounter';
@@ -14,6 +14,8 @@ import ScoreDebugPanel from '@/components/ScoreDebugPanel';
 import AdBonusModal from '@/components/AdBonusModal';
 import SavedResultsModal, { type SavedResult } from '@/components/SavedResultsModal';
 import { generateResultCard, buildShareText } from '@/lib/imageGen';
+import { useLocale } from '@/lib/locale';
+import { TRANSLATIONS, MAINSTAT_LABEL_EN, interpolate } from '@/data/translations';
 
 const COST_OPTIONS: EchoCost[] = [4, 3, 1];
 const ACCENT = '#7c3aed';
@@ -35,24 +37,10 @@ function addCost(a: TotalCost, b: TotalCost): TotalCost {
 
 type AdPurpose = 'bonus' | 'saves';
 
-const AD_CONFIGS: Record<AdPurpose, { title: string; items: string[] }> = {
-  bonus: {
-    title: 'ボーナスタイム獲得',
-    items: [
-      'メインステータスを自由に固定して音骸を引ける（5分間）',
-      '+25音骸のサブステを最大3個まで1回だけ再抽選できる（5分間）',
-    ],
-  },
-  saves: {
-    title: '保存枠を獲得',
-    items: [
-      `音骸の計算結果を${SAVE_PER_AD}件まで保存できます`,
-      '再度広告を視聴するとさらに追加できます',
-    ],
-  },
-};
-
 export default function Home() {
+  const { locale, toggleLocale } = useLocale();
+  const T = TRANSLATIONS[locale];
+
   const [cost, setCost] = useState<EchoCost>(4);
   const [selectedEchoId, setSelectedEchoId] = useState<string>(DEFAULT_ECHO_ID[4]);
   const [selectedHarmonySet, setSelectedHarmonySet] = useState<string>('');
@@ -94,6 +82,21 @@ export default function Home() {
   const [savedResults, setSavedResults] = useState<SavedResult[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
 
+  // ── Ad configs (locale-aware) ──────────────────────────────────────────
+  const adConfigs: Record<AdPurpose, { title: string; items: string[] }> = useMemo(() => ({
+    bonus: {
+      title: T.adBonusTitle,
+      items: [T.adBonusItem1, T.adBonusItem2],
+    },
+    saves: {
+      title: T.adSavesTitle,
+      items: [
+        interpolate(T.adSavesItem1, [SAVE_PER_AD]),
+        T.adSavesItem2,
+      ],
+    },
+  }), [T]);
+
   // ── Ad grant handler ───────────────────────────────────────────────────
   const handleGrantBonus = useCallback(() => {
     if (adPurpose === 'bonus') {
@@ -133,7 +136,6 @@ export default function Home() {
   }, []);
 
   const handleStart = useCallback(() => {
-    // 前の音骸のコストを累計に加算してから新しい音骸を生成
     if (echo) setLifetimeCost(prev => addCost(prev, echo.totalCost));
 
     let echoId = selectedEchoId;
@@ -162,7 +164,6 @@ export default function Home() {
     if (next.level === 25) setMaxedAt(Date.now());
   }, [echo, selectedCharId]);
 
-  // ワンクリック最大強化
   const handleMaxUpgrade = useCallback(() => {
     if (!echo || echo.level >= 25) return;
     const maxed = upgradeToFull(echo);
@@ -181,7 +182,6 @@ export default function Home() {
     setRerollIndices(new Set());
   }, [echo]);
 
-  // サブステ再抽選 (bonus)
   const handleReroll = useCallback(() => {
     if (!echo || rerollUsed || rerollIndices.size === 0) return;
     const newEcho = rerollSubstats(echo, Array.from(rerollIndices));
@@ -201,7 +201,6 @@ export default function Home() {
     });
   }, []);
 
-  // 結果保存
   const handleSave = useCallback(() => {
     if (!echo || !score || echo.level < 25 || saveSlots <= 0) return;
     const ts = maxedAt ?? Date.now();
@@ -215,7 +214,6 @@ export default function Home() {
 
   const isMaxLevel = echo?.level === 25;
 
-  // 累計コスト = セッション全体の過去分 + 現在の音骸分
   const displayCost = addCost(lifetimeCost, echo?.totalCost ?? ZERO_COST);
   const hasAnyCost = displayCost.shellCoins > 0;
   const echoList = ECHOES_BY_COST[cost];
@@ -238,9 +236,17 @@ export default function Home() {
             >
               ◈
             </div>
-            <span className="font-bold text-white text-sm tracking-wide">音骸シミュレーター</span>
+            <span className="font-bold text-white text-sm tracking-wide">{T.appTitle}</span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
+            {/* Locale toggle */}
+            <button
+              onClick={toggleLocale}
+              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border"
+              style={{ borderColor: 'rgba(148,163,184,0.2)', color: '#94a3b8', background: 'rgba(148,163,184,0.06)' }}
+            >
+              {locale === 'ja' ? 'EN' : 'JA'}
+            </button>
             {/* Bonus status */}
             {bonusActive ? (
               <div
@@ -256,7 +262,7 @@ export default function Home() {
                 className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border"
                 style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: `${ACCENT}11` }}
               >
-                🎁<span className="hidden sm:inline"> ボーナス</span>
+                🎁<span className="hidden sm:inline"> {T.bonusBtn}</span>
               </button>
             )}
             {/* History */}
@@ -265,7 +271,7 @@ export default function Home() {
               className="relative flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border"
               style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: `${ACCENT}11` }}
             >
-              📋<span className="hidden sm:inline"> 履歴</span>
+              📋<span className="hidden sm:inline"> {T.historyBtn}</span>
               {savedResults.length > 0 && (
                 <span
                   className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center text-white"
@@ -281,7 +287,7 @@ export default function Home() {
               className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border"
               style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: `${ACCENT}11` }}
             >
-              ⚡<span className="hidden sm:inline"> 100連</span>
+              ⚡<span className="hidden sm:inline"> {T.bulkBtn}</span>
             </button>
           </div>
         </div>
@@ -291,7 +297,7 @@ export default function Home() {
 
         {/* Character selector */}
         <div className="flex flex-col gap-2">
-          <div className="text-xs text-slate-600 text-center tracking-wider uppercase">評価キャラクター</div>
+          <div className="text-xs text-slate-600 text-center tracking-wider uppercase">{T.charLabel}</div>
           <div className="relative">
             <select
               value={selectedCharId}
@@ -299,10 +305,10 @@ export default function Home() {
               className="w-full px-4 py-2.5 rounded-xl text-sm text-slate-200 appearance-none cursor-pointer"
               style={{ background: 'rgba(15,17,23,0.8)', border: `1px solid ${ACCENT}44`, outline: 'none' }}
             >
-              <option value="generic" style={{ background: '#0f1117' }}>汎用スコア（キャラ指定なし）</option>
+              <option value="generic" style={{ background: '#0f1117' }}>{T.charGeneric}</option>
               {CHARACTER_LIST.map((c) => (
                 <option key={c.id} value={c.id} style={{ background: '#0f1117' }}>
-                  {c.name}
+                  {locale === 'en' ? (c.nameEn ?? c.name) : c.name}
                 </option>
               ))}
             </select>
@@ -312,7 +318,7 @@ export default function Home() {
 
         {/* Cost selector */}
         <div className="flex flex-col gap-2">
-          <div className="text-xs text-slate-600 text-center tracking-wider uppercase">音骸コスト</div>
+          <div className="text-xs text-slate-600 text-center tracking-wider uppercase">{T.costLabel}</div>
           <div className="flex gap-2 justify-center">
             {COST_OPTIONS.map((c) => (
               <button
@@ -329,7 +335,7 @@ export default function Home() {
               </button>
             ))}
           </div>
-          <div className="text-center text-xs text-slate-600">サブステ最大 {SUBSTAT_COUNT[cost]} 個</div>
+          <div className="text-center text-xs text-slate-600">{interpolate(T.costSubstats, [SUBSTAT_COUNT[cost]])}</div>
         </div>
 
         {/* Main stat lock (bonus only) */}
@@ -339,7 +345,7 @@ export default function Home() {
             style={{ borderColor: '#f59e0b44', background: '#f59e0b08' }}
           >
             <div className="text-xs text-amber-500 text-center tracking-wider uppercase">
-              ✨ ボーナス：メインステータス固定
+              {T.bonusMainTitle}
             </div>
             <div className="relative">
               <select
@@ -348,22 +354,25 @@ export default function Home() {
                 className="w-full px-4 py-2.5 rounded-xl text-sm text-slate-200 appearance-none cursor-pointer"
                 style={{ background: 'rgba(15,17,23,0.8)', border: '1px solid #f59e0b44', outline: 'none' }}
               >
-                {MAINSTAT_POOLS[cost].map((m) => (
-                  <option key={m.key} value={m.key} style={{ background: '#0f1117' }}>
-                    {m.label}（+25: {m.value}{m.unit}）
-                  </option>
-                ))}
+                {MAINSTAT_POOLS[cost].map((m) => {
+                  const label = locale === 'en' ? (MAINSTAT_LABEL_EN[m.key] ?? m.label) : m.label;
+                  return (
+                    <option key={m.key} value={m.key} style={{ background: '#0f1117' }}>
+                      {label}（+25: {m.value}{m.unit}）
+                    </option>
+                  );
+                })}
               </select>
               <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">▼</div>
             </div>
-            <p className="text-xs text-amber-600/80 text-center">次に引く音骸のメインステがこの値に固定されます</p>
+            <p className="text-xs text-amber-600/80 text-center">{T.bonusMainHint}</p>
           </div>
         )}
 
         {/* Echo / Harmony selector */}
         {cost === 4 ? (
           <div className="flex flex-col gap-2">
-            <div className="text-xs text-slate-600 text-center tracking-wider uppercase">音骸を選択</div>
+            <div className="text-xs text-slate-600 text-center tracking-wider uppercase">{T.echoSelectLabel}</div>
             <div className="relative">
               <select
                 value={selectedEchoId}
@@ -373,7 +382,7 @@ export default function Home() {
               >
                 {echoList.map((e) => (
                   <option key={e.id} value={e.id} style={{ background: '#0f1117' }}>
-                    {e.name}
+                    {locale === 'en' ? (e.nameEn ?? e.name) : e.name}
                   </option>
                 ))}
               </select>
@@ -382,7 +391,7 @@ export default function Home() {
           </div>
         ) : (
           <div className="flex flex-col gap-2">
-            <div className="text-xs text-slate-600 text-center tracking-wider uppercase">ハーモニーセットを選択</div>
+            <div className="text-xs text-slate-600 text-center tracking-wider uppercase">{T.harmonySelectLabel}</div>
             <div className="relative">
               <select
                 value={selectedHarmonySet}
@@ -391,13 +400,15 @@ export default function Home() {
                 style={{ background: 'rgba(15,17,23,0.8)', border: `1px solid ${ACCENT}44`, outline: 'none' }}
               >
                 {harmonySetOptions.map((s) => (
-                  <option key={s} value={s} style={{ background: '#0f1117' }}>{s}</option>
+                  <option key={s} value={s} style={{ background: '#0f1117' }}>
+                    {locale === 'en' ? (HARMONY_SETS_EN[s] ?? s) : s}
+                  </option>
                 ))}
               </select>
               <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">▼</div>
             </div>
             <div className="text-center text-xs text-slate-600">
-              該当音骸 {ECHOES.filter(e => e.cost === cost && e.sets.includes(selectedHarmonySet)).length} 体からランダム抽選
+              {interpolate(T.harmonyCount, [ECHOES.filter(e => e.cost === cost && e.sets.includes(selectedHarmonySet)).length])}
             </div>
           </div>
         )}
@@ -410,7 +421,7 @@ export default function Home() {
               className="px-8 py-3 rounded-xl font-bold text-base text-white transition-all"
               style={{ background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT}cc)`, boxShadow: `0 4px 20px ${ACCENT}55` }}
             >
-              ✦ 音骸を入手
+              {T.getEcho}
             </button>
           ) : (
             <>
@@ -424,9 +435,8 @@ export default function Home() {
                     : { background: 'rgba(148,163,184,0.1)' }
                 }
               >
-                {isMaxLevel ? '✓ MAX' : `+5 → +${echo.level + 5}`}
+                {isMaxLevel ? T.maxed : `+5 → +${echo.level + 5}`}
               </button>
-              {/* ワンクリック最大強化（ボーナスタイム中のみ） */}
               {bonusActive && (
                 <button
                   onClick={handleMaxUpgrade}
@@ -438,29 +448,29 @@ export default function Home() {
                       : { background: 'rgba(148,163,184,0.06)', borderColor: 'rgba(148,163,184,0.12)', color: '#94a3b8' }
                   }
                 >
-                  ⚡ +25まで強化
+                  {T.maxUpgrade}
                 </button>
               )}
               <button
                 onClick={handleReset}
                 className="px-4 py-2.5 rounded-xl text-sm text-slate-400 border border-slate-700 hover:border-slate-500 hover:text-slate-200 transition-colors"
               >
-                リセット
+                {T.resetBtn}
               </button>
             </>
           )}
         </div>
 
-        {/* 累計消費リソース（セッション全体） */}
+        {/* 累計消費リソース */}
         {hasAnyCost && (
           <div className="w-full">
             <div className="flex items-center justify-center gap-2 mb-2">
-              <span className="text-xs text-slate-600 tracking-wider uppercase">累計消費リソース</span>
+              <span className="text-xs text-slate-600 tracking-wider uppercase">{T.resourceLabel}</span>
               <button
                 onClick={() => setLifetimeCost(ZERO_COST)}
                 className="text-[10px] text-slate-700 hover:text-slate-400 border border-slate-800 hover:border-slate-600 px-1.5 py-0.5 rounded transition-colors"
               >
-                リセット
+                {T.resourceReset}
               </button>
             </div>
             <ResourceCounter totalCost={displayCost} />
@@ -496,7 +506,7 @@ export default function Home() {
                     className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-white border transition-all disabled:opacity-50"
                     style={{ borderColor: '#64748b44', background: 'rgba(100,116,139,0.12)', color: '#cbd5e1' }}
                   >
-                    {downloading ? '⏳' : '💾'} 画像保存
+                    {downloading ? '⏳' : T.imgSave}
                   </button>
                   <button
                     onClick={() => {
@@ -509,7 +519,7 @@ export default function Home() {
                     className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-white border transition-all"
                     style={{ background: '#1a1a2e', border: '1px solid #334155' }}
                   >
-                    𝕏 シェア
+                    {T.shareBtn}
                   </button>
                   {saveSlots > 0 ? (
                     <button
@@ -517,8 +527,8 @@ export default function Home() {
                       className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border transition-all"
                       style={{ borderColor: '#22c55e44', background: '#22c55e11', color: '#4ade80' }}
                     >
-                      📋 保存
-                      <span className="text-xs opacity-60">（残り {saveSlots} 枠）</span>
+                      {T.saveBtn}
+                      <span className="text-xs opacity-60">{interpolate(T.saveSlotsLeft, [saveSlots])}</span>
                     </button>
                   ) : (
                     <button
@@ -526,7 +536,7 @@ export default function Home() {
                       className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border transition-all"
                       style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: `${ACCENT}11` }}
                     >
-                      📺 広告で保存枠 +{SAVE_PER_AD}
+                      {interpolate(T.adSaveSlots, [SAVE_PER_AD])}
                     </button>
                   )}
                 </div>
@@ -534,19 +544,21 @@ export default function Home() {
             )}
 
             {!isMaxLevel && echo.level > 0 && (
-              <p className="text-xs text-slate-600 text-center">あと {(25 - echo.level) / 5} 回強化でMAX (+25)</p>
+              <p className="text-xs text-slate-600 text-center">
+                {interpolate(T.untilMax, [(25 - echo.level) / 5])}
+              </p>
             )}
           </div>
         )}
 
-        {/* Substat reroll panel (bonus + level 25 + not used) */}
+        {/* Substat reroll panel */}
         {showRerollPanel && echo && (
           <div
             className="rounded-xl border p-4 flex flex-col gap-3"
             style={{ borderColor: '#f59e0b44', background: '#f59e0b08' }}
           >
             <div className="text-xs text-amber-500 text-center tracking-wider uppercase">
-              ✨ ボーナス：サブステ再抽選（最大 {MAX_REROLL} 個・1回限り）
+              {interpolate(T.rerollPanelTitle, [MAX_REROLL])}
             </div>
             <div className="space-y-2">
               {echo.substats.map((s, i) => {
@@ -567,7 +579,7 @@ export default function Home() {
                     <span className="text-slate-300">{s.label}</span>
                     <div className="flex items-center gap-2">
                       <span className="text-white font-medium">{s.value}{s.unit}</span>
-                      {selected && <span className="text-amber-400 text-xs">再抽選</span>}
+                      {selected && <span className="text-amber-400 text-xs">{T.rerollBadge}</span>}
                     </div>
                   </button>
                 );
@@ -584,14 +596,14 @@ export default function Home() {
               }
             >
               {rerollIndices.size > 0
-                ? `🎲 ${rerollIndices.size}個を再抽選する`
-                : '再抽選するサブステを選択してください'}
+                ? interpolate(T.rerollBtn, [rerollIndices.size])
+                : T.rerollSelect}
             </button>
           </div>
         )}
 
         {bonusActive && echo?.level === 25 && rerollUsed && (
-          <div className="text-center text-xs text-amber-600/70">✓ この音骸の再抽選は使用済みです</div>
+          <div className="text-center text-xs text-amber-600/70">{T.rerollUsed}</div>
         )}
 
         {/* Empty state */}
@@ -604,7 +616,7 @@ export default function Home() {
               ◈
             </div>
             <p className="text-slate-500 text-sm max-w-xs">
-              音骸とコストを選んで「音骸を入手」から強化シミュレーションを開始できます
+              {T.emptyText}
             </p>
             {!bonusActive && (
               <button
@@ -612,7 +624,7 @@ export default function Home() {
                 className="mt-2 px-5 py-2 rounded-xl text-sm font-medium border transition-colors"
                 style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: `${ACCENT}11` }}
               >
-                🎁 広告を見てボーナスタイムを獲得
+                {T.emptyBonus}
               </button>
             )}
           </div>
@@ -620,9 +632,7 @@ export default function Home() {
       </main>
 
       <footer className="border-t border-slate-800/40 py-3">
-        <p className="text-center text-xs text-slate-700">
-          非公式ファンツール / Unofficial fan tool · 鳴潮 Wuthering Waves
-        </p>
+        <p className="text-center text-xs text-slate-700">{T.footer}</p>
       </footer>
 
       {bulkOpen && (
@@ -636,7 +646,7 @@ export default function Home() {
 
       {adModalOpen && (
         <AdBonusModal
-          {...AD_CONFIGS[adPurpose]}
+          {...adConfigs[adPurpose]}
           onGrantBonus={handleGrantBonus}
           onClose={() => setAdModalOpen(false)}
         />

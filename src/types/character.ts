@@ -12,6 +12,7 @@ export interface MainstatCategory {
 export interface CharacterBuild {
   id: string;
   name: string;
+  nameEn: string;
   element: string;
   weapon: string;
   role: string;

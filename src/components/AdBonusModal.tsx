@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useLocale } from '@/lib/locale';
+import { TRANSLATIONS } from '@/data/translations';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Google Ad Manager の設定
@@ -24,6 +26,8 @@ declare let googletag: any;
 
 export default function AdBonusModal({ title, items, onGrantBonus, onClose }: Props) {
   const [adState, setAdState] = useState<AdState>('loading');
+  const { locale } = useLocale();
+  const T = TRANSLATIONS[locale];
 
   // コールバックを ref に保持してクロージャのズレを防ぐ
   const onGrantBonusRef = useRef(onGrantBonus);
@@ -123,7 +127,7 @@ export default function AdBonusModal({ title, items, onGrantBonus, onClose }: Pr
 
         {/* 特典説明 */}
         <div className="rounded-xl bg-slate-800/60 border border-slate-700 p-4 mb-5 space-y-2 text-sm">
-          <p className="text-slate-300 font-semibold mb-1">獲得できる特典</p>
+          <p className="text-slate-300 font-semibold mb-1">{T.adRewardsTitle}</p>
           {items.map((item, i) => (
             <div key={i} className="flex items-start gap-2 text-slate-400">
               <span className="text-amber-400 mt-0.5 shrink-0">◈</span>
@@ -136,29 +140,28 @@ export default function AdBonusModal({ title, items, onGrantBonus, onClose }: Pr
         {adState === 'loading' && (
           <div className="text-center py-8 space-y-3">
             <div className="text-3xl animate-pulse">📺</div>
-            <p className="text-slate-400 text-sm">広告を読み込んでいます…</p>
+            <p className="text-slate-400 text-sm">{T.adLoading}</p>
           </div>
         )}
 
         {adState === 'watching' && (
           <div className="text-center py-8 space-y-3">
             <div className="text-3xl">▶️</div>
-            <p className="text-slate-300 text-sm font-medium">広告を視聴中</p>
-            <p className="text-slate-500 text-xs">最後まで視聴すると特典が付与されます</p>
+            <p className="text-slate-300 text-sm font-medium">{T.adWatching}</p>
+            <p className="text-slate-500 text-xs">{T.adWatchingSub}</p>
           </div>
         )}
 
         {adState === 'error' && (
           <div className="text-center py-8 space-y-4">
-            <p className="text-red-400 text-sm leading-relaxed">
-              広告を読み込めませんでした。<br />
-              広告ブロッカーを無効にするか、<br />しばらくしてからもう一度お試しください。
+            <p className="text-red-400 text-sm leading-relaxed whitespace-pre-line">
+              {T.adError}
             </p>
             <button
               onClick={onClose}
               className="px-5 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm text-white transition-colors"
             >
-              閉じる
+              {T.adCloseBtn}
             </button>
           </div>
         )}
