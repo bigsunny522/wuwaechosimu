@@ -12,6 +12,7 @@ export interface SavedResult {
   echo: EchoState;
   score: ScoreResult;
   maxedAt: number;
+  charName?: string; // キャラクター名（保存時のロケールに応じた名前）
 }
 
 interface Props {
@@ -51,7 +52,10 @@ function SavedCard({ result, onClear }: { result: SavedResult; onClear: () => vo
   };
 
   const handleShare = () => {
-    const text = buildShareText(result.echo, result.score);
+    const text = buildShareText(result.echo, result.score, {
+      locale,
+      charName: result.charName,
+    });
     window.open(
       `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
       '_blank', 'noopener,noreferrer'

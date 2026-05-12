@@ -195,9 +195,13 @@ export default function Home() {
   const handleSave = useCallback(() => {
     if (!echo || !score || echo.level < 25 || saveSlots <= 0) return;
     const ts = maxedAt ?? Date.now();
-    setSavedResults(prev => [{ id: Date.now(), echo, score, maxedAt: ts }, ...prev]);
+    const char = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
+    const charName = char
+      ? (locale === 'en' ? char.nameEn : char.name)
+      : undefined;
+    setSavedResults(prev => [{ id: Date.now(), echo, score, maxedAt: ts, charName }, ...prev]);
     setSaveSlots(prev => prev - 1);
-  }, [echo, score, saveSlots, maxedAt]);
+  }, [echo, score, saveSlots, maxedAt, selectedCharId, locale]);
 
   const handleClearSaved = useCallback((id: number) => {
     setSavedResults(prev => prev.filter(r => r.id !== id));
@@ -544,7 +548,9 @@ export default function Home() {
                   </button>
                   <button
                     onClick={() => {
-                      const text = buildShareText(echo, score);
+                      const char = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
+                      const charName = char ? (locale === 'en' ? char.nameEn : char.name) : undefined;
+                      const text = buildShareText(echo, score, { locale, charName });
                       window.open(
                         `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
                         '_blank', 'noopener,noreferrer'
