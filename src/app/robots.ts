@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-const SITE_URL = 'https://wuwa-echo-sim.pages.dev'; // ★ 実際のURLに変更
+const SITE_URL = 'https://wuwaechosimu.xyzack271.com'; // ★ 実際のURLに変更
 
 export default function robots(): MetadataRoute.Robots {
   return {

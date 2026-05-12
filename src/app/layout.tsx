@@ -4,7 +4,7 @@ import { LocaleProvider } from '@/lib/locale';
 import './globals.css';
 
 // ★ 公開URLを実際のドメインに変更してください
-const SITE_URL = 'https://wuwa-echo-sim.pages.dev';
+const SITE_URL = 'https://wuwaechosimu.xyzack271.com';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
