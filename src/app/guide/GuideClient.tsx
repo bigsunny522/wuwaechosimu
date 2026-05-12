@@ -79,11 +79,6 @@ const GUIDE = {
         },
       ],
     },
-    bulkSection: {
-      title: '⚡ 100 連一括シミュレーション',
-      sub:   '広告視聴で永久に解放されます',
-      body:  '選択したコストの音骸を 100 個一括でシミュレートし、最高スコアを持つ音骸とランク分布（S+〜D の個数）を即座に表示します。厳選の期待値を把握するのに最適な機能です。',
-    },
     saveSection: {
       title: '📋 結果の保存・シェア',
       items: [
@@ -207,11 +202,6 @@ const GUIDE = {
           body: '"⚡ Max to +25" button appears, letting you instantly upgrade to +25 in one tap. Dramatically speeds up your farming workflow.',
         },
       ],
-    },
-    bulkSection: {
-      title: '⚡ 100 Pulls Simulation',
-      sub:   'Permanently unlocked after watching one ad',
-      body:  'Simulate 100 echoes of the selected cost at once. The highest-scored echo and the full rank distribution (S+ through D counts) are shown instantly — perfect for estimating farming expectations before committing resources.',
     },
     saveSection: {
       title: '📋 Save & Share Results',
@@ -409,19 +399,6 @@ export default function GuideClient() {
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── Bulk Simulation ── */}
-        <section>
-          <SectionLabel>Bulk Simulation</SectionLabel>
-          <div className="mt-5 rounded-2xl overflow-hidden border border-[#e5e7eb]">
-            <div className="h-1 w-full" style={{ background: 'linear-gradient(90deg, #0275fd, #60a5fa)' }} />
-            <div className="p-5">
-              <h2 className="text-base font-semibold text-[#222222] mb-1">{G.bulkSection.title}</h2>
-              <p className="text-xs font-medium mb-3" style={{ color: ACCENT }}>{G.bulkSection.sub}</p>
-              <p className="text-sm text-[#707070] leading-relaxed">{G.bulkSection.body}</p>
             </div>
           </div>
         </section>

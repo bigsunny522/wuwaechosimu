@@ -10,7 +10,6 @@ import { ECHOES_BY_COST, ECHOES, DEFAULT_ECHO_ID, HARMONY_SETS, HARMONY_SETS_EN 
 import { CHARACTER_LIST, CHARACTER_MAP } from '@/data/characters';
 import EchoCard from '@/components/EchoCard';
 import ResourceCounter from '@/components/ResourceCounter';
-import BulkSimModal from '@/components/BulkSimModal';
 import ScoreDebugPanel from '@/components/ScoreDebugPanel';
 import AdBonusModal from '@/components/AdBonusModal';
 import SavedResultsModal, { type SavedResult } from '@/components/SavedResultsModal';
@@ -56,8 +55,6 @@ export default function Home() {
   const [echo, setEcho]                       = useState<EchoState | null>(null);
   const [score, setScore]                     = useState<ScoreResult | null>(null);
   const [selectedCharId, setSelectedCharId]   = useState<string>('generic');
-  const [bulkOpen, setBulkOpen]               = useState(false);
-  const [bulkUnlocked, setBulkUnlocked]       = useState(false);
   const [downloading, setDownloading]         = useState(false);
   const [maxedAt, setMaxedAt]                 = useState<number | null>(null);
   const [lifetimeCost, setLifetimeCost]       = useState<TotalCost>(ZERO_COST);
@@ -292,13 +289,6 @@ export default function Home() {
               )}
             </button>
 
-            {/* Bulk sim */}
-            <button
-              onClick={() => setBulkOpen(true)}
-              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
-            >
-              ⚡<span className="hidden sm:inline"> {T.bulkBtn}</span>
-            </button>
           </div>
         </div>
       </header>
@@ -748,15 +738,6 @@ export default function Home() {
       <footer className="border-t border-[#f3f4f6] py-4">
         <p className="text-center text-xs text-[#9ca3af]">{T.footer}</p>
       </footer>
-
-      {bulkOpen && (
-        <BulkSimModal
-          cost={cost}
-          unlocked={bulkUnlocked}
-          onUnlock={() => setBulkUnlocked(true)}
-          onClose={() => setBulkOpen(false)}
-        />
-      )}
 
       {adModalOpen && (
         <AdBonusModal
