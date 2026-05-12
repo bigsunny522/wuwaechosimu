@@ -8,7 +8,6 @@ import { TRANSLATIONS } from '@/data/translations';
 // Google Ad Manager の設定
 // Ad Manager（https://admanager.google.com）でネットワークコードと
 // リワード広告ユニットを作成し、下記のパスを書き換えてください
-// 例: '/1234567890/rewarded-bonus'
 // ─────────────────────────────────────────────────────────────────────────────
 const REWARDED_AD_UNIT = '/YOUR_NETWORK_CODE/rewarded-bonus';
 
@@ -92,58 +91,125 @@ export default function AdBonusModal({ title, items, onGrantBonus, onClose }: Pr
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
       <div
-        className="w-full max-w-md mx-4 rounded-2xl bg-white p-6 shadow-2xl"
+        className="w-full max-w-md mx-4 rounded-2xl bg-white shadow-2xl overflow-hidden animate-fadeUp"
         style={{ border: '1px solid #e5e7eb' }}
       >
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-base font-semibold text-[#222222]">🎁 {title}</h2>
-          <button
-            onClick={onClose}
-            className="text-[#9ca3af] hover:text-[#222222] text-xl leading-none transition-colors"
-          >
-            ✕
-          </button>
-        </div>
+        {/* ── Top accent stripe ── */}
+        <div className="h-1 w-full" style={{ background: 'linear-gradient(90deg, #0275fd, #60a5fa)' }} />
 
-        {/* 特典説明 */}
-        <div className="rounded-xl bg-[#f7f7f7] border border-[#e5e7eb] p-4 mb-5 space-y-2.5">
-          <p className="text-sm font-medium text-[#222222]">{T.adRewardsTitle}</p>
-          {items.map((item, i) => (
-            <div key={i} className="flex items-start gap-2 text-sm text-[#707070]">
-              <span className="text-[#0275fd] mt-0.5 shrink-0">◈</span>
-              <span>{item}</span>
+        <div className="p-6">
+          {/* Header */}
+          <div className="flex items-start justify-between mb-5">
+            <div>
+              <div className="flex items-center gap-2 mb-0.5">
+                <h2 className="text-base font-semibold text-[#222222]">🎁 {title}</h2>
+                <span
+                  className="px-2 py-0.5 rounded-full text-[10px] font-semibold text-white"
+                  style={{ background: '#0275fd', fontFamily: '"IBM Plex Mono", monospace' }}
+                >
+                  {T.adFreeLabel}
+                </span>
+              </div>
+              <p className="text-xs text-[#9ca3af]">{T.bonusAdNote}</p>
             </div>
-          ))}
-        </div>
-
-        {adState === 'loading' && (
-          <div className="text-center py-8 space-y-3">
-            <div className="text-3xl animate-pulse">📺</div>
-            <p className="text-sm text-[#707070]">{T.adLoading}</p>
-          </div>
-        )}
-
-        {adState === 'watching' && (
-          <div className="text-center py-8 space-y-3">
-            <div className="text-3xl">▶️</div>
-            <p className="text-sm font-medium text-[#222222]">{T.adWatching}</p>
-            <p className="text-xs text-[#707070]">{T.adWatchingSub}</p>
-          </div>
-        )}
-
-        {adState === 'error' && (
-          <div className="text-center py-8 space-y-4">
-            <p className="text-sm text-[#ef4444] leading-relaxed whitespace-pre-line">
-              {T.adError}
-            </p>
             <button
               onClick={onClose}
-              className="px-5 py-2 rounded-[500px] text-sm font-medium text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
+              className="text-[#9ca3af] hover:text-[#222222] text-xl leading-none transition-colors shrink-0 ml-3"
             >
-              {T.adCloseBtn}
+              ✕
             </button>
           </div>
-        )}
+
+          {/* Benefits */}
+          <div className="rounded-xl bg-[#f7f7f7] border border-[#e5e7eb] p-4 mb-5">
+            <p
+              className="text-[10px] uppercase tracking-wider text-[#9ca3af] mb-3"
+              style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+            >
+              {T.adRewardsTitle}
+            </p>
+            <div className="space-y-2.5">
+              {items.map((item, i) => (
+                <div key={i} className="flex items-start gap-2.5 text-sm">
+                  <span
+                    className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold mt-0.5"
+                    style={{ background: '#0275fd' }}
+                  >
+                    ✓
+                  </span>
+                  <span className="text-[#222222] leading-snug">{item}</span>
+                </div>
+              ))}
+            </div>
+            {/* Duration badge */}
+            <div className="mt-3 pt-3 border-t border-[#e5e7eb] flex items-center gap-1.5">
+              <span className="text-xs text-[#9ca3af]">⏱</span>
+              <span className="text-xs font-medium text-[#0275fd]">{T.adDuration}</span>
+            </div>
+          </div>
+
+          {/* State: loading */}
+          {adState === 'loading' && (
+            <div className="flex flex-col items-center py-6 gap-4">
+              <div
+                className="w-12 h-12 rounded-full border-2 border-[#e5e7eb] border-t-[#0275fd] animate-spin"
+              />
+              <div className="text-center">
+                <p className="text-sm font-medium text-[#222222]">{T.adLoading}</p>
+                <p className="text-xs text-[#9ca3af] mt-1">{T.bonusAdNote}</p>
+              </div>
+            </div>
+          )}
+
+          {/* State: watching */}
+          {adState === 'watching' && (
+            <div className="flex flex-col items-center py-6 gap-4">
+              {/* Animated play icon */}
+              <div
+                className="w-16 h-16 rounded-full flex items-center justify-center text-3xl"
+                style={{ background: '#eef9ff', border: '2px solid #0275fd33' }}
+              >
+                ▶️
+              </div>
+              <div className="text-center">
+                <p className="text-base font-semibold text-[#222222]">{T.adWatching}</p>
+                <p className="text-sm text-[#707070] mt-1">{T.adWatchHint}</p>
+              </div>
+              {/* Progress bar (visual feedback — not real timer) */}
+              <div className="w-full h-1.5 bg-[#e5e7eb] rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[#0275fd] rounded-full"
+                  style={{ animation: 'shimmer 3s linear infinite', width: '60%' }}
+                />
+              </div>
+              <p className="text-xs text-[#9ca3af] text-center">{T.adWatchingSub}</p>
+            </div>
+          )}
+
+          {/* State: error */}
+          {adState === 'error' && (
+            <div className="flex flex-col items-center py-4 gap-4">
+              <div
+                className="w-14 h-14 rounded-full flex items-center justify-center text-2xl"
+                style={{ background: '#fef2f2', border: '1px solid #fecaca' }}
+              >
+                ⚠️
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-medium text-[#222222] mb-1">{T.adWatching.replace('中', 'エラー')}</p>
+                <p className="text-xs text-[#707070] leading-relaxed max-w-xs">
+                  {T.adErrorTip}
+                </p>
+              </div>
+              <button
+                onClick={onClose}
+                className="w-full py-2.5 rounded-[500px] text-sm font-medium text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
+              >
+                {T.adCloseBtn}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

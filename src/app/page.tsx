@@ -260,7 +260,8 @@ export default function Home() {
             ) : (
               <button
                 onClick={() => openAdModal('bonus')}
-                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
+                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold transition-colors border animate-pulseRing"
+                style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: '#eef9ff' }}
               >
                 🎁<span className="hidden sm:inline"> {T.bonusBtn}</span>
               </button>
@@ -563,16 +564,30 @@ export default function Home() {
                       {T.saveBtn}
                       <span className="text-xs opacity-70">{interpolate(T.saveSlotsLeft, [saveSlots])}</span>
                     </button>
-                  ) : (
-                    <button
-                      onClick={() => openAdModal('saves')}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium border transition-colors"
-                      style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: '#eef9ff' }}
-                    >
-                      {interpolate(T.adSaveSlots, [SAVE_PER_AD])}
-                    </button>
-                  )}
+                  ) : null}
                 </div>
+
+                {/* Save CTA card (shown when no slots) */}
+                {saveSlots === 0 && (
+                  <div
+                    className="w-full rounded-xl overflow-hidden animate-fadeUp"
+                    style={{ border: '1px solid #e5e7eb' }}
+                  >
+                    <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, #0275fd, #60a5fa)' }} />
+                    <div className="p-4 flex flex-col gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-[#222222] mb-0.5">{T.saveCTATitle}</p>
+                        <p className="text-xs text-[#9ca3af]">{interpolate(T.saveCTASub, [SAVE_PER_AD])}</p>
+                      </div>
+                      <button
+                        onClick={() => openAdModal('saves')}
+                        className="w-full py-2.5 rounded-[500px] text-sm font-medium text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
+                      >
+                        {interpolate(T.saveCTABtn, [SAVE_PER_AD])}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </>
             )}
 
@@ -655,24 +670,67 @@ export default function Home() {
 
         {/* Empty state */}
         {!echo && (
-          <div className="flex flex-col items-center gap-4 py-12 text-center">
-            <div
-              className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl"
-              style={{ background: '#eef9ff', border: `1px solid ${ACCENT}33` }}
-            >
-              ◈
-            </div>
-            <p className="text-[#707070] text-sm max-w-xs leading-relaxed" style={{ lineHeight: 1.7 }}>
-              {T.emptyText}
-            </p>
-            {!bonusActive && (
-              <button
-                onClick={() => openAdModal('bonus')}
-                className="mt-1 px-5 py-2 rounded-[500px] text-sm font-medium border transition-colors"
-                style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: '#eef9ff' }}
+          <div className="flex flex-col items-center gap-6 py-8 text-center">
+            <div>
+              <div
+                className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4"
+                style={{ background: '#eef9ff', border: `1px solid ${ACCENT}33` }}
               >
-                {T.emptyBonus}
-              </button>
+                ◈
+              </div>
+              <p className="text-[#707070] text-sm max-w-xs leading-relaxed mx-auto" style={{ lineHeight: 1.7 }}>
+                {T.emptyText}
+              </p>
+            </div>
+
+            {!bonusActive && (
+              <div
+                className="w-full rounded-2xl bg-white overflow-hidden animate-fadeUp"
+                style={{ border: '1px solid #e5e7eb', boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}
+              >
+                {/* Top accent stripe */}
+                <div className="h-1 w-full" style={{ background: 'linear-gradient(90deg, #0275fd, #60a5fa)' }} />
+                <div className="p-5">
+                  {/* Header */}
+                  <div className="flex items-center justify-center gap-2 mb-4">
+                    <span className="text-sm font-semibold text-[#222222]">🎁 {T.bonusCardTitle}</span>
+                    <span
+                      className="px-2 py-0.5 rounded-full text-[10px] font-semibold text-white shrink-0"
+                      style={{ background: ACCENT }}
+                    >
+                      {T.bonusFree}
+                    </span>
+                  </div>
+                  {/* Benefits */}
+                  <div className="space-y-2.5 mb-4 text-left">
+                    {[T.bonusCardBenefit1, T.bonusCardBenefit2, T.bonusCardBenefit3].map((item, i) => (
+                      <div key={i} className="flex items-start gap-2.5 text-sm">
+                        <span
+                          className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold mt-0.5"
+                          style={{ background: ACCENT }}
+                        >
+                          ✓
+                        </span>
+                        <span className="text-[#222222] leading-snug">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Duration badge */}
+                  <div className="flex items-center gap-1.5 mb-3">
+                    <span className="text-xs text-[#9ca3af]">⏱</span>
+                    <span className="text-xs font-medium" style={{ color: ACCENT }}>{T.adDuration}</span>
+                  </div>
+                  {/* Ad note */}
+                  <p className="text-xs text-[#9ca3af] mb-4">{T.bonusAdNote}</p>
+                  {/* CTA */}
+                  <button
+                    onClick={() => openAdModal('bonus')}
+                    className="w-full py-3 rounded-[500px] text-sm font-semibold text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity animate-pulseRing"
+                  >
+                    {T.bonusCTA}
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         )}
