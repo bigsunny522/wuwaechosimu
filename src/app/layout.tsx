@@ -16,6 +16,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ja" className="h-full antialiased">
       <head>
+        {/* Google Publisher Tags — リワード広告に必要 */}
+        <Script
+          src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"
+          strategy="afterInteractive"
+        />
+        {/* AdSense — 通常バナー広告 */}
         <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6628382645135412"

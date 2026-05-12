@@ -1,8 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-const AD_DURATION = 30;
+// ─────────────────────────────────────────────────────────────────────────────
+// Google Ad Manager の設定
+// Ad Manager（https://admanager.google.com）でネットワークコードと
+// リワード広告ユニットを作成し、下記のパスを書き換えてください
+// 例: '/1234567890/rewarded-bonus'
+// ─────────────────────────────────────────────────────────────────────────────
+const REWARDED_AD_UNIT = '/YOUR_NETWORK_CODE/rewarded-bonus';
+
+type AdState = 'loading' | 'watching' | 'error';
 
 interface Props {
   title: string;
@@ -11,24 +19,98 @@ interface Props {
   onClose: () => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare let googletag: any;
+
 export default function AdBonusModal({ title, items, onGrantBonus, onClose }: Props) {
-  const [countdown, setCountdown] = useState(AD_DURATION);
-  const [ready, setReady] = useState(false);
+  const [adState, setAdState] = useState<AdState>('loading');
+
+  // コールバックを ref に保持してクロージャのズレを防ぐ
+  const onGrantBonusRef = useRef(onGrantBonus);
+  const onCloseRef      = useRef(onClose);
+  useEffect(() => { onGrantBonusRef.current = onGrantBonus; }, [onGrantBonus]);
+  useEffect(() => { onCloseRef.current      = onClose;      }, [onClose]);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const slotRef    = useRef<any>(null);
+  const grantedRef = useRef(false);
 
   useEffect(() => {
-    try {
-      ((window as unknown as { adsbygoogle: unknown[] }).adsbygoogle =
-        (window as unknown as { adsbygoogle: unknown[] }).adsbygoogle || []).push({});
-    } catch {}
-  }, []);
+    const gtag = (typeof googletag !== 'undefined' ? googletag : null)
+      ?? (window as any).googletag    // eslint-disable-line @typescript-eslint/no-explicit-any
+      ?? null;
 
-  useEffect(() => {
-    if (countdown <= 0) { setReady(true); return; }
-    const id = setTimeout(() => setCountdown((c) => c - 1), 1000);
-    return () => clearTimeout(id);
-  }, [countdown]);
+    if (!gtag) {
+      setAdState('error');
+      return;
+    }
 
-  const handleClaim = () => { onGrantBonus(); onClose(); };
+    gtag.cmd = gtag.cmd || [];
+    gtag.cmd.push(() => {
+      const slot = gtag.defineOutOfPageSlot(
+        REWARDED_AD_UNIT,
+        gtag.enums.OutOfPageFormat.REWARDED,
+      );
+
+      if (!slot) {
+        // リワード広告が利用できない環境（広告ブロッカー、設定未完了 など）
+        setAdState('error');
+        return;
+      }
+
+      slotRef.current = slot;
+      slot.addService(gtag.pubads());
+
+      // ── イベントハンドラ ──────────────────────────────────────────
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const handleReady = (e: any) => {
+        if (e.slot !== slot) return;
+        setAdState('watching');
+        e.makeRewardedVisible(); // 広告を表示
+      };
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const handleGranted = (e: any) => {
+        if (e.slot !== slot) return;
+        grantedRef.current = true; // 視聴完了フラグ
+      };
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const handleClosed = (e: any) => {
+        if (e.slot !== slot) return;
+        cleanup();
+        if (grantedRef.current) {
+          onGrantBonusRef.current(); // 特典付与
+        }
+        onCloseRef.current();
+      };
+
+      const cleanup = () => {
+        gtag.pubads().removeEventListener('rewardedSlotReady',   handleReady);
+        gtag.pubads().removeEventListener('rewardedSlotGranted', handleGranted);
+        gtag.pubads().removeEventListener('rewardedSlotClosed',  handleClosed);
+        if (slotRef.current) {
+          gtag.destroySlots([slotRef.current]);
+          slotRef.current = null;
+        }
+      };
+
+      gtag.pubads().addEventListener('rewardedSlotReady',   handleReady);
+      gtag.pubads().addEventListener('rewardedSlotGranted', handleGranted);
+      gtag.pubads().addEventListener('rewardedSlotClosed',  handleClosed);
+
+      gtag.enableServices();
+      gtag.display(slot);
+    });
+
+    return () => {
+      // アンマウント時のクリーンアップ
+      if (slotRef.current && typeof googletag !== 'undefined' && googletag.destroySlots) {
+        googletag.destroySlots([slotRef.current]);
+        slotRef.current = null;
+      }
+    };
+  }, []); // マウント時に1回だけ実行
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
@@ -36,23 +118,10 @@ export default function AdBonusModal({ title, items, onGrantBonus, onClose }: Pr
 
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-white">🎁 {title}</h2>
-          {ready && (
-            <button onClick={onClose} className="text-slate-500 hover:text-white text-xl leading-none">✕</button>
-          )}
+          <button onClick={onClose} className="text-slate-500 hover:text-white text-xl leading-none">✕</button>
         </div>
 
-        {/* Ad banner slot */}
-        <div className="w-full rounded-xl overflow-hidden bg-slate-800 mb-5" style={{ minHeight: 90 }}>
-          <ins
-            className="adsbygoogle"
-            style={{ display: 'block', width: '100%', height: 90 }}
-            data-ad-client="ca-pub-6628382645135412"
-            data-ad-slot="YOUR_AD_SLOT_ID"
-            data-ad-format="fixed"
-          />
-        </div>
-
-        {/* Reward description */}
+        {/* 特典説明 */}
         <div className="rounded-xl bg-slate-800/60 border border-slate-700 p-4 mb-5 space-y-2 text-sm">
           <p className="text-slate-300 font-semibold mb-1">獲得できる特典</p>
           {items.map((item, i) => (
@@ -63,27 +132,35 @@ export default function AdBonusModal({ title, items, onGrantBonus, onClose }: Pr
           ))}
         </div>
 
-        {!ready ? (
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs text-slate-500">
-              <span>広告視聴中…</span>
-              <span className="font-mono text-slate-400">{countdown}秒</span>
-            </div>
-            <div className="w-full bg-slate-700 rounded-full h-1.5">
-              <div
-                className="bg-violet-500 h-1.5 rounded-full transition-all duration-1000"
-                style={{ width: `${((AD_DURATION - countdown) / AD_DURATION) * 100}%` }}
-              />
-            </div>
+        {/* 状態表示 */}
+        {adState === 'loading' && (
+          <div className="text-center py-8 space-y-3">
+            <div className="text-3xl animate-pulse">📺</div>
+            <p className="text-slate-400 text-sm">広告を読み込んでいます…</p>
           </div>
-        ) : (
-          <button
-            onClick={handleClaim}
-            className="w-full py-3 rounded-xl font-bold text-white text-base transition-all"
-            style={{ background: 'linear-gradient(135deg, #7c3aed, #6d28d9)', boxShadow: '0 4px 20px #7c3aed55' }}
-          >
-            ✨ 受け取る
-          </button>
+        )}
+
+        {adState === 'watching' && (
+          <div className="text-center py-8 space-y-3">
+            <div className="text-3xl">▶️</div>
+            <p className="text-slate-300 text-sm font-medium">広告を視聴中</p>
+            <p className="text-slate-500 text-xs">最後まで視聴すると特典が付与されます</p>
+          </div>
+        )}
+
+        {adState === 'error' && (
+          <div className="text-center py-8 space-y-4">
+            <p className="text-red-400 text-sm leading-relaxed">
+              広告を読み込めませんでした。<br />
+              広告ブロッカーを無効にするか、<br />しばらくしてからもう一度お試しください。
+            </p>
+            <button
+              onClick={onClose}
+              className="px-5 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm text-white transition-colors"
+            >
+              閉じる
+            </button>
+          </div>
         )}
       </div>
     </div>

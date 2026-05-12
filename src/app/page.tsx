@@ -426,19 +426,21 @@ export default function Home() {
               >
                 {isMaxLevel ? '✓ MAX' : `+5 → +${echo.level + 5}`}
               </button>
-              {/* ワンクリック最大強化 */}
-              <button
-                onClick={handleMaxUpgrade}
-                disabled={isMaxLevel}
-                className="px-5 py-2.5 rounded-xl font-bold text-sm text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed border"
-                style={
-                  !isMaxLevel
-                    ? { borderColor: `${ACCENT}66`, color: ACCENT, background: `${ACCENT}11` }
-                    : { background: 'rgba(148,163,184,0.06)', borderColor: 'rgba(148,163,184,0.12)', color: '#94a3b8' }
-                }
-              >
-                ⚡ +25まで強化
-              </button>
+              {/* ワンクリック最大強化（ボーナスタイム中のみ） */}
+              {bonusActive && (
+                <button
+                  onClick={handleMaxUpgrade}
+                  disabled={isMaxLevel}
+                  className="px-5 py-2.5 rounded-xl font-bold text-sm text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed border"
+                  style={
+                    !isMaxLevel
+                      ? { borderColor: '#f59e0b66', color: '#fbbf24', background: '#f59e0b11' }
+                      : { background: 'rgba(148,163,184,0.06)', borderColor: 'rgba(148,163,184,0.12)', color: '#94a3b8' }
+                  }
+                >
+                  ⚡ +25まで強化
+                </button>
+              )}
               <button
                 onClick={handleReset}
                 className="px-4 py-2.5 rounded-xl text-sm text-slate-400 border border-slate-700 hover:border-slate-500 hover:text-slate-200 transition-colors"
