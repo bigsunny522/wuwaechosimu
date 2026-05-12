@@ -18,13 +18,14 @@ import { useLocale } from '@/lib/locale';
 import { TRANSLATIONS, MAINSTAT_LABEL_EN, interpolate } from '@/data/translations';
 
 const COST_OPTIONS: EchoCost[] = [4, 3, 1];
-const ACCENT = '#7c3aed';
+const ACCENT          = '#0275fd';
 const BONUS_DURATION_MS = 5 * 60 * 1000;
-const MAX_REROLL = 3;
-const SAVE_PER_AD = 10;
+const MAX_REROLL      = 3;
+const SAVE_PER_AD     = 10;
 
 const ZERO_COST = { shellCoins: 0, tunerBasic: 0, tunerAdvanced: 0, expMaterial: 0 };
-type TotalCost = typeof ZERO_COST;
+type TotalCost  = typeof ZERO_COST;
+type AdPurpose  = 'bonus' | 'saves';
 
 function addCost(a: TotalCost, b: TotalCost): TotalCost {
   return {
@@ -35,33 +36,40 @@ function addCost(a: TotalCost, b: TotalCost): TotalCost {
   };
 }
 
-type AdPurpose = 'bonus' | 'saves';
+/* ── セレクト共通スタイル ─────────────────────────────────────── */
+const selectStyle: React.CSSProperties = {
+  background: '#ffffff',
+  border: '1px solid #e5e7eb',
+  outline: 'none',
+  color: '#222222',
+  fontSize: '14px',
+};
 
 export default function Home() {
   const { locale, toggleLocale } = useLocale();
   const T = TRANSLATIONS[locale];
 
-  const [cost, setCost] = useState<EchoCost>(4);
-  const [selectedEchoId, setSelectedEchoId] = useState<string>(DEFAULT_ECHO_ID[4]);
+  const [cost, setCost]                       = useState<EchoCost>(4);
+  const [selectedEchoId, setSelectedEchoId]   = useState<string>(DEFAULT_ECHO_ID[4]);
   const [selectedHarmonySet, setSelectedHarmonySet] = useState<string>('');
-  const [echo, setEcho] = useState<EchoState | null>(null);
-  const [score, setScore] = useState<ScoreResult | null>(null);
-  const [selectedCharId, setSelectedCharId] = useState<string>('generic');
-  const [bulkOpen, setBulkOpen] = useState(false);
-  const [bulkUnlocked, setBulkUnlocked] = useState(false);
-  const [downloading, setDownloading] = useState(false);
-  const [maxedAt, setMaxedAt] = useState<number | null>(null);
-  const [lifetimeCost, setLifetimeCost] = useState<TotalCost>(ZERO_COST);
+  const [echo, setEcho]                       = useState<EchoState | null>(null);
+  const [score, setScore]                     = useState<ScoreResult | null>(null);
+  const [selectedCharId, setSelectedCharId]   = useState<string>('generic');
+  const [bulkOpen, setBulkOpen]               = useState(false);
+  const [bulkUnlocked, setBulkUnlocked]       = useState(false);
+  const [downloading, setDownloading]         = useState(false);
+  const [maxedAt, setMaxedAt]                 = useState<number | null>(null);
+  const [lifetimeCost, setLifetimeCost]       = useState<TotalCost>(ZERO_COST);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // ── Bonus time ──────────────────────────────────────────────────────────
-  const [bonusEndTime, setBonusEndTime] = useState<number | null>(null);
-  const [adModalOpen, setAdModalOpen] = useState(false);
-  const [adPurpose, setAdPurpose] = useState<AdPurpose>('bonus');
-  const [timeLeft, setTimeLeft] = useState(0);
+  /* ── Bonus time ─────────────────────────────────────────────── */
+  const [bonusEndTime, setBonusEndTime]       = useState<number | null>(null);
+  const [adModalOpen, setAdModalOpen]         = useState(false);
+  const [adPurpose, setAdPurpose]             = useState<AdPurpose>('bonus');
+  const [timeLeft, setTimeLeft]               = useState(0);
   const [lockedMainstatKey, setLockedMainstatKey] = useState<string>('');
-  const [rerollUsed, setRerollUsed] = useState(false);
-  const [rerollIndices, setRerollIndices] = useState<Set<number>>(new Set());
+  const [rerollUsed, setRerollUsed]           = useState(false);
+  const [rerollIndices, setRerollIndices]     = useState<Set<number>>(new Set());
 
   const bonusActive = bonusEndTime !== null && Date.now() < bonusEndTime;
 
@@ -77,27 +85,18 @@ export default function Home() {
     return () => clearInterval(id);
   }, [bonusEndTime]);
 
-  // ── Save slots ─────────────────────────────────────────────────────────
-  const [saveSlots, setSaveSlots] = useState(0);
-  const [savedResults, setSavedResults] = useState<SavedResult[]>([]);
-  const [historyOpen, setHistoryOpen] = useState(false);
+  /* ── Save slots ─────────────────────────────────────────────── */
+  const [saveSlots, setSaveSlots]             = useState(0);
+  const [savedResults, setSavedResults]       = useState<SavedResult[]>([]);
+  const [historyOpen, setHistoryOpen]         = useState(false);
 
-  // ── Ad configs (locale-aware) ──────────────────────────────────────────
+  /* ── Ad configs (locale-aware) ──────────────────────────────── */
   const adConfigs: Record<AdPurpose, { title: string; items: string[] }> = useMemo(() => ({
-    bonus: {
-      title: T.adBonusTitle,
-      items: [T.adBonusItem1, T.adBonusItem2],
-    },
-    saves: {
-      title: T.adSavesTitle,
-      items: [
-        interpolate(T.adSavesItem1, [SAVE_PER_AD]),
-        T.adSavesItem2,
-      ],
-    },
+    bonus: { title: T.adBonusTitle, items: [T.adBonusItem1, T.adBonusItem2] },
+    saves: { title: T.adSavesTitle, items: [interpolate(T.adSavesItem1, [SAVE_PER_AD]), T.adSavesItem2] },
   }), [T]);
 
-  // ── Ad grant handler ───────────────────────────────────────────────────
+  /* ── Handlers ───────────────────────────────────────────────── */
   const handleGrantBonus = useCallback(() => {
     if (adPurpose === 'bonus') {
       setBonusEndTime(Date.now() + BONUS_DURATION_MS);
@@ -114,14 +113,12 @@ export default function Home() {
     setAdModalOpen(true);
   }, []);
 
-  // ── Harmony set options ────────────────────────────────────────────────
   const harmonySetOptions = useMemo(() => {
     if (cost === 4) return [];
     const available = new Set(ECHOES.filter(e => e.cost === cost).flatMap(e => e.sets));
     return Object.values(HARMONY_SETS).filter(s => available.has(s));
   }, [cost]);
 
-  // ── Core handlers ──────────────────────────────────────────────────────
   const handleCostChange = useCallback((c: EchoCost) => {
     setCost(c);
     setSelectedEchoId(DEFAULT_ECHO_ID[c]);
@@ -137,7 +134,6 @@ export default function Home() {
 
   const handleStart = useCallback(() => {
     if (echo) setLifetimeCost(prev => addCost(prev, echo.totalCost));
-
     let echoId = selectedEchoId;
     if (cost !== 4) {
       const pool = ECHOES.filter(e => e.cost === cost && e.sets.includes(selectedHarmonySet));
@@ -175,11 +171,8 @@ export default function Home() {
 
   const handleReset = useCallback(() => {
     if (echo) setLifetimeCost(prev => addCost(prev, echo.totalCost));
-    setEcho(null);
-    setScore(null);
-    setMaxedAt(null);
-    setRerollUsed(false);
-    setRerollIndices(new Set());
+    setEcho(null); setScore(null); setMaxedAt(null);
+    setRerollUsed(false); setRerollIndices(new Set());
   }, [echo]);
 
   const handleReroll = useCallback(() => {
@@ -195,8 +188,8 @@ export default function Home() {
   const toggleRerollIndex = useCallback((idx: number) => {
     setRerollIndices(prev => {
       const next = new Set(prev);
-      if (next.has(idx)) { next.delete(idx); }
-      else if (next.size < MAX_REROLL) { next.add(idx); }
+      if (next.has(idx)) next.delete(idx);
+      else if (next.size < MAX_REROLL) next.add(idx);
       return next;
     });
   }, []);
@@ -212,64 +205,71 @@ export default function Home() {
     setSavedResults(prev => prev.filter(r => r.id !== id));
   }, []);
 
-  const isMaxLevel = echo?.level === 25;
-
+  const isMaxLevel  = echo?.level === 25;
   const displayCost = addCost(lifetimeCost, echo?.totalCost ?? ZERO_COST);
-  const hasAnyCost = displayCost.shellCoins > 0;
-  const echoList = ECHOES_BY_COST[cost];
-  const showRerollPanel = bonusActive && echo?.level === 25 && !rerollUsed;
-  const showMainstatLock = bonusActive;
-  const formatTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  const hasAnyCost  = displayCost.shellCoins > 0;
+  const echoList    = ECHOES_BY_COST[cost];
+  const showRerollPanel   = bonusActive && echo?.level === 25 && !rerollUsed;
+  const showMainstatLock  = bonusActive;
+  const formatTime  = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
   return (
-    <div
-      className="min-h-screen flex flex-col"
-      style={{ background: 'linear-gradient(160deg, #0a0c14 0%, #0d0f1e 50%, #080b12 100%)' }}
-    >
-      {/* Header */}
-      <header className="border-b border-slate-800/60 sticky top-0 z-30" style={{ background: 'rgba(10,12,20,0.85)' }}>
+    <div className="min-h-screen flex flex-col bg-white">
+
+      {/* ── Header ────────────────────────────────────────────── */}
+      <header
+        className="sticky top-0 z-30 bg-white"
+        style={{ borderBottom: '1px solid #e5e7eb' }}
+      >
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
+          {/* Logo */}
           <div className="flex items-center gap-2 shrink-0">
             <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold"
-              style={{ background: `${ACCENT}33`, border: `1px solid ${ACCENT}66`, color: ACCENT }}
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-semibold text-white"
+              style={{ background: ACCENT }}
             >
               ◈
             </div>
-            <span className="font-bold text-white text-sm tracking-wide">{T.appTitle}</span>
+            <span className="font-semibold text-[#222222] text-sm tracking-tight">{T.appTitle}</span>
           </div>
+
+          {/* Nav buttons */}
           <div className="flex items-center gap-1.5 shrink-0">
             {/* Locale toggle */}
             <button
               onClick={toggleLocale}
-              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border"
-              style={{ borderColor: 'rgba(148,163,184,0.2)', color: '#94a3b8', background: 'rgba(148,163,184,0.06)' }}
+              className="px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
             >
               {locale === 'ja' ? 'EN' : 'JA'}
             </button>
-            {/* Bonus status */}
+
+            {/* Bonus */}
             {bonusActive ? (
               <div
                 className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium border"
-                style={{ borderColor: '#f59e0b44', color: '#fbbf24', background: '#f59e0b11' }}
+                style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: '#eef9ff' }}
               >
                 <span className="animate-pulse">✨</span>
-                <span className="font-mono">{formatTime(timeLeft)}</span>
+                <span
+                  className="font-medium"
+                  style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+                >
+                  {formatTime(timeLeft)}
+                </span>
               </div>
             ) : (
               <button
                 onClick={() => openAdModal('bonus')}
-                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border"
-                style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: `${ACCENT}11` }}
+                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
               >
                 🎁<span className="hidden sm:inline"> {T.bonusBtn}</span>
               </button>
             )}
+
             {/* History */}
             <button
               onClick={() => setHistoryOpen(true)}
-              className="relative flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border"
-              style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: `${ACCENT}11` }}
+              className="relative flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
             >
               📋<span className="hidden sm:inline"> {T.historyBtn}</span>
               {savedResults.length > 0 && (
@@ -281,11 +281,11 @@ export default function Home() {
                 </span>
               )}
             </button>
+
             {/* Bulk sim */}
             <button
               onClick={() => setBulkOpen(true)}
-              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border"
-              style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: `${ACCENT}11` }}
+              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
             >
               ⚡<span className="hidden sm:inline"> {T.bulkBtn}</span>
             </button>
@@ -293,121 +293,152 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-6 flex flex-col gap-6">
+      <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-8 flex flex-col gap-8">
 
         {/* Character selector */}
         <div className="flex flex-col gap-2">
-          <div className="text-xs text-slate-600 text-center tracking-wider uppercase">{T.charLabel}</div>
+          <label
+            className="text-xs font-medium uppercase tracking-wider text-[#9ca3af] text-center"
+            style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+          >
+            {T.charLabel}
+          </label>
           <div className="relative">
             <select
               value={selectedCharId}
               onChange={(e) => { setSelectedCharId(e.target.value); setScore(null); }}
-              className="w-full px-4 py-2.5 rounded-xl text-sm text-slate-200 appearance-none cursor-pointer"
-              style={{ background: 'rgba(15,17,23,0.8)', border: `1px solid ${ACCENT}44`, outline: 'none' }}
+              className="w-full px-4 py-2.5 rounded-xl text-sm appearance-none cursor-pointer"
+              style={{ ...selectStyle, fontWeight: 500 }}
             >
-              <option value="generic" style={{ background: '#0f1117' }}>{T.charGeneric}</option>
+              <option value="generic" style={{ background: '#fff' }}>{T.charGeneric}</option>
               {CHARACTER_LIST.map((c) => (
-                <option key={c.id} value={c.id} style={{ background: '#0f1117' }}>
+                <option key={c.id} value={c.id} style={{ background: '#fff' }}>
                   {locale === 'en' ? (c.nameEn ?? c.name) : c.name}
                 </option>
               ))}
             </select>
-            <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">▼</div>
+            <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] text-xs">▼</div>
           </div>
         </div>
 
         {/* Cost selector */}
         <div className="flex flex-col gap-2">
-          <div className="text-xs text-slate-600 text-center tracking-wider uppercase">{T.costLabel}</div>
+          <label
+            className="text-xs font-medium uppercase tracking-wider text-[#9ca3af] text-center"
+            style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+          >
+            {T.costLabel}
+          </label>
           <div className="flex gap-2 justify-center">
             {COST_OPTIONS.map((c) => (
               <button
                 key={c}
                 onClick={() => handleCostChange(c)}
-                className="px-6 py-2.5 rounded-xl font-bold text-sm transition-all"
+                className="px-6 py-2.5 rounded-[500px] font-medium text-sm transition-all"
                 style={
                   cost === c
-                    ? { background: ACCENT, color: '#fff', boxShadow: `0 0 16px ${ACCENT}66` }
-                    : { background: 'rgba(148,163,184,0.06)', border: '1px solid rgba(148,163,184,0.12)', color: '#94a3b8' }
+                    ? { background: '#222222', color: '#f7f7f7' }
+                    : { background: '#f7f7f7', border: '1px solid #e5e7eb', color: '#707070' }
                 }
               >
                 COST {c}
               </button>
             ))}
           </div>
-          <div className="text-center text-xs text-slate-600">{interpolate(T.costSubstats, [SUBSTAT_COUNT[cost]])}</div>
+          <div
+            className="text-center text-xs text-[#9ca3af]"
+            style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+          >
+            {interpolate(T.costSubstats, [SUBSTAT_COUNT[cost]])}
+          </div>
         </div>
 
         {/* Main stat lock (bonus only) */}
         {showMainstatLock && (
           <div
             className="flex flex-col gap-2 rounded-xl p-4 border"
-            style={{ borderColor: '#f59e0b44', background: '#f59e0b08' }}
+            style={{ borderColor: `${ACCENT}44`, background: '#eef9ff' }}
           >
-            <div className="text-xs text-amber-500 text-center tracking-wider uppercase">
+            <div
+              className="text-xs font-medium text-center uppercase tracking-wider"
+              style={{ color: ACCENT, fontFamily: '"IBM Plex Mono", monospace' }}
+            >
               {T.bonusMainTitle}
             </div>
             <div className="relative">
               <select
                 value={lockedMainstatKey}
                 onChange={(e) => setLockedMainstatKey(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl text-sm text-slate-200 appearance-none cursor-pointer"
-                style={{ background: 'rgba(15,17,23,0.8)', border: '1px solid #f59e0b44', outline: 'none' }}
+                className="w-full px-4 py-2.5 rounded-xl text-sm appearance-none cursor-pointer"
+                style={{ ...selectStyle, borderColor: `${ACCENT}44` }}
               >
                 {MAINSTAT_POOLS[cost].map((m) => {
                   const label = locale === 'en' ? (MAINSTAT_LABEL_EN[m.key] ?? m.label) : m.label;
                   return (
-                    <option key={m.key} value={m.key} style={{ background: '#0f1117' }}>
+                    <option key={m.key} value={m.key} style={{ background: '#fff' }}>
                       {label}（+25: {m.value}{m.unit}）
                     </option>
                   );
                 })}
               </select>
-              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">▼</div>
+              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] text-xs">▼</div>
             </div>
-            <p className="text-xs text-amber-600/80 text-center">{T.bonusMainHint}</p>
+            <p className="text-xs text-center" style={{ color: `${ACCENT}99` }}>{T.bonusMainHint}</p>
           </div>
         )}
 
         {/* Echo / Harmony selector */}
         {cost === 4 ? (
           <div className="flex flex-col gap-2">
-            <div className="text-xs text-slate-600 text-center tracking-wider uppercase">{T.echoSelectLabel}</div>
+            <label
+              className="text-xs font-medium uppercase tracking-wider text-[#9ca3af] text-center"
+              style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+            >
+              {T.echoSelectLabel}
+            </label>
             <div className="relative">
               <select
                 value={selectedEchoId}
                 onChange={(e) => { setSelectedEchoId(e.target.value); setEcho(null); setScore(null); }}
-                className="w-full px-4 py-2.5 rounded-xl text-sm text-slate-200 appearance-none cursor-pointer"
-                style={{ background: 'rgba(15,17,23,0.8)', border: `1px solid ${ACCENT}44`, outline: 'none' }}
+                className="w-full px-4 py-2.5 rounded-xl text-sm appearance-none cursor-pointer"
+                style={selectStyle}
               >
                 {echoList.map((e) => (
-                  <option key={e.id} value={e.id} style={{ background: '#0f1117' }}>
+                  <option key={e.id} value={e.id} style={{ background: '#fff' }}>
                     {locale === 'en' ? (e.nameEn ?? e.name) : e.name}
                   </option>
                 ))}
               </select>
-              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">▼</div>
+              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] text-xs">▼</div>
             </div>
           </div>
         ) : (
           <div className="flex flex-col gap-2">
-            <div className="text-xs text-slate-600 text-center tracking-wider uppercase">{T.harmonySelectLabel}</div>
+            <label
+              className="text-xs font-medium uppercase tracking-wider text-[#9ca3af] text-center"
+              style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+            >
+              {T.harmonySelectLabel}
+            </label>
             <div className="relative">
               <select
                 value={selectedHarmonySet}
                 onChange={(e) => { setSelectedHarmonySet(e.target.value); setEcho(null); setScore(null); }}
-                className="w-full px-4 py-2.5 rounded-xl text-sm text-slate-200 appearance-none cursor-pointer"
-                style={{ background: 'rgba(15,17,23,0.8)', border: `1px solid ${ACCENT}44`, outline: 'none' }}
+                className="w-full px-4 py-2.5 rounded-xl text-sm appearance-none cursor-pointer"
+                style={selectStyle}
               >
                 {harmonySetOptions.map((s) => (
-                  <option key={s} value={s} style={{ background: '#0f1117' }}>
+                  <option key={s} value={s} style={{ background: '#fff' }}>
                     {locale === 'en' ? (HARMONY_SETS_EN[s] ?? s) : s}
                   </option>
                 ))}
               </select>
-              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">▼</div>
+              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] text-xs">▼</div>
             </div>
-            <div className="text-center text-xs text-slate-600">
+            <div
+              className="text-center text-xs text-[#9ca3af]"
+              style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+            >
               {interpolate(T.harmonyCount, [ECHOES.filter(e => e.cost === cost && e.sets.includes(selectedHarmonySet)).length])}
             </div>
           </div>
@@ -418,8 +449,7 @@ export default function Home() {
           {!echo ? (
             <button
               onClick={handleStart}
-              className="px-8 py-3 rounded-xl font-bold text-base text-white transition-all"
-              style={{ background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT}cc)`, boxShadow: `0 4px 20px ${ACCENT}55` }}
+              className="px-8 py-3 rounded-[500px] font-medium text-sm text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
             >
               {T.getEcho}
             </button>
@@ -428,11 +458,11 @@ export default function Home() {
               <button
                 onClick={handleUpgrade}
                 disabled={isMaxLevel}
-                className="px-5 py-2.5 rounded-xl font-bold text-sm text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-5 py-2.5 rounded-[500px] font-medium text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 style={
                   !isMaxLevel
-                    ? { background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT}aa)`, boxShadow: `0 4px 16px ${ACCENT}44` }
-                    : { background: 'rgba(148,163,184,0.1)' }
+                    ? { background: ACCENT, color: '#ffffff' }
+                    : { background: '#f7f7f7', border: '1px solid #e5e7eb', color: '#9ca3af' }
                 }
               >
                 {isMaxLevel ? T.maxed : `+5 → +${echo.level + 5}`}
@@ -441,11 +471,11 @@ export default function Home() {
                 <button
                   onClick={handleMaxUpgrade}
                   disabled={isMaxLevel}
-                  className="px-5 py-2.5 rounded-xl font-bold text-sm text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed border"
+                  className="px-5 py-2.5 rounded-[500px] font-medium text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed border"
                   style={
                     !isMaxLevel
-                      ? { borderColor: '#f59e0b66', color: '#fbbf24', background: '#f59e0b11' }
-                      : { background: 'rgba(148,163,184,0.06)', borderColor: 'rgba(148,163,184,0.12)', color: '#94a3b8' }
+                      ? { borderColor: `${ACCENT}66`, color: ACCENT, background: '#eef9ff' }
+                      : { background: '#f7f7f7', borderColor: '#e5e7eb', color: '#9ca3af' }
                   }
                 >
                   {T.maxUpgrade}
@@ -453,7 +483,7 @@ export default function Home() {
               )}
               <button
                 onClick={handleReset}
-                className="px-4 py-2.5 rounded-xl text-sm text-slate-400 border border-slate-700 hover:border-slate-500 hover:text-slate-200 transition-colors"
+                className="px-4 py-2.5 rounded-lg text-sm text-[#707070] border border-[#e5e7eb] hover:border-[#d1d5db] hover:text-[#222222] transition-colors"
               >
                 {T.resetBtn}
               </button>
@@ -464,11 +494,16 @@ export default function Home() {
         {/* 累計消費リソース */}
         {hasAnyCost && (
           <div className="w-full">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <span className="text-xs text-slate-600 tracking-wider uppercase">{T.resourceLabel}</span>
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <span
+                className="text-xs text-[#9ca3af] tracking-wider uppercase"
+                style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+              >
+                {T.resourceLabel}
+              </span>
               <button
                 onClick={() => setLifetimeCost(ZERO_COST)}
-                className="text-[10px] text-slate-700 hover:text-slate-400 border border-slate-800 hover:border-slate-600 px-1.5 py-0.5 rounded transition-colors"
+                className="text-[10px] text-[#9ca3af] hover:text-[#707070] border border-[#e5e7eb] hover:border-[#d1d5db] px-1.5 py-0.5 rounded transition-colors"
               >
                 {T.resourceReset}
               </button>
@@ -503,8 +538,7 @@ export default function Home() {
                       }
                     }}
                     disabled={downloading}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-white border transition-all disabled:opacity-50"
-                    style={{ borderColor: '#64748b44', background: 'rgba(100,116,139,0.12)', color: '#cbd5e1' }}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors disabled:opacity-50"
                   >
                     {downloading ? '⏳' : T.imgSave}
                   </button>
@@ -516,25 +550,24 @@ export default function Home() {
                         '_blank', 'noopener,noreferrer'
                       );
                     }}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-white border transition-all"
-                    style={{ background: '#1a1a2e', border: '1px solid #334155' }}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors"
                   >
                     {T.shareBtn}
                   </button>
                   {saveSlots > 0 ? (
                     <button
                       onClick={handleSave}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border transition-all"
-                      style={{ borderColor: '#22c55e44', background: '#22c55e11', color: '#4ade80' }}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium border transition-colors"
+                      style={{ borderColor: '#10b98144', background: '#f0fdf4', color: '#059669' }}
                     >
                       {T.saveBtn}
-                      <span className="text-xs opacity-60">{interpolate(T.saveSlotsLeft, [saveSlots])}</span>
+                      <span className="text-xs opacity-70">{interpolate(T.saveSlotsLeft, [saveSlots])}</span>
                     </button>
                   ) : (
                     <button
                       onClick={() => openAdModal('saves')}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border transition-all"
-                      style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: `${ACCENT}11` }}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium border transition-colors"
+                      style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: '#eef9ff' }}
                     >
                       {interpolate(T.adSaveSlots, [SAVE_PER_AD])}
                     </button>
@@ -544,23 +577,29 @@ export default function Home() {
             )}
 
             {!isMaxLevel && echo.level > 0 && (
-              <p className="text-xs text-slate-600 text-center">
+              <p
+                className="text-xs text-[#9ca3af] text-center"
+                style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+              >
                 {interpolate(T.untilMax, [(25 - echo.level) / 5])}
               </p>
             )}
           </div>
         )}
 
-        {/* Substat reroll panel */}
+        {/* Reroll panel */}
         {showRerollPanel && echo && (
           <div
             className="rounded-xl border p-4 flex flex-col gap-3"
-            style={{ borderColor: '#f59e0b44', background: '#f59e0b08' }}
+            style={{ borderColor: `${ACCENT}44`, background: '#eef9ff' }}
           >
-            <div className="text-xs text-amber-500 text-center tracking-wider uppercase">
+            <div
+              className="text-xs font-medium text-center uppercase tracking-wider"
+              style={{ color: ACCENT, fontFamily: '"IBM Plex Mono", monospace' }}
+            >
               {interpolate(T.rerollPanelTitle, [MAX_REROLL])}
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {echo.substats.map((s, i) => {
                 const selected = rerollIndices.has(i);
                 const disabled = !selected && rerollIndices.size >= MAX_REROLL;
@@ -570,16 +609,23 @@ export default function Home() {
                     onClick={() => !disabled && toggleRerollIndex(i)}
                     className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all"
                     style={{
-                      background: selected ? '#f59e0b22' : 'rgba(15,17,23,0.6)',
-                      border: selected ? '1px solid #f59e0b66' : '1px solid rgba(148,163,184,0.12)',
+                      background: selected ? `${ACCENT}0f` : '#ffffff',
+                      border: selected ? `1px solid ${ACCENT}66` : '1px solid #e5e7eb',
                       opacity: disabled ? 0.4 : 1,
                       cursor: disabled ? 'not-allowed' : 'pointer',
                     }}
                   >
-                    <span className="text-slate-300">{s.label}</span>
+                    <span className="text-[#222222] font-medium">{s.label}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-white font-medium">{s.value}{s.unit}</span>
-                      {selected && <span className="text-amber-400 text-xs">{T.rerollBadge}</span>}
+                      <span className="text-[#707070]">{s.value}{s.unit}</span>
+                      {selected && (
+                        <span
+                          className="text-xs font-medium px-1.5 py-0.5 rounded-full"
+                          style={{ background: `${ACCENT}18`, color: ACCENT }}
+                        >
+                          {T.rerollBadge}
+                        </span>
+                      )}
                     </div>
                   </button>
                 );
@@ -588,12 +634,8 @@ export default function Home() {
             <button
               onClick={handleReroll}
               disabled={rerollIndices.size === 0}
-              className="w-full py-2.5 rounded-xl font-bold text-sm text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-              style={
-                rerollIndices.size > 0
-                  ? { background: 'linear-gradient(135deg, #f59e0b, #d97706)', boxShadow: '0 4px 16px #f59e0b44' }
-                  : { background: 'rgba(148,163,184,0.1)' }
-              }
+              className="w-full py-2.5 rounded-[500px] font-medium text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed text-[#f7f7f7]"
+              style={{ background: rerollIndices.size > 0 ? '#222222' : '#9ca3af' }}
             >
               {rerollIndices.size > 0
                 ? interpolate(T.rerollBtn, [rerollIndices.size])
@@ -603,26 +645,31 @@ export default function Home() {
         )}
 
         {bonusActive && echo?.level === 25 && rerollUsed && (
-          <div className="text-center text-xs text-amber-600/70">{T.rerollUsed}</div>
+          <div
+            className="text-center text-xs"
+            style={{ color: `${ACCENT}80` }}
+          >
+            {T.rerollUsed}
+          </div>
         )}
 
         {/* Empty state */}
         {!echo && (
-          <div className="flex flex-col items-center gap-3 py-8 text-center">
+          <div className="flex flex-col items-center gap-4 py-12 text-center">
             <div
-              className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl border"
-              style={{ background: `${ACCENT}11`, borderColor: `${ACCENT}33` }}
+              className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl"
+              style={{ background: '#eef9ff', border: `1px solid ${ACCENT}33` }}
             >
               ◈
             </div>
-            <p className="text-slate-500 text-sm max-w-xs">
+            <p className="text-[#707070] text-sm max-w-xs leading-relaxed" style={{ lineHeight: 1.7 }}>
               {T.emptyText}
             </p>
             {!bonusActive && (
               <button
                 onClick={() => openAdModal('bonus')}
-                className="mt-2 px-5 py-2 rounded-xl text-sm font-medium border transition-colors"
-                style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: `${ACCENT}11` }}
+                className="mt-1 px-5 py-2 rounded-[500px] text-sm font-medium border transition-colors"
+                style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: '#eef9ff' }}
               >
                 {T.emptyBonus}
               </button>
@@ -631,8 +678,8 @@ export default function Home() {
         )}
       </main>
 
-      <footer className="border-t border-slate-800/40 py-3">
-        <p className="text-center text-xs text-slate-700">{T.footer}</p>
+      <footer className="border-t border-[#f3f4f6] py-4">
+        <p className="text-center text-xs text-[#9ca3af]">{T.footer}</p>
       </footer>
 
       {bulkOpen && (

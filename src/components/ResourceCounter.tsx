@@ -16,11 +16,18 @@ interface Props {
 
 function Stat({ label, value, icon }: { label: string; value: number; icon: string }) {
   return (
-    <div className="flex items-center gap-1.5 bg-slate-800/60 rounded-lg px-3 py-1.5 border border-slate-700/50">
+    <div className="flex items-center gap-2 bg-white rounded-lg px-3 py-2 border border-[#e5e7eb]"
+      style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
+    >
       <span className="text-base">{icon}</span>
       <div className="flex flex-col leading-none">
-        <span className="text-[10px] text-slate-500 uppercase tracking-wider">{label}</span>
-        <span className="text-sm font-semibold text-slate-200 tabular-nums">
+        <span
+          className="text-[10px] uppercase tracking-wider mb-0.5"
+          style={{ fontFamily: '"IBM Plex Mono", monospace', color: '#707070' }}
+        >
+          {label}
+        </span>
+        <span className="text-sm font-semibold tabular-nums text-[#222222]">
           {value.toLocaleString()}
         </span>
       </div>

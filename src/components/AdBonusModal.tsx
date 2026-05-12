@@ -29,7 +29,6 @@ export default function AdBonusModal({ title, items, onGrantBonus, onClose }: Pr
   const { locale } = useLocale();
   const T = TRANSLATIONS[locale];
 
-  // コールバックを ref に保持してクロージャのズレを防ぐ
   const onGrantBonusRef = useRef(onGrantBonus);
   const onCloseRef      = useRef(onClose);
   useEffect(() => { onGrantBonusRef.current = onGrantBonus; }, [onGrantBonus]);
@@ -41,13 +40,10 @@ export default function AdBonusModal({ title, items, onGrantBonus, onClose }: Pr
 
   useEffect(() => {
     const gtag = (typeof googletag !== 'undefined' ? googletag : null)
-      ?? (window as any).googletag    // eslint-disable-line @typescript-eslint/no-explicit-any
-      ?? null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ?? (window as any).googletag ?? null;
 
-    if (!gtag) {
-      setAdState('error');
-      return;
-    }
+    if (!gtag) { setAdState('error'); return; }
 
     gtag.cmd = gtag.cmd || [];
     gtag.cmd.push(() => {
@@ -55,111 +51,94 @@ export default function AdBonusModal({ title, items, onGrantBonus, onClose }: Pr
         REWARDED_AD_UNIT,
         gtag.enums.OutOfPageFormat.REWARDED,
       );
-
-      if (!slot) {
-        // リワード広告が利用できない環境（広告ブロッカー、設定未完了 など）
-        setAdState('error');
-        return;
-      }
+      if (!slot) { setAdState('error'); return; }
 
       slotRef.current = slot;
       slot.addService(gtag.pubads());
 
-      // ── イベントハンドラ ──────────────────────────────────────────
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const handleReady = (e: any) => {
-        if (e.slot !== slot) return;
-        setAdState('watching');
-        e.makeRewardedVisible(); // 広告を表示
-      };
-
+      const handleReady   = (e: any) => { if (e.slot !== slot) return; setAdState('watching'); e.makeRewardedVisible(); };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const handleGranted = (e: any) => {
-        if (e.slot !== slot) return;
-        grantedRef.current = true; // 視聴完了フラグ
-      };
-
+      const handleGranted = (e: any) => { if (e.slot !== slot) return; grantedRef.current = true; };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const handleClosed = (e: any) => {
+      const handleClosed  = (e: any) => {
         if (e.slot !== slot) return;
         cleanup();
-        if (grantedRef.current) {
-          onGrantBonusRef.current(); // 特典付与
-        }
+        if (grantedRef.current) onGrantBonusRef.current();
         onCloseRef.current();
       };
-
       const cleanup = () => {
         gtag.pubads().removeEventListener('rewardedSlotReady',   handleReady);
         gtag.pubads().removeEventListener('rewardedSlotGranted', handleGranted);
         gtag.pubads().removeEventListener('rewardedSlotClosed',  handleClosed);
-        if (slotRef.current) {
-          gtag.destroySlots([slotRef.current]);
-          slotRef.current = null;
-        }
+        if (slotRef.current) { gtag.destroySlots([slotRef.current]); slotRef.current = null; }
       };
 
       gtag.pubads().addEventListener('rewardedSlotReady',   handleReady);
       gtag.pubads().addEventListener('rewardedSlotGranted', handleGranted);
       gtag.pubads().addEventListener('rewardedSlotClosed',  handleClosed);
-
       gtag.enableServices();
       gtag.display(slot);
     });
 
     return () => {
-      // アンマウント時のクリーンアップ
       if (slotRef.current && typeof googletag !== 'undefined' && googletag.destroySlots) {
         googletag.destroySlots([slotRef.current]);
         slotRef.current = null;
       }
     };
-  }, []); // マウント時に1回だけ実行
+  }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-      <div className="w-full max-w-md mx-4 rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
-
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-white">🎁 {title}</h2>
-          <button onClick={onClose} className="text-slate-500 hover:text-white text-xl leading-none">✕</button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+      <div
+        className="w-full max-w-md mx-4 rounded-2xl bg-white p-6 shadow-2xl"
+        style={{ border: '1px solid #e5e7eb' }}
+      >
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-base font-semibold text-[#222222]">🎁 {title}</h2>
+          <button
+            onClick={onClose}
+            className="text-[#9ca3af] hover:text-[#222222] text-xl leading-none transition-colors"
+          >
+            ✕
+          </button>
         </div>
 
         {/* 特典説明 */}
-        <div className="rounded-xl bg-slate-800/60 border border-slate-700 p-4 mb-5 space-y-2 text-sm">
-          <p className="text-slate-300 font-semibold mb-1">{T.adRewardsTitle}</p>
+        <div className="rounded-xl bg-[#f7f7f7] border border-[#e5e7eb] p-4 mb-5 space-y-2.5">
+          <p className="text-sm font-medium text-[#222222]">{T.adRewardsTitle}</p>
           {items.map((item, i) => (
-            <div key={i} className="flex items-start gap-2 text-slate-400">
-              <span className="text-amber-400 mt-0.5 shrink-0">◈</span>
+            <div key={i} className="flex items-start gap-2 text-sm text-[#707070]">
+              <span className="text-[#0275fd] mt-0.5 shrink-0">◈</span>
               <span>{item}</span>
             </div>
           ))}
         </div>
 
-        {/* 状態表示 */}
         {adState === 'loading' && (
           <div className="text-center py-8 space-y-3">
             <div className="text-3xl animate-pulse">📺</div>
-            <p className="text-slate-400 text-sm">{T.adLoading}</p>
+            <p className="text-sm text-[#707070]">{T.adLoading}</p>
           </div>
         )}
 
         {adState === 'watching' && (
           <div className="text-center py-8 space-y-3">
             <div className="text-3xl">▶️</div>
-            <p className="text-slate-300 text-sm font-medium">{T.adWatching}</p>
-            <p className="text-slate-500 text-xs">{T.adWatchingSub}</p>
+            <p className="text-sm font-medium text-[#222222]">{T.adWatching}</p>
+            <p className="text-xs text-[#707070]">{T.adWatchingSub}</p>
           </div>
         )}
 
         {adState === 'error' && (
           <div className="text-center py-8 space-y-4">
-            <p className="text-red-400 text-sm leading-relaxed whitespace-pre-line">
+            <p className="text-sm text-[#ef4444] leading-relaxed whitespace-pre-line">
               {T.adError}
             </p>
             <button
               onClick={onClose}
-              className="px-5 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm text-white transition-colors"
+              className="px-5 py-2 rounded-[500px] text-sm font-medium text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
             >
               {T.adCloseBtn}
             </button>

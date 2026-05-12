@@ -15,14 +15,21 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ja" className="h-full antialiased">
+    <html lang="ja" className="h-full">
       <head>
-        {/* Google Publisher Tags — リワード広告に必要 */}
+        {/* Google Fonts — Inter / Noto Sans JP / IBM Plex Mono */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=Inter:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+        {/* Google Publisher Tags — リワード広告 */}
         <Script
           src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"
           strategy="afterInteractive"
         />
-        {/* AdSense — 通常バナー広告 */}
+        {/* AdSense */}
         <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6628382645135412"
@@ -30,7 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           strategy="afterInteractive"
         />
       </head>
-      <body className="min-h-full flex flex-col bg-[#0a0c14] text-slate-200">
+      <body className="min-h-full flex flex-col bg-white text-[#222222]">
         <LocaleProvider>{children}</LocaleProvider>
       </body>
     </html>

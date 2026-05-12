@@ -5,7 +5,7 @@ import type { EchoState, ScoreResult, SubstatCategory } from '@/types/echo';
 import { SUBSTAT_COUNT } from '@/data/mainstats';
 import { MULT, IDEAL_MULT, REFERENCE_TIER, normalizedTier, CATEGORY_COLORS } from '@/lib/scorer';
 import { useLocale } from '@/lib/locale';
-import { TRANSLATIONS, SUBSTAT_LABEL_EN, interpolate } from '@/data/translations';
+import { TRANSLATIONS, SUBSTAT_LABEL_EN } from '@/data/translations';
 
 interface Props {
   echo: EchoState;
@@ -34,33 +34,36 @@ export default function ScoreDebugPanel({ echo, score }: Props) {
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs border transition-colors"
         style={{
-          background: 'rgba(15,17,23,0.6)',
-          borderColor: open ? 'rgba(148,163,184,0.3)' : 'rgba(148,163,184,0.15)',
-          color: open ? '#94a3b8' : '#475569',
+          background: '#f7f7f7',
+          borderColor: open ? '#d1d5db' : '#e5e7eb',
+          color: open ? '#222222' : '#9ca3af',
         }}
       >
         <span className="flex items-center gap-1.5">
           <span>🔍</span>
-          <span>{T.debugTitle}</span>
+          <span className="font-medium">{T.debugTitle}</span>
         </span>
         <span className="text-[10px]">{open ? T.debugClose : T.debugOpen}</span>
       </button>
 
       {open && (
         <div
-          className="mt-1.5 rounded-xl overflow-hidden text-[11px] font-mono"
+          className="mt-1.5 rounded-xl overflow-hidden text-[11px]"
           style={{
-            background: 'rgba(10,12,20,0.85)',
-            border: '1px solid rgba(148,163,184,0.15)',
+            background: '#ffffff',
+            border: '1px solid #e5e7eb',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+            fontFamily: '"IBM Plex Mono", monospace',
           }}
         >
-          {/* サブステ内訳 */}
+          {/* サブステ内訳ヘッダー */}
           <div
             className="grid gap-x-2 px-3 py-1.5 text-[10px] uppercase tracking-wider"
             style={{
               gridTemplateColumns: '1fr 5rem 3.5rem 4rem',
-              borderBottom: '1px solid rgba(148,163,184,0.1)',
-              color: '#475569',
+              borderBottom: '1px solid #f3f4f6',
+              color: '#9ca3af',
+              background: '#f7f7f7',
             }}
           >
             <span>{T.debugSubstat}</span>
@@ -79,29 +82,29 @@ export default function ScoreDebugPanel({ echo, score }: Props) {
             return (
               <div
                 key={b.key}
-                className="grid gap-x-2 px-3 py-1 items-center"
+                className="grid gap-x-2 px-3 py-1.5 items-center"
                 style={{
                   gridTemplateColumns: '1fr 5rem 3.5rem 4rem',
-                  borderBottom: '1px solid rgba(148,163,184,0.05)',
+                  borderBottom: '1px solid #f9fafb',
                 }}
               >
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span
-                    className="shrink-0 px-1 rounded text-[9px] font-bold"
-                    style={{ background: `${color}22`, color }}
+                    className="shrink-0 px-1 rounded text-[9px] font-semibold"
+                    style={{ background: `${color}18`, color }}
                   >
                     {CATEGORY_LABEL[b.category]}
                   </span>
-                  <span className="text-slate-300 truncate">{subLabel}</span>
+                  <span className="text-[#222222] truncate">{subLabel}</span>
                 </div>
                 <div className="text-right">
-                  <span className="text-slate-300">T{sub.tier}</span>
-                  <span className="text-slate-600 ml-1">({nt.toFixed(3)})</span>
+                  <span className="text-[#222222]">T{sub.tier}</span>
+                  <span className="text-[#9ca3af] ml-1">({nt.toFixed(3)})</span>
                 </div>
-                <div className="text-right" style={{ color }}>
+                <div className="text-right font-medium" style={{ color }}>
                   ×{mult.toFixed(1)}
                 </div>
-                <div className="text-right text-slate-200 tabular-nums">
+                <div className="text-right text-[#222222] tabular-nums">
                   {b.points.toFixed(4)}
                 </div>
               </div>
@@ -111,50 +114,50 @@ export default function ScoreDebugPanel({ echo, score }: Props) {
           {/* 計算式まとめ */}
           <div
             className="px-3 py-2.5 flex flex-col gap-1.5"
-            style={{ borderTop: '1px solid rgba(148,163,184,0.12)' }}
+            style={{ borderTop: '1px solid #e5e7eb', background: '#f7f7f7' }}
           >
-            <div className="flex justify-between text-slate-600">
+            <div className="flex justify-between text-[#9ca3af]">
               <span>
                 {T.debugMax}
                 <span className="ml-1 text-[10px]">
                   ({SUBSTAT_COUNT[echo.cost]}× {normalizedTier(REFERENCE_TIER).toFixed(3)} × {IDEAL_MULT.toFixed(3)})
                 </span>
               </span>
-              <span className="tabular-nums text-slate-500">{theoreticalMax.toFixed(4)}</span>
+              <span className="tabular-nums text-[#707070]">{theoreticalMax.toFixed(4)}</span>
             </div>
-            <div className="flex justify-between text-slate-500">
+            <div className="flex justify-between text-[#707070]">
               <span>{T.debugTotal}</span>
-              <span className="tabular-nums text-slate-300">{rawTotal.toFixed(4)}</span>
+              <span className="tabular-nums text-[#222222]">{rawTotal.toFixed(4)}</span>
             </div>
             <div
-              className="flex justify-between font-bold"
-              style={{ borderTop: '1px solid rgba(148,163,184,0.1)', paddingTop: '0.375rem' }}
+              className="flex justify-between font-semibold"
+              style={{ borderTop: '1px solid #e5e7eb', paddingTop: '0.375rem' }}
             >
-              <span className="text-slate-400">
+              <span className="text-[#222222]">
                 {T.debugSubScore}
-                <span className="ml-1 text-[10px] font-normal text-slate-600">
+                <span className="ml-1 text-[10px] font-normal text-[#9ca3af]">
                   ({rawTotal.toFixed(3)} ÷ {theoreticalMax.toFixed(3)} × 100)
                 </span>
               </span>
-              <span className="tabular-nums text-slate-200">{substatScore.toFixed(2)}</span>
+              <span className="tabular-nums text-[#0275fd]">{substatScore.toFixed(2)}</span>
             </div>
 
             {score.isCharacterScore && (
               <>
                 {score.mainstatBonus !== undefined && score.mainstatBonus !== 0 && (
-                  <div className="flex justify-between text-red-400/80">
+                  <div className="flex justify-between text-[#ef4444]">
                     <span>{T.debugMainBonus}</span>
                     <span className="tabular-nums">{score.mainstatBonus > 0 ? '+' : ''}{score.mainstatBonus}</span>
                   </div>
                 )}
                 {score.setBonus !== undefined && score.setBonus !== 0 && (
-                  <div className="flex justify-between text-orange-400/80">
+                  <div className="flex justify-between text-[#f97316]">
                     <span>{T.debugSetBonus}</span>
                     <span className="tabular-nums">{score.setBonus > 0 ? '+' : ''}{score.setBonus}</span>
                   </div>
                 )}
                 {score.mainstatBonus === 0 && score.setBonus === 0 && (
-                  <div className="flex justify-between text-emerald-500/80">
+                  <div className="flex justify-between text-[#10b981]">
                     <span>{T.debugNoBonus}</span>
                     <span>{T.debugNone}</span>
                   </div>
@@ -163,8 +166,8 @@ export default function ScoreDebugPanel({ echo, score }: Props) {
             )}
 
             <div
-              className="flex justify-between text-sm font-black"
-              style={{ borderTop: '1px solid rgba(148,163,184,0.15)', paddingTop: '0.375rem', color: '#e2e8f0' }}
+              className="flex justify-between text-sm font-semibold"
+              style={{ borderTop: '1px solid #e5e7eb', paddingTop: '0.375rem', color: '#222222' }}
             >
               <span>{T.debugFinal}</span>
               <span className="tabular-nums">{score.score} / 100</span>
@@ -172,11 +175,8 @@ export default function ScoreDebugPanel({ echo, score }: Props) {
           </div>
 
           {/* 凡例 */}
-          <div
-            className="px-3 py-2 flex flex-wrap gap-x-3 gap-y-1"
-            style={{ borderTop: '1px solid rgba(148,163,184,0.08)', background: 'rgba(0,0,0,0.2)' }}
-          >
-            <span className="text-[10px] text-slate-600 w-full mb-0.5">{T.debugMultsLabel}</span>
+          <div className="px-3 py-2 flex flex-wrap gap-x-3 gap-y-1" style={{ borderTop: '1px solid #f3f4f6' }}>
+            <span className="text-[10px] text-[#9ca3af] w-full mb-0.5">{T.debugMultsLabel}</span>
             {(Object.entries(MULT) as [SubstatCategory, number][]).map(([cat, val]) => (
               <span key={cat} className="text-[10px]" style={{ color: CATEGORY_COLORS[cat] }}>
                 {CATEGORY_LABEL[cat]} ×{val.toFixed(1)}

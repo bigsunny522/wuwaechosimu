@@ -1,15 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --accent: #7c3aed;
-  --background: #0a0c14;
-  --foreground: #e2e8f0;
+  --accent:    #0275fd;
+  --accent-bg: #eef9ff;
+  --background: #ffffff;
+  --surface:   #f7f7f7;
+  --text:      #222222;
+  --text-sub:  #707070;
+  --border:    #e5e7eb;
 }
 
 body {
   background: var(--background);
-  color: var(--foreground);
-  font-family: 'Inter', 'Noto Sans JP', ui-sans-serif, system-ui, sans-serif;
+  color: var(--text);
+  font-family: Inter, 'Noto Sans JP', ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 @keyframes fadeSlideIn {
@@ -28,11 +33,6 @@ body {
   to   { background-position:  200% center; }
 }
 
-@keyframes cursePulse {
-  0%, 100% { box-shadow: 0 0 8px rgba(220, 38, 38, 0.4); }
-  50%       { box-shadow: 0 0 24px rgba(220, 38, 38, 0.8); }
-}
-
 .animate-fadeSlideIn {
   animation: fadeSlideIn 0.3s ease-out both;
 }
@@ -42,22 +42,18 @@ body {
 }
 
 .animate-shimmer {
-  background: linear-gradient(90deg, #FFD700, #FFF7A1, #FFD700);
+  background: linear-gradient(90deg, #e6b800, #ffe566, #e6b800);
   background-size: 200%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: shimmer 2s linear infinite;
 }
 
-.animate-cursePulse {
-  animation: cursePulse 1.5s ease-in-out infinite;
-}
-
-/* モバイルでボタン・セレクトの300msタップ遅延とジェスチャー競合を防ぐ */
 button, select, a {
   touch-action: manipulation;
 }
 
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #0f1117; }
-::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+::-webkit-scrollbar-track { background: #f7f7f7; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }

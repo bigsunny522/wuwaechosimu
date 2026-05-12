@@ -13,22 +13,22 @@ interface Props {
 }
 
 function tierColor(tier: number): string {
-  if (tier >= 7) return '#FFD700';
-  if (tier >= 5) return '#E8C44A';
-  if (tier >= 3) return '#A78BFA';
-  return '#94A3B8';
+  if (tier >= 7) return '#e6b800';
+  if (tier >= 5) return '#f97316';
+  if (tier >= 3) return '#a855f7';
+  return '#9ca3af';
 }
 
 function tierBg(tier: number): string {
-  if (tier >= 7) return 'rgba(255,215,0,0.08)';
-  if (tier >= 5) return 'rgba(232,196,74,0.06)';
-  if (tier >= 3) return 'rgba(167,139,250,0.05)';
+  if (tier >= 7) return 'rgba(230,184,0,0.06)';
+  if (tier >= 5) return 'rgba(249,115,22,0.05)';
+  if (tier >= 3) return 'rgba(168,85,247,0.04)';
   return 'transparent';
 }
 
 function resolveColor(tier: number, category: SubstatCategory | undefined): string {
   if (!category) return tierColor(tier);
-  if (category === 'unnecessary') return '#475569';
+  if (category === 'unnecessary') return '#d1d5db';
   return CATEGORY_COLORS[category];
 }
 
@@ -38,16 +38,11 @@ function resolveBg(tier: number, category: SubstatCategory | undefined): string 
   return tierBg(tier);
 }
 
-function resolveGoldBorder(tier: number, category: SubstatCategory | undefined): boolean {
-  if (category === 'unnecessary') return false;
-  return tier >= 7;
-}
-
 export default function SubstatRow({ substat, index, animated = true, category }: Props) {
   const { locale } = useLocale();
-  const label = locale === 'en' ? (SUBSTAT_LABEL_EN[substat.key] ?? substat.label) : substat.label;
-  const pct = Math.round((substat.value / substat.maxValue) * 100);
-  const color  = resolveColor(substat.tier, category);
+  const label    = locale === 'en' ? (SUBSTAT_LABEL_EN[substat.key] ?? substat.label) : substat.label;
+  const pct      = Math.round((substat.value / substat.maxValue) * 100);
+  const color    = resolveColor(substat.tier, category);
   const catColor = category ? CATEGORY_COLORS[category] : undefined;
 
   return (
@@ -56,31 +51,27 @@ export default function SubstatRow({ substat, index, animated = true, category }
       style={{
         background: resolveBg(substat.tier, category),
         animationDelay: `${index * 80}ms`,
-        border: resolveGoldBorder(substat.tier, category) ? '1px solid rgba(255,215,0,0.25)' : '1px solid transparent',
+        borderLeft: catColor && category !== 'unnecessary'
+          ? `3px solid ${catColor}` : '3px solid transparent',
       }}
     >
-      {/* Index number + category dot */}
-      <div className="flex flex-col items-center gap-0.5 w-4 pt-0.5 shrink-0">
-        <span className="text-xs text-slate-500 select-none">{index + 1}</span>
-        {catColor && (
-          <span className="w-1.5 h-1.5 rounded-full" style={{ background: catColor }} />
-        )}
+      {/* Index */}
+      <div className="flex items-center w-4 shrink-0">
+        <span className="text-xs text-[#9ca3af] select-none">{index + 1}</span>
       </div>
 
       {/* Label + bar + value */}
       <div className="flex-1 min-w-0">
-        <div className="text-sm text-slate-200 leading-snug mb-1">{label}</div>
-
-        {/* Bar + value row */}
+        <div className="text-sm font-medium text-[#222222] leading-snug mb-1">{label}</div>
         <div className="flex items-center gap-2">
-          <div className="flex-1 h-1.5 bg-slate-700/80 rounded-full overflow-hidden">
+          <div className="flex-1 h-1 bg-[#e5e7eb] rounded-full overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-500"
               style={{ width: `${pct}%`, background: color }}
             />
           </div>
           <span
-            className="text-sm font-bold tabular-nums shrink-0 min-w-[3.5rem] text-right"
+            className="text-sm font-semibold tabular-nums shrink-0 min-w-[3.5rem] text-right"
             style={{ color }}
           >
             {substat.value}{substat.unit}

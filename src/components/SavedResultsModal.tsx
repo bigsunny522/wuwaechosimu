@@ -21,12 +21,12 @@ interface Props {
 }
 
 function formatDate(ts: number): string {
-  const d = new Date(ts);
+  const d    = new Date(ts);
   const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  const hh = String(d.getHours()).padStart(2, '0');
-  const min = String(d.getMinutes()).padStart(2, '0');
+  const mm   = String(d.getMonth() + 1).padStart(2, '0');
+  const dd   = String(d.getDate()).padStart(2, '0');
+  const hh   = String(d.getHours()).padStart(2, '0');
+  const min  = String(d.getMinutes()).padStart(2, '0');
   return `${yyyy}/${mm}/${dd} ${hh}:${min}`;
 }
 
@@ -60,35 +60,34 @@ function SavedCard({ result, onClear }: { result: SavedResult; onClear: () => vo
 
   return (
     <div className="flex flex-col items-center gap-2">
-      {/* +25達成日時 */}
-      <div className="text-xs text-slate-600 font-mono">
+      <div
+        className="text-[10px] text-[#9ca3af]"
+        style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+      >
         {interpolate(T.savedDateLabel, [formatDate(result.maxedAt)])}
       </div>
 
-      {/* Same visual as ResultCard */}
       <div className="scale-[0.72] origin-top">
         <ResultCardVisual echo={result.echo} score={result.score} cardRef={cardRef} maxedAt={result.maxedAt} />
       </div>
 
-      {/* Buttons */}
       <div className="flex gap-2 w-full">
         <button
           onClick={handleDownload}
           disabled={downloading}
-          className="flex-1 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-xs font-medium text-white transition-colors disabled:opacity-50"
+          className="flex-1 py-1.5 rounded-lg text-xs font-medium text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity disabled:opacity-40"
         >
           {downloading ? '⏳' : T.savedSaveBtn}
         </button>
         <button
           onClick={handleShare}
-          className="flex-1 py-1.5 rounded-lg text-xs font-medium text-white transition-colors"
-          style={{ background: '#1a1a2e', border: '1px solid #334155' }}
+          className="flex-1 py-1.5 rounded-lg text-xs font-medium text-[#707070] border border-[#e5e7eb] hover:border-[#d1d5db] hover:text-[#222222] transition-colors"
         >
           𝕏
         </button>
         <button
           onClick={onClear}
-          className="px-3 py-1.5 rounded-lg text-xs text-slate-500 hover:text-red-400 border border-slate-700 hover:border-red-900 transition-colors"
+          className="px-3 py-1.5 rounded-lg text-xs text-[#9ca3af] hover:text-[#ef4444] border border-[#e5e7eb] hover:border-[#fca5a5] transition-colors"
         >
           ✕
         </button>
@@ -103,26 +102,29 @@ export default function SavedResultsModal({ results, onClear, onClose }: Props) 
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="w-full max-w-lg mx-4 rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl flex flex-col"
-        style={{ maxHeight: '85vh' }}
+        className="w-full max-w-lg mx-4 rounded-2xl bg-white shadow-2xl flex flex-col"
+        style={{ maxHeight: '85vh', border: '1px solid #e5e7eb' }}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800">
-          <h2 className="text-base font-bold text-white">{T.savedTitle}</h2>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#f3f4f6]">
+          <h2 className="text-base font-semibold text-[#222222]">{T.savedTitle}</h2>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-slate-500">{interpolate(T.savedCount, [results.length])}</span>
-            <button onClick={onClose} className="text-slate-500 hover:text-white text-xl leading-none">✕</button>
+            <span className="text-xs text-[#9ca3af]">{interpolate(T.savedCount, [results.length])}</span>
+            <button
+              onClick={onClose}
+              className="text-[#9ca3af] hover:text-[#222222] text-xl leading-none transition-colors"
+            >
+              ✕
+            </button>
           </div>
         </div>
 
-        {/* Content */}
         <div className="overflow-y-auto flex-1 p-4">
           {results.length === 0 ? (
-            <div className="text-center py-12 text-slate-500 text-sm">
+            <div className="text-center py-12 text-[#9ca3af] text-sm">
               {T.savedEmpty}
             </div>
           ) : (
