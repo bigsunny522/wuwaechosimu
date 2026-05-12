@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-const SITE_URL = 'https://wuwa-echo-sim.pages.dev'; // ★ 実際のURLに変更
+const SITE_URL = 'https://wuwaechosimu.xyzack271.com'; // ★ 実際のURLに変更
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
@@ -13,6 +13,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
         languages: {
           ja: SITE_URL,
           en: `${SITE_URL}?lang=en`,
+        },
+      },
+    },
+    {
+      url: `${SITE_URL}/guide`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+      alternates: {
+        languages: {
+          ja: `${SITE_URL}/guide`,
+          en: `${SITE_URL}/guide?lang=en`,
         },
       },
     },

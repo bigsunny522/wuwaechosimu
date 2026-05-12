@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import Link from 'next/link';
 import type { EchoCost, EchoState, ScoreResult, MainstatInfo } from '@/types/echo';
 import { createEcho, upgradeEcho, upgradeToFull, rerollSubstats } from '@/lib/simulator';
 import { scoreEcho } from '@/lib/scorer';
@@ -235,6 +236,14 @@ export default function Home() {
 
           {/* Nav buttons */}
           <div className="flex items-center gap-1.5 shrink-0">
+            {/* Guide link */}
+            <Link
+              href="/guide"
+              className="hidden sm:flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
+              title={locale === 'ja' ? '使い方ガイド' : 'How to Use'}
+            >
+              {locale === 'ja' ? '使い方' : 'Guide'}
+            </Link>
             {/* Locale toggle */}
             <button
               onClick={toggleLocale}
