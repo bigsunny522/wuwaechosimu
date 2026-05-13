@@ -16,6 +16,7 @@ import SavedResultsModal, { type SavedResult } from '@/components/SavedResultsMo
 import { generateResultCard, buildShareText } from '@/lib/imageGen';
 import { useLocale } from '@/lib/locale';
 import { TRANSLATIONS, MAINSTAT_LABEL_EN, interpolate } from '@/data/translations';
+import CustomSelect from '@/components/CustomSelect';
 
 const COST_OPTIONS: EchoCost[] = [4, 3, 1];
 const ACCENT          = '#0275fd';
@@ -36,14 +37,6 @@ function addCost(a: TotalCost, b: TotalCost): TotalCost {
   };
 }
 
-/* ── セレクト共通スタイル ─────────────────────────────────────── */
-const selectStyle: React.CSSProperties = {
-  background: '#ffffff',
-  border: '1px solid #e5e7eb',
-  outline: 'none',
-  color: '#222222',
-  fontSize: '14px',
-};
 
 export default function Home() {
   const { locale, toggleLocale } = useLocale();
@@ -211,6 +204,35 @@ export default function Home() {
   const displayCost = addCost(lifetimeCost, echo?.totalCost ?? ZERO_COST);
   const hasAnyCost  = displayCost.shellCoins > 0;
   const echoList    = ECHOES_BY_COST[cost];
+
+  const charOptions = useMemo(() => [
+    { value: 'generic', label: T.charGeneric },
+    ...CHARACTER_LIST.map((c) => ({
+      value: c.id,
+      label: locale === 'en' ? (c.nameEn ?? c.name) : c.name,
+    })),
+  ], [T.charGeneric, locale]);
+
+  const echoOptions = useMemo(() =>
+    echoList.map((e) => ({
+      value: e.id,
+      label: locale === 'en' ? (e.nameEn ?? e.name) : e.name,
+    })),
+  [echoList, locale]);
+
+  const harmonyOptions = useMemo(() =>
+    harmonySetOptions.map((s) => ({
+      value: s,
+      label: locale === 'en' ? (HARMONY_SETS_EN[s] ?? s) : s,
+    })),
+  [harmonySetOptions, locale]);
+
+  const mainstatOptions = useMemo(() =>
+    MAINSTAT_POOLS[cost].map((m) => ({
+      value: m.key,
+      label: `${locale === 'en' ? (MAINSTAT_LABEL_EN[m.key] ?? m.label) : m.label}（+25: ${m.value}${m.unit}）`,
+    })),
+  [cost, locale]);
   const showRerollPanel   = bonusActive && echo?.level === 25 && !rerollUsed;
   const showMainstatLock  = bonusActive;
   const formatTime  = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
@@ -311,29 +333,14 @@ export default function Home() {
               {T.charLabel}
             </label>
           </div>
-          <div
-            className="relative rounded-xl"
-            style={{
-              background: 'linear-gradient(135deg, #f0f7ff 0%, #fafbff 100%)',
-              border: '1.5px solid #bdd4fb',
-              boxShadow: '0 2px 8px rgba(2, 117, 253, 0.08)',
-            }}
-          >
-            <select
-              value={selectedCharId}
-              onChange={(e) => { setSelectedCharId(e.target.value); setScore(null); }}
-              className="w-full px-4 py-3 rounded-xl text-sm appearance-none cursor-pointer bg-transparent font-medium"
-              style={{ color: '#222222', outline: 'none' }}
-            >
-              <option value="generic" style={{ background: '#fff' }}>{T.charGeneric}</option>
-              {CHARACTER_LIST.map((c) => (
-                <option key={c.id} value={c.id} style={{ background: '#fff' }}>
-                  {locale === 'en' ? (c.nameEn ?? c.name) : c.name}
-                </option>
-              ))}
-            </select>
-            <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#0275fd] text-xs">▼</div>
-          </div>
+          <CustomSelect
+            value={selectedCharId}
+            onChange={(v) => { setSelectedCharId(v); setScore(null); }}
+            options={charOptions}
+            accentColor="#0275fd"
+            background="linear-gradient(135deg, #f0f7ff 0%, #fafbff 100%)"
+            borderColor="#bdd4fb"
+          />
         </div>
 
         {/* Cost selector */}
@@ -380,24 +387,14 @@ export default function Home() {
             >
               {T.bonusMainTitle}
             </div>
-            <div className="relative">
-              <select
-                value={lockedMainstatKey}
-                onChange={(e) => setLockedMainstatKey(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl text-sm appearance-none cursor-pointer"
-                style={{ ...selectStyle, borderColor: `${ACCENT}44` }}
-              >
-                {MAINSTAT_POOLS[cost].map((m) => {
-                  const label = locale === 'en' ? (MAINSTAT_LABEL_EN[m.key] ?? m.label) : m.label;
-                  return (
-                    <option key={m.key} value={m.key} style={{ background: '#fff' }}>
-                      {label}（+25: {m.value}{m.unit}）
-                    </option>
-                  );
-                })}
-              </select>
-              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] text-xs">▼</div>
-            </div>
+            <CustomSelect
+              value={lockedMainstatKey}
+              onChange={setLockedMainstatKey}
+              options={mainstatOptions}
+              accentColor={ACCENT}
+              background="#ffffff"
+              borderColor={`${ACCENT}44`}
+            />
             <p className="text-xs text-center" style={{ color: `${ACCENT}99` }}>{T.bonusMainHint}</p>
           </div>
         )}
@@ -414,28 +411,14 @@ export default function Home() {
                 {T.echoSelectLabel}
               </label>
             </div>
-            <div
-              className="relative rounded-xl"
-              style={{
-                background: 'linear-gradient(135deg, #f5f0ff 0%, #fafbff 100%)',
-                border: '1.5px solid #cdbdfb',
-                boxShadow: '0 2px 8px rgba(120, 60, 240, 0.08)',
-              }}
-            >
-              <select
-                value={selectedEchoId}
-                onChange={(e) => { setSelectedEchoId(e.target.value); setEcho(null); setScore(null); }}
-                className="w-full px-4 py-3 rounded-xl text-sm appearance-none cursor-pointer bg-transparent font-medium"
-                style={{ color: '#222222', outline: 'none' }}
-              >
-                {echoList.map((e) => (
-                  <option key={e.id} value={e.id} style={{ background: '#fff' }}>
-                    {locale === 'en' ? (e.nameEn ?? e.name) : e.name}
-                  </option>
-                ))}
-              </select>
-              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#783cf0] text-xs">▼</div>
-            </div>
+            <CustomSelect
+              value={selectedEchoId}
+              onChange={(v) => { setSelectedEchoId(v); setEcho(null); setScore(null); }}
+              options={echoOptions}
+              accentColor="#783cf0"
+              background="linear-gradient(135deg, #f5f0ff 0%, #fafbff 100%)"
+              borderColor="#cdbdfb"
+            />
           </div>
         ) : (
           <div className="flex flex-col gap-2">
@@ -448,28 +431,14 @@ export default function Home() {
                 {T.harmonySelectLabel}
               </label>
             </div>
-            <div
-              className="relative rounded-xl"
-              style={{
-                background: 'linear-gradient(135deg, #f5f0ff 0%, #fafbff 100%)',
-                border: '1.5px solid #cdbdfb',
-                boxShadow: '0 2px 8px rgba(120, 60, 240, 0.08)',
-              }}
-            >
-              <select
-                value={selectedHarmonySet}
-                onChange={(e) => { setSelectedHarmonySet(e.target.value); setEcho(null); setScore(null); }}
-                className="w-full px-4 py-3 rounded-xl text-sm appearance-none cursor-pointer bg-transparent font-medium"
-                style={{ color: '#222222', outline: 'none' }}
-              >
-                {harmonySetOptions.map((s) => (
-                  <option key={s} value={s} style={{ background: '#fff' }}>
-                    {locale === 'en' ? (HARMONY_SETS_EN[s] ?? s) : s}
-                  </option>
-                ))}
-              </select>
-              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#783cf0] text-xs">▼</div>
-            </div>
+            <CustomSelect
+              value={selectedHarmonySet}
+              onChange={(v) => { setSelectedHarmonySet(v); setEcho(null); setScore(null); }}
+              options={harmonyOptions}
+              accentColor="#783cf0"
+              background="linear-gradient(135deg, #f5f0ff 0%, #fafbff 100%)"
+              borderColor="#cdbdfb"
+            />
             <div
               className="text-center text-xs text-[#9ca3af]"
               style={{ fontFamily: '"IBM Plex Mono", monospace' }}
