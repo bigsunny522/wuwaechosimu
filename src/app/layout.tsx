@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next';
-import Script from 'next/script';
 import { LocaleProvider } from '@/lib/locale';
 import './globals.css';
 
@@ -102,16 +101,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
         {/* Google Publisher Tags — リワード広告 */}
-        <Script
-          src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"
-          strategy="afterInteractive"
-        />
-        {/* AdSense */}
-        <Script
+        <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js" />
+        {/* Google AdSense */}
+        <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6628382645135412"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
         />
       </head>
       <body className="min-h-full flex flex-col bg-white text-[#222222]">
