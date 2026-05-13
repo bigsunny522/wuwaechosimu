@@ -240,10 +240,11 @@ export default function Home() {
             {/* Guide link */}
             <Link
               href="/guide"
-              className="hidden sm:flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
+              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
               title={locale === 'ja' ? '使い方ガイド' : 'How to Use'}
             >
-              {locale === 'ja' ? '使い方' : 'Guide'}
+              <span>📖</span>
+              <span className="hidden sm:inline">{locale === 'ja' ? '使い方' : 'Guide'}</span>
             </Link>
             {/* Locale toggle */}
             <button
@@ -301,18 +302,28 @@ export default function Home() {
 
         {/* Character selector */}
         <div className="flex flex-col gap-2">
-          <label
-            className="text-xs font-medium uppercase tracking-wider text-[#9ca3af] text-center"
-            style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+          <div className="flex items-center justify-center gap-1.5">
+            <span className="text-sm">⚔️</span>
+            <label
+              className="text-xs font-medium uppercase tracking-wider text-[#9ca3af]"
+              style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+            >
+              {T.charLabel}
+            </label>
+          </div>
+          <div
+            className="relative rounded-xl"
+            style={{
+              background: 'linear-gradient(135deg, #f0f7ff 0%, #fafbff 100%)',
+              border: '1.5px solid #bdd4fb',
+              boxShadow: '0 2px 8px rgba(2, 117, 253, 0.08)',
+            }}
           >
-            {T.charLabel}
-          </label>
-          <div className="relative">
             <select
               value={selectedCharId}
               onChange={(e) => { setSelectedCharId(e.target.value); setScore(null); }}
-              className="w-full px-4 py-2.5 rounded-xl text-sm appearance-none cursor-pointer"
-              style={{ ...selectStyle, fontWeight: 500 }}
+              className="w-full px-4 py-3 rounded-xl text-sm appearance-none cursor-pointer bg-transparent font-medium"
+              style={{ color: '#222222', outline: 'none' }}
             >
               <option value="generic" style={{ background: '#fff' }}>{T.charGeneric}</option>
               {CHARACTER_LIST.map((c) => (
@@ -321,7 +332,7 @@ export default function Home() {
                 </option>
               ))}
             </select>
-            <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] text-xs">▼</div>
+            <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#0275fd] text-xs">▼</div>
           </div>
         </div>
 
@@ -394,18 +405,28 @@ export default function Home() {
         {/* Echo / Harmony selector */}
         {cost === 4 ? (
           <div className="flex flex-col gap-2">
-            <label
-              className="text-xs font-medium uppercase tracking-wider text-[#9ca3af] text-center"
-              style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+            <div className="flex items-center justify-center gap-1.5">
+              <span className="text-sm">◈</span>
+              <label
+                className="text-xs font-medium uppercase tracking-wider text-[#9ca3af]"
+                style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+              >
+                {T.echoSelectLabel}
+              </label>
+            </div>
+            <div
+              className="relative rounded-xl"
+              style={{
+                background: 'linear-gradient(135deg, #f5f0ff 0%, #fafbff 100%)',
+                border: '1.5px solid #cdbdfb',
+                boxShadow: '0 2px 8px rgba(120, 60, 240, 0.08)',
+              }}
             >
-              {T.echoSelectLabel}
-            </label>
-            <div className="relative">
               <select
                 value={selectedEchoId}
                 onChange={(e) => { setSelectedEchoId(e.target.value); setEcho(null); setScore(null); }}
-                className="w-full px-4 py-2.5 rounded-xl text-sm appearance-none cursor-pointer"
-                style={selectStyle}
+                className="w-full px-4 py-3 rounded-xl text-sm appearance-none cursor-pointer bg-transparent font-medium"
+                style={{ color: '#222222', outline: 'none' }}
               >
                 {echoList.map((e) => (
                   <option key={e.id} value={e.id} style={{ background: '#fff' }}>
@@ -413,23 +434,33 @@ export default function Home() {
                   </option>
                 ))}
               </select>
-              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] text-xs">▼</div>
+              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#783cf0] text-xs">▼</div>
             </div>
           </div>
         ) : (
           <div className="flex flex-col gap-2">
-            <label
-              className="text-xs font-medium uppercase tracking-wider text-[#9ca3af] text-center"
-              style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+            <div className="flex items-center justify-center gap-1.5">
+              <span className="text-sm">◈</span>
+              <label
+                className="text-xs font-medium uppercase tracking-wider text-[#9ca3af]"
+                style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+              >
+                {T.harmonySelectLabel}
+              </label>
+            </div>
+            <div
+              className="relative rounded-xl"
+              style={{
+                background: 'linear-gradient(135deg, #f5f0ff 0%, #fafbff 100%)',
+                border: '1.5px solid #cdbdfb',
+                boxShadow: '0 2px 8px rgba(120, 60, 240, 0.08)',
+              }}
             >
-              {T.harmonySelectLabel}
-            </label>
-            <div className="relative">
               <select
                 value={selectedHarmonySet}
                 onChange={(e) => { setSelectedHarmonySet(e.target.value); setEcho(null); setScore(null); }}
-                className="w-full px-4 py-2.5 rounded-xl text-sm appearance-none cursor-pointer"
-                style={selectStyle}
+                className="w-full px-4 py-3 rounded-xl text-sm appearance-none cursor-pointer bg-transparent font-medium"
+                style={{ color: '#222222', outline: 'none' }}
               >
                 {harmonySetOptions.map((s) => (
                   <option key={s} value={s} style={{ background: '#fff' }}>
@@ -437,7 +468,7 @@ export default function Home() {
                   </option>
                 ))}
               </select>
-              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] text-xs">▼</div>
+              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#783cf0] text-xs">▼</div>
             </div>
             <div
               className="text-center text-xs text-[#9ca3af]"
