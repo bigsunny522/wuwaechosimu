@@ -465,27 +465,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* 累計消費リソース */}
-        {hasAnyCost && (
-          <div className="w-full">
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <span
-                className="text-xs text-[#9ca3af] tracking-wider uppercase"
-                style={{ fontFamily: '"IBM Plex Mono", monospace' }}
-              >
-                {T.resourceLabel}
-              </span>
-              <button
-                onClick={() => setLifetimeCost(ZERO_COST)}
-                className="text-[10px] text-[#9ca3af] hover:text-[#707070] border border-[#e5e7eb] hover:border-[#d1d5db] px-1.5 py-0.5 rounded transition-colors"
-              >
-                {T.resourceReset}
-              </button>
-            </div>
-            <ResourceCounter totalCost={displayCost} />
-          </div>
-        )}
-
         {/* Echo card */}
         {echo && (
           <div ref={echoSectionRef} className="flex flex-col items-center gap-4">
@@ -566,6 +545,27 @@ export default function Home() {
               </>
             )}
 
+          </div>
+        )}
+
+        {/* 累計消費リソース */}
+        {hasAnyCost && (
+          <div className="w-full">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <span
+                className="text-xs text-[#9ca3af] tracking-wider uppercase"
+                style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+              >
+                {T.resourceLabel}
+              </span>
+              <button
+                onClick={() => setLifetimeCost(ZERO_COST)}
+                className="text-[10px] text-[#9ca3af] hover:text-[#707070] border border-[#e5e7eb] hover:border-[#d1d5db] px-1.5 py-0.5 rounded transition-colors"
+              >
+                {T.resourceReset}
+              </button>
+            </div>
+            <ResourceCounter totalCost={displayCost} />
           </div>
         )}
 

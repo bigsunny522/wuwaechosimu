@@ -66,24 +66,24 @@ export default function EchoCard({ echo, score, cardRef, maxedAt }: Props) {
       )}
 
       {/* Header */}
-      <div className="px-5 pt-4 pb-4" style={{ borderBottom: '1px solid #f3f4f6' }}>
+      <div className="px-4 pt-3 pb-3" style={{ borderBottom: '1px solid #f3f4f6' }}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
               <span
-                className="text-[11px] font-semibold tracking-widest uppercase"
+                className="text-[10px] font-semibold tracking-widest uppercase"
                 style={{ color: COST_COLOR[echo.cost], fontFamily: '"IBM Plex Mono", monospace' }}
               >
                 COST {echo.cost}
               </span>
-              <span className="text-[11px] text-[#9ca3af]">{T.echoType}</span>
+              <span className="text-[10px] text-[#9ca3af]">{T.echoType}</span>
             </div>
-            <div className="text-base font-semibold text-[#222222] leading-snug mb-1">
+            <div className="text-sm font-semibold text-[#222222] leading-snug mb-0.5">
               {echoDisplayName}
             </div>
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-sm text-[#707070]">{mainstatLabel}</span>
-              <span className="text-sm font-semibold" style={{ color: COST_COLOR[echo.cost] }}>
+              <span className="text-xs text-[#707070]">{mainstatLabel}</span>
+              <span className="text-xs font-semibold" style={{ color: COST_COLOR[echo.cost] }}>
                 {echo.mainstat.value}{echo.mainstat.unit}
               </span>
             </div>
@@ -95,12 +95,12 @@ export default function EchoCard({ echo, score, cardRef, maxedAt }: Props) {
             >
               {T.levelLabel}
             </div>
-            <div className="text-2xl font-semibold text-[#222222]">+{echo.level}</div>
+            <div className="text-xl font-semibold text-[#222222]">+{echo.level}</div>
           </div>
         </div>
 
         {/* Level bar */}
-        <div className="mt-3 w-full h-1 bg-[#e5e7eb] rounded-full overflow-hidden">
+        <div className="mt-2 w-full h-1 bg-[#e5e7eb] rounded-full overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-500"
             style={{
@@ -109,15 +109,11 @@ export default function EchoCard({ echo, score, cardRef, maxedAt }: Props) {
             }}
           />
         </div>
-        <div className="flex justify-between mt-1">
-          <span className="text-[10px] text-[#d1d5db]">+0</span>
-          <span className="text-[10px] text-[#d1d5db]">+25</span>
-        </div>
       </div>
 
       {/* Harmony Set */}
       {harmonyDisplay && (
-        <div className="px-5 py-2 flex items-center gap-2" style={{ borderBottom: '1px solid #f3f4f6' }}>
+        <div className="px-4 py-1.5 flex items-center gap-2" style={{ borderBottom: '1px solid #f3f4f6' }}>
           <span
             className="text-[10px] text-[#9ca3af] uppercase tracking-widest shrink-0"
             style={{ fontFamily: '"IBM Plex Mono", monospace' }}
@@ -135,11 +131,11 @@ export default function EchoCard({ echo, score, cardRef, maxedAt }: Props) {
 
       {/* Score section */}
       {score && isMax && (
-        <div className="px-5 py-4" style={{ borderBottom: '1px solid #f3f4f6' }}>
+        <div className="px-4 py-3" style={{ borderBottom: '1px solid #f3f4f6' }}>
           <ScoreBadge result={score} />
           {maxedAt && (
             <div
-              className="mt-2 text-center text-[11px] text-[#9ca3af] tracking-wide"
+              className="mt-1.5 text-center text-[10px] text-[#9ca3af] tracking-wide"
               style={{ fontFamily: '"IBM Plex Mono", monospace' }}
             >
               {T.maxedAt}: {formatMaxedDate(maxedAt)}
@@ -149,9 +145,9 @@ export default function EchoCard({ echo, score, cardRef, maxedAt }: Props) {
       )}
 
       {/* Substats */}
-      <div className="px-3 py-3 flex flex-col gap-0.5">
+      <div className="px-2 py-2 flex flex-col gap-0.5">
         {echo.substats.length === 0 ? (
-          <div className="text-center text-[#9ca3af] text-sm py-4">
+          <div className="text-center text-[#9ca3af] text-xs py-3">
             {T.levelHint}
           </div>
         ) : (
@@ -163,10 +159,10 @@ export default function EchoCard({ echo, score, cardRef, maxedAt }: Props) {
         {Array.from({ length: emptyCount }).map((_, i) => (
           <div
             key={`empty-${i}`}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-[#e5e7eb]"
+            className="flex items-center gap-2 px-2 py-1.5 rounded-lg border border-dashed border-[#e5e7eb]"
           >
-            <span className="text-xs text-[#d1d5db] w-4">{echo.substats.length + i + 1}</span>
-            <span className="flex-1 text-sm text-[#d1d5db] italic">{T.unlockedSlot}</span>
+            <span className="text-[10px] text-[#d1d5db] w-3 text-center">{echo.substats.length + i + 1}</span>
+            <span className="flex-1 text-xs text-[#d1d5db] italic">{T.unlockedSlot}</span>
           </div>
         ))}
       </div>
