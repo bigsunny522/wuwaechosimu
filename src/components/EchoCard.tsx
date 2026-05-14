@@ -145,9 +145,9 @@ export default function EchoCard({ echo, score, cardRef, maxedAt }: Props) {
       )}
 
       {/* Substats */}
-      <div className="px-2 py-2 flex flex-col gap-0.5">
+      <div className="px-3 py-3 flex flex-col gap-0.5">
         {echo.substats.length === 0 ? (
-          <div className="text-center text-[#9ca3af] text-xs py-3">
+          <div className="text-center text-[#9ca3af] text-sm py-4">
             {T.levelHint}
           </div>
         ) : (
@@ -159,10 +159,10 @@ export default function EchoCard({ echo, score, cardRef, maxedAt }: Props) {
         {Array.from({ length: emptyCount }).map((_, i) => (
           <div
             key={`empty-${i}`}
-            className="flex items-center gap-2 px-2 py-1.5 rounded-lg border border-dashed border-[#e5e7eb]"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-[#e5e7eb]"
           >
-            <span className="text-[10px] text-[#d1d5db] w-3 text-center">{echo.substats.length + i + 1}</span>
-            <span className="flex-1 text-xs text-[#d1d5db] italic">{T.unlockedSlot}</span>
+            <span className="text-xs text-[#d1d5db] w-4">{echo.substats.length + i + 1}</span>
+            <span className="flex-1 text-sm text-[#d1d5db] italic">{T.unlockedSlot}</span>
           </div>
         ))}
       </div>

@@ -47,7 +47,7 @@ export default function SubstatRow({ substat, index, animated = true, category }
 
   return (
     <div
-      className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all ${animated ? 'animate-fadeSlideIn' : ''}`}
+      className={`flex gap-2 px-3 py-2 rounded-lg transition-all ${animated ? 'animate-fadeSlideIn' : ''}`}
       style={{
         background: resolveBg(substat.tier, category),
         animationDelay: `${index * 80}ms`,
@@ -56,30 +56,28 @@ export default function SubstatRow({ substat, index, animated = true, category }
       }}
     >
       {/* Index */}
-      <span className="text-[10px] text-[#9ca3af] w-3 shrink-0 select-none text-center">
-        {index + 1}
-      </span>
-
-      {/* Label */}
-      <span className="text-xs font-medium text-[#222222] w-28 shrink-0 truncate leading-none">
-        {label}
-      </span>
-
-      {/* Bar */}
-      <div className="flex-1 h-1 bg-[#e5e7eb] rounded-full overflow-hidden min-w-0">
-        <div
-          className="h-full rounded-full transition-all duration-500"
-          style={{ width: `${pct}%`, background: color }}
-        />
+      <div className="flex items-center w-4 shrink-0">
+        <span className="text-xs text-[#9ca3af] select-none">{index + 1}</span>
       </div>
 
-      {/* Value */}
-      <span
-        className="text-xs font-semibold tabular-nums w-12 text-right shrink-0 leading-none"
-        style={{ color }}
-      >
-        {substat.value}{substat.unit}
-      </span>
+      {/* Label + bar + value */}
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium text-[#222222] leading-snug mb-1">{label}</div>
+        <div className="flex items-center gap-2">
+          <div className="flex-1 h-1 bg-[#e5e7eb] rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{ width: `${pct}%`, background: color }}
+            />
+          </div>
+          <span
+            className="text-sm font-semibold tabular-nums shrink-0 min-w-[3.5rem] text-right"
+            style={{ color }}
+          >
+            {substat.value}{substat.unit}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
