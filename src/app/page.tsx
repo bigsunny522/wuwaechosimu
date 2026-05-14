@@ -324,7 +324,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-8 flex flex-col gap-8">
+      <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-8 flex flex-col gap-8 pb-28">
 
         {/* Character selector */}
         <div className="flex flex-col gap-2">
@@ -452,53 +452,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Action buttons */}
-        <div className="flex gap-2 justify-center flex-wrap">
-          {!echo ? (
-            <button
-              onClick={handleStart}
-              className="px-8 py-3 rounded-[500px] font-medium text-sm text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
-            >
-              {T.getEcho}
-            </button>
-          ) : (
-            <>
-              <button
-                onClick={handleUpgrade}
-                disabled={isMaxLevel}
-                className="px-5 py-2.5 rounded-[500px] font-medium text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                style={
-                  !isMaxLevel
-                    ? { background: ACCENT, color: '#ffffff' }
-                    : { background: '#f7f7f7', border: '1px solid #e5e7eb', color: '#9ca3af' }
-                }
-              >
-                {isMaxLevel ? T.maxed : `+5 → +${echo.level + 5}`}
-              </button>
-              {bonusActive && (
-                <button
-                  onClick={handleMaxUpgrade}
-                  disabled={isMaxLevel}
-                  className="px-5 py-2.5 rounded-[500px] font-medium text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed border"
-                  style={
-                    !isMaxLevel
-                      ? { borderColor: `${ACCENT}66`, color: ACCENT, background: '#eef9ff' }
-                      : { background: '#f7f7f7', borderColor: '#e5e7eb', color: '#9ca3af' }
-                  }
-                >
-                  {T.maxUpgrade}
-                </button>
-              )}
-              <button
-                onClick={handleReset}
-                className="px-4 py-2.5 rounded-lg text-sm text-[#707070] border border-[#e5e7eb] hover:border-[#d1d5db] hover:text-[#222222] transition-colors"
-              >
-                {T.resetBtn}
-              </button>
-            </>
-          )}
-        </div>
-
         {/* 累計消費リソース */}
         {hasAnyCost && (
           <div className="w-full">
@@ -600,14 +553,6 @@ export default function Home() {
               </>
             )}
 
-            {!isMaxLevel && echo.level > 0 && (
-              <p
-                className="text-xs text-[#9ca3af] text-center"
-                style={{ fontFamily: '"IBM Plex Mono", monospace' }}
-              >
-                {interpolate(T.untilMax, [(25 - echo.level) / 5])}
-              </p>
-            )}
           </div>
         )}
 
@@ -744,6 +689,76 @@ export default function Home() {
           </div>
         )}
       </main>
+
+      {/* ── Sticky bottom action bar ─────────────────────────────────────────── */}
+      <div
+        className="fixed bottom-0 inset-x-0 z-20 bg-white/95 backdrop-blur-sm"
+        style={{ borderTop: '1px solid #e5e7eb', paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        <div className="max-w-2xl mx-auto px-4 pt-2 pb-3">
+          {/* Progress hint */}
+          {echo && !isMaxLevel && echo.level > 0 && (
+            <p
+              className="text-[11px] text-[#9ca3af] text-center mb-2"
+              style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+            >
+              {interpolate(T.untilMax, [(25 - echo.level) / 5])}
+            </p>
+          )}
+
+          {!echo ? (
+            /* ── No echo: Get Echo CTA ── */
+            <button
+              onClick={handleStart}
+              className="w-full py-3 rounded-[500px] font-semibold text-sm text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
+            >
+              {T.getEcho}
+            </button>
+          ) : !isMaxLevel ? (
+            /* ── Upgrading: level-up controls ── */
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleUpgrade}
+                className="flex-1 py-3 rounded-[500px] font-semibold text-sm text-white hover:opacity-80 transition-opacity"
+                style={{ background: ACCENT }}
+              >
+                +5 → +{echo.level + 5}
+              </button>
+              {bonusActive && (
+                <button
+                  onClick={handleMaxUpgrade}
+                  className="px-4 py-3 rounded-[500px] font-medium text-sm border hover:opacity-80 transition-opacity shrink-0"
+                  style={{ borderColor: `${ACCENT}66`, color: ACCENT, background: '#eef9ff' }}
+                >
+                  {T.maxUpgrade}
+                </button>
+              )}
+              <button
+                onClick={handleReset}
+                className="px-4 py-3 rounded-[500px] text-sm text-[#707070] border border-[#e5e7eb] hover:border-[#d1d5db] hover:text-[#222222] transition-colors shrink-0"
+              >
+                {T.resetBtn}
+              </button>
+            </div>
+          ) : (
+            /* ── Maxed: next echo or reset ── */
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleStart}
+                className="flex-1 py-3 rounded-[500px] font-semibold text-sm text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
+              >
+                {T.getEcho}
+              </button>
+              <button
+                onClick={handleReset}
+                className="px-4 py-3 rounded-[500px] text-sm text-[#707070] border border-[#e5e7eb] hover:border-[#d1d5db] hover:text-[#222222] transition-colors shrink-0"
+              >
+                {T.resetBtn}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
 
       <footer className="border-t border-[#f3f4f6] py-4">
         <p className="text-center text-xs text-[#9ca3af]">{T.footer}</p>
