@@ -1,6 +1,6 @@
 import type { EchoCost, EchoState, Substat, MainstatInfo } from '@/types/echo';
 import { SUBSTAT_DATA } from '@/data/substats';
-import { MAINSTAT_POOLS, SUBSTAT_COUNT, UPGRADE_COST } from '@/data/mainstats';
+import { MAINSTAT_POOLS, MAINSTAT_WEIGHTS, SUBSTAT_COUNT, UPGRADE_COST } from '@/data/mainstats';
 import { ECHOES_BY_COST, DEFAULT_ECHO_ID } from '@/data/echoes';
 
 // Tier出現重み: 2-5が高め、Tier7≈4%
@@ -36,8 +36,15 @@ function pickSubstat(excluded: Set<string>): Substat {
 }
 
 function pickMainstat(cost: EchoCost): MainstatInfo {
-  const pool = MAINSTAT_POOLS[cost];
-  return pool[Math.floor(Math.random() * pool.length)];
+  const pool    = MAINSTAT_POOLS[cost];
+  const weights = MAINSTAT_WEIGHTS[cost];
+  const total   = weights.reduce((s, w) => s + w, 0);
+  let rand = Math.random() * total;
+  for (let i = 0; i < pool.length; i++) {
+    rand -= weights[i];
+    if (rand <= 0) return pool[i];
+  }
+  return pool[pool.length - 1];
 }
 
 export function createEcho(cost: EchoCost, echoId?: string, fixedMainstat?: MainstatInfo): EchoState {

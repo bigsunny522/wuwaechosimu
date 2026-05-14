@@ -214,10 +214,14 @@ export default function Home() {
   ], [T.charGeneric, locale]);
 
   const echoOptions = useMemo(() =>
-    echoList.map((e) => ({
-      value: e.id,
-      label: locale === 'en' ? (e.nameEn ?? e.name) : e.name,
-    })),
+    echoList
+      .map((e) => ({
+        value: e.id,
+        label: locale === 'en' ? (e.nameEn ?? e.name) : e.name,
+      }))
+      .sort((a, b) =>
+        a.label.localeCompare(b.label, locale === 'en' ? 'en' : 'ja', { sensitivity: 'base' })
+      ),
   [echoList, locale]);
 
   const harmonyOptions = useMemo(() =>

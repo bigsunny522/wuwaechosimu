@@ -46,6 +46,19 @@ export const MAINSTAT_POOLS: Record<EchoCost, MainstatInfo[]> = {
   ],
 };
 
+// ── Main stat draw weights (index matches MAINSTAT_POOLS order) ──────────────
+// 合計が total になる整数で指定。値が大きいほど出やすい。
+export const MAINSTAT_WEIGHTS: Record<EchoCost, number[]> = {
+  // COST 4: critRate・critDmg を 3 倍に
+  // critRate(3) / critDmg(3) / healingBonus(1) / atkPercent(1) / hpPercent(1) / defPercent(1)
+  4: [3, 3, 1, 1, 1, 1],
+  // COST 3: すべて均等
+  3: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  // COST 1: atkPercent を 3 倍に
+  // hpPercent(1) / atkPercent(3) / defPercent(1)
+  1: [1, 3, 1],
+};
+
 // Max number of substats revealed at +25 per cost
 export const SUBSTAT_COUNT: Record<EchoCost, number> = {
   4: 5,
