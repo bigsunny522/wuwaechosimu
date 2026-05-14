@@ -51,7 +51,9 @@ export default function Home() {
   const [downloading, setDownloading]         = useState(false);
   const [maxedAt, setMaxedAt]                 = useState<number | null>(null);
   const [lifetimeCost, setLifetimeCost]       = useState<TotalCost>(ZERO_COST);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const cardRef          = useRef<HTMLDivElement>(null);
+  const echoSectionRef   = useRef<HTMLDivElement>(null);
+  const scrollOnNext     = useRef(false);
 
   /* ── Bonus time ─────────────────────────────────────────────── */
   const [bonusEndTime, setBonusEndTime]       = useState<number | null>(null);
@@ -75,6 +77,16 @@ export default function Home() {
     const id = setInterval(tick, 500);
     return () => clearInterval(id);
   }, [bonusEndTime]);
+
+  /* ── Auto-scroll to echo card on new draw ───────────────────── */
+  useEffect(() => {
+    if (!echo || !scrollOnNext.current) return;
+    scrollOnNext.current = false;
+    const timer = setTimeout(() => {
+      echoSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 80);
+    return () => clearTimeout(timer);
+  }, [echo]);
 
   /* ── Save slots ─────────────────────────────────────────────── */
   const [saveSlots, setSaveSlots]             = useState(0);
@@ -124,6 +136,7 @@ export default function Home() {
   }, []);
 
   const handleStart = useCallback(() => {
+    scrollOnNext.current = true;
     if (echo) setLifetimeCost(prev => addCost(prev, echo.totalCost));
     let echoId = selectedEchoId;
     if (cost !== 4) {
@@ -475,7 +488,7 @@ export default function Home() {
 
         {/* Echo card */}
         {echo && (
-          <div className="flex flex-col items-center gap-4">
+          <div ref={echoSectionRef} className="flex flex-col items-center gap-4">
             <EchoCard echo={echo} score={score} cardRef={cardRef} maxedAt={maxedAt} />
 
             {score && isMaxLevel && (
