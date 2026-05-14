@@ -83,7 +83,7 @@ export default function Home() {
     if (!echo || !scrollOnNext.current) return;
     scrollOnNext.current = false;
     const timer = setTimeout(() => {
-      echoSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      echoSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 80);
     return () => clearTimeout(timer);
   }, [echo]);
@@ -92,6 +92,7 @@ export default function Home() {
   const [saveSlots, setSaveSlots]             = useState(0);
   const [savedResults, setSavedResults]       = useState<SavedResult[]>([]);
   const [historyOpen, setHistoryOpen]         = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false);
 
   /* ── Ad configs (locale-aware) ──────────────────────────────── */
   const adConfigs: Record<AdPurpose, { title: string; items: string[] }> = useMemo(() => ({
@@ -153,6 +154,7 @@ export default function Home() {
     setMaxedAt(null);
     setRerollUsed(false);
     setRerollIndices(new Set());
+    setShowResultModal(false);
   }, [echo, cost, selectedEchoId, selectedHarmonySet, bonusEndTime, lockedMainstatKey]);
 
   const handleUpgrade = useCallback(() => {
@@ -161,7 +163,10 @@ export default function Home() {
     setEcho(next);
     const build = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
     setScore(scoreEcho(next, build));
-    if (next.level === 25) setMaxedAt(Date.now());
+    if (next.level === 25) {
+      setMaxedAt(Date.now());
+      setShowResultModal(true);
+    }
   }, [echo, selectedCharId]);
 
   const handleMaxUpgrade = useCallback(() => {
@@ -171,12 +176,14 @@ export default function Home() {
     const build = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
     setScore(scoreEcho(maxed, build));
     setMaxedAt(Date.now());
+    setShowResultModal(true);
   }, [echo, selectedCharId]);
 
   const handleReset = useCallback(() => {
     if (echo) setLifetimeCost(prev => addCost(prev, echo.totalCost));
     setEcho(null); setScore(null); setMaxedAt(null);
     setRerollUsed(false); setRerollIndices(new Set());
+    setShowResultModal(false);
   }, [echo]);
 
   const handleReroll = useCallback(() => {
@@ -468,80 +475,17 @@ export default function Home() {
         {/* Echo card */}
         {echo && (
           <div ref={echoSectionRef} className="flex flex-col items-center gap-4">
-            <EchoCard echo={echo} score={score} cardRef={cardRef} maxedAt={maxedAt} />
+            <EchoCard echo={echo} score={score} maxedAt={maxedAt} />
 
             {score && isMaxLevel && (
               <>
                 <ScoreDebugPanel echo={echo} score={score} />
-
-                {/* Download + Share + Save */}
-                <div className="flex flex-wrap items-center justify-center gap-2 w-full">
-                  <button
-                    onClick={async () => {
-                      if (!cardRef.current) return;
-                      setDownloading(true);
-                      try {
-                        const dataUrl = await generateResultCard(cardRef.current);
-                        const a = document.createElement('a');
-                        a.href = dataUrl;
-                        a.download = `echo-${score.rank}-${score.score}pt.png`;
-                        a.click();
-                      } finally {
-                        setDownloading(false);
-                      }
-                    }}
-                    disabled={downloading}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors disabled:opacity-50"
-                  >
-                    {downloading ? '⏳' : T.imgSave}
-                  </button>
-                  <button
-                    onClick={() => {
-                      const char = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
-                      const charName = char ? (locale === 'en' ? char.nameEn : char.name) : undefined;
-                      const text = buildShareText(echo, score, { locale, charName });
-                      window.open(
-                        `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
-                        '_blank', 'noopener,noreferrer'
-                      );
-                    }}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors"
-                  >
-                    {T.shareBtn}
-                  </button>
-                  {saveSlots > 0 ? (
-                    <button
-                      onClick={handleSave}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium border transition-colors"
-                      style={{ borderColor: '#10b98144', background: '#f0fdf4', color: '#059669' }}
-                    >
-                      {T.saveBtn}
-                      <span className="text-xs opacity-70">{interpolate(T.saveSlotsLeft, [saveSlots])}</span>
-                    </button>
-                  ) : null}
-                </div>
-
-                {/* Save CTA card (shown when no slots) */}
-                {saveSlots === 0 && (
-                  <div
-                    className="w-full rounded-xl overflow-hidden animate-fadeUp"
-                    style={{ border: '1px solid #e5e7eb' }}
-                  >
-                    <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, #0275fd, #60a5fa)' }} />
-                    <div className="p-4 flex flex-col gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-[#222222] mb-0.5">{T.saveCTATitle}</p>
-                        <p className="text-xs text-[#9ca3af]">{interpolate(T.saveCTASub, [SAVE_PER_AD])}</p>
-                      </div>
-                      <button
-                        onClick={() => openAdModal('saves')}
-                        className="w-full py-2.5 rounded-[500px] text-sm font-medium text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
-                      >
-                        {interpolate(T.saveCTABtn, [SAVE_PER_AD])}
-                      </button>
-                    </div>
-                  </div>
-                )}
+                <button
+                  onClick={() => setShowResultModal(true)}
+                  className="w-full py-2.5 rounded-[500px] text-sm font-medium border border-[#0275fd44] text-[#0275fd] hover:bg-[#eef9ff] transition-colors"
+                >
+                  {T.resultShowBtn}
+                </button>
               </>
             )}
 
@@ -791,6 +735,113 @@ export default function Home() {
           onClear={handleClearSaved}
           onClose={() => setHistoryOpen(false)}
         />
+      )}
+
+      {/* ── Result modal (auto-shows at +25) ─────────────────────── */}
+      {showResultModal && echo && score && isMaxLevel && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+          style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}
+          onClick={() => setShowResultModal(false)}
+        >
+          <div
+            className="w-full max-w-sm mx-0 sm:mx-4 rounded-t-3xl sm:rounded-2xl bg-white shadow-2xl overflow-y-auto animate-fadeUp"
+            style={{ maxHeight: '92vh' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drag handle */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-[#e5e7eb]" />
+            </div>
+
+            <div className="px-4 pt-2 pb-8 flex flex-col gap-4">
+              {/* Title */}
+              <p className="text-center text-base font-semibold text-[#222222]">
+                {T.resultModalTitle}
+              </p>
+
+              {/* Card (with cardRef for image export) */}
+              <EchoCard echo={echo} score={score} cardRef={cardRef} maxedAt={maxedAt} />
+
+              {/* Action buttons */}
+              <div className="flex gap-2">
+                <button
+                  onClick={async () => {
+                    if (!cardRef.current) return;
+                    setDownloading(true);
+                    try {
+                      const dataUrl = await generateResultCard(cardRef.current);
+                      const a = document.createElement('a');
+                      a.href = dataUrl;
+                      a.download = `echo-${score.rank}-${score.score}pt.png`;
+                      a.click();
+                    } finally {
+                      setDownloading(false);
+                    }
+                  }}
+                  disabled={downloading}
+                  className="flex-1 py-2.5 rounded-lg text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors disabled:opacity-50"
+                >
+                  {downloading ? '⏳' : T.imgSave}
+                </button>
+                <button
+                  onClick={() => {
+                    const char = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
+                    const charName = char ? (locale === 'en' ? char.nameEn : char.name) : undefined;
+                    const text = buildShareText(echo, score, { locale, charName });
+                    window.open(
+                      `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
+                      '_blank', 'noopener,noreferrer'
+                    );
+                  }}
+                  className="flex-1 py-2.5 rounded-lg text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors"
+                >
+                  {T.shareBtn}
+                </button>
+                {saveSlots > 0 && (
+                  <button
+                    onClick={() => { handleSave(); setShowResultModal(false); }}
+                    className="flex-1 py-2.5 rounded-lg text-sm font-medium border transition-colors"
+                    style={{ borderColor: '#10b98144', background: '#f0fdf4', color: '#059669' }}
+                  >
+                    {T.saveBtn}
+                    <span className="block text-[10px] opacity-70">{interpolate(T.saveSlotsLeft, [saveSlots])}</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Save CTA (no slots) */}
+              {saveSlots === 0 && (
+                <div
+                  className="w-full rounded-xl overflow-hidden"
+                  style={{ border: '1px solid #e5e7eb' }}
+                >
+                  <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, #0275fd, #60a5fa)' }} />
+                  <div className="p-4 flex flex-col gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-[#222222] mb-0.5">{T.saveCTATitle}</p>
+                      <p className="text-xs text-[#9ca3af]">{interpolate(T.saveCTASub, [SAVE_PER_AD])}</p>
+                    </div>
+                    <button
+                      onClick={() => { openAdModal('saves'); setShowResultModal(false); }}
+                      className="w-full py-2.5 rounded-[500px] text-sm font-medium text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
+                    >
+                      {interpolate(T.saveCTABtn, [SAVE_PER_AD])}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Close */}
+              <button
+                onClick={() => setShowResultModal(false)}
+                className="w-full py-2.5 rounded-[500px] text-sm text-[#9ca3af] border border-[#e5e7eb] hover:text-[#222222] hover:border-[#d1d5db] transition-colors"
+              >
+                {T.adCloseBtn}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

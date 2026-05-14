@@ -140,6 +140,9 @@ const JA = {
   catPreferred:     '優先',
   catAcceptable:    '妥協',
   catUnnecessary:   '不要',
+  // Result modal
+  resultModalTitle: '🎉 +25 達成！',
+  resultShowBtn:    '📊 結果を表示',
   // SavedResultsModal
   savedTitle:       '📋 保存済み結果',
   savedEmpty:       '保存された結果がありません',
@@ -246,6 +249,8 @@ const EN: typeof JA = {
   catPreferred:     'Good',
   catAcceptable:    'OK',
   catUnnecessary:   'Skip',
+  resultModalTitle: '🎉 Max Level!',
+  resultShowBtn:    '📊 Show Results',
   savedTitle:       '📋 Saved Results',
   savedEmpty:       'No saved results',
   savedCount:       '{0} results',

@@ -78,8 +78,18 @@ export default function EchoCard({ echo, score, cardRef, maxedAt }: Props) {
               </span>
               <span className="text-[10px] text-[#9ca3af]">{T.echoType}</span>
             </div>
-            <div className="text-sm font-semibold text-[#222222] leading-snug mb-0.5">
-              {echoDisplayName}
+            <div className="flex items-center gap-2 flex-wrap mb-0.5">
+              <span className="text-sm font-semibold text-[#222222] leading-snug">
+                {echoDisplayName}
+              </span>
+              {harmonyDisplay && (
+                <span
+                  className="text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0"
+                  style={{ background: '#eef9ff', color: '#0275fd' }}
+                >
+                  {harmonyDisplay}
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-xs text-[#707070]">{mainstatLabel}</span>
@@ -110,24 +120,6 @@ export default function EchoCard({ echo, score, cardRef, maxedAt }: Props) {
           />
         </div>
       </div>
-
-      {/* Harmony Set */}
-      {harmonyDisplay && (
-        <div className="px-4 py-1.5 flex items-center gap-2" style={{ borderBottom: '1px solid #f3f4f6' }}>
-          <span
-            className="text-[10px] text-[#9ca3af] uppercase tracking-widest shrink-0"
-            style={{ fontFamily: '"IBM Plex Mono", monospace' }}
-          >
-            {T.harmonyBadge}
-          </span>
-          <span
-            className="text-xs font-medium px-2 py-0.5 rounded-full"
-            style={{ background: '#eef9ff', color: '#0275fd' }}
-          >
-            {harmonyDisplay}
-          </span>
-        </div>
-      )}
 
       {/* Score section */}
       {score && isMax && (
