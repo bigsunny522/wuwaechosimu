@@ -1,10 +1,10 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import type { EchoState, ScoreResult } from '@/types/echo';
-import { buildShareText } from '@/lib/imageGen';
-import { generateResultCard } from '@/lib/imageGen';
+import { generateResultCard, buildShareText } from '@/lib/imageGen';
 import ResultCardVisual from './ResultCardVisual';
+import { useLocale } from '@/lib/locale';
 
 interface Props {
   echo: EchoState;
@@ -12,15 +12,14 @@ interface Props {
 }
 
 export default function ResultCard({ echo, score }: Props) {
-  const cardRef = useRef<HTMLDivElement>(null);
+  const { locale } = useLocale();
   const [downloading, setDownloading] = useState(false);
   const isCursed = score.score < 20;
 
   const handleDownload = async () => {
-    if (!cardRef.current) return;
     setDownloading(true);
     try {
-      const dataUrl = await generateResultCard(cardRef.current);
+      const dataUrl = await generateResultCard(echo, score, locale);
       const a = document.createElement('a');
       a.href = dataUrl;
       a.download = `echo-${score.rank}-${score.score}pt.png`;
@@ -40,7 +39,7 @@ export default function ResultCard({ echo, score }: Props) {
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <ResultCardVisual echo={echo} score={score} cardRef={cardRef} />
+      <ResultCardVisual echo={echo} score={score} />
 
       {isCursed && (
         <div className="text-center p-3 rounded-xl border border-red-900/50 bg-red-950/30 max-w-xs animate-pulse">

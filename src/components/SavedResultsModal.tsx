@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import type { EchoState, ScoreResult } from '@/types/echo';
 import { generateResultCard, buildShareText } from '@/lib/imageGen';
 import ResultCardVisual from './ResultCardVisual';
@@ -32,16 +32,14 @@ function formatDate(ts: number): string {
 }
 
 function SavedCard({ result, onClear }: { result: SavedResult; onClear: () => void }) {
-  const cardRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
   const { locale } = useLocale();
   const T = TRANSLATIONS[locale];
 
   const handleDownload = async () => {
-    if (!cardRef.current) return;
     setDownloading(true);
     try {
-      const dataUrl = await generateResultCard(cardRef.current);
+      const dataUrl = await generateResultCard(result.echo, result.score, locale, result.maxedAt);
       const a = document.createElement('a');
       a.href = dataUrl;
       a.download = `echo-${result.score.rank}-${result.score.score}pt.png`;
@@ -72,7 +70,7 @@ function SavedCard({ result, onClear }: { result: SavedResult; onClear: () => vo
       </div>
 
       <div className="scale-[0.72] origin-top">
-        <ResultCardVisual echo={result.echo} score={result.score} cardRef={cardRef} maxedAt={result.maxedAt} />
+        <ResultCardVisual echo={result.echo} score={result.score} maxedAt={result.maxedAt} />
       </div>
 
       <div className="flex gap-2 w-full">
