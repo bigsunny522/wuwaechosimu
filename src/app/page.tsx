@@ -737,6 +737,13 @@ export default function Home() {
         />
       )}
 
+      {/* ── Hidden full-quality card for image export (always mounted at +25) ── */}
+      {echo && score && isMaxLevel && (
+        <div style={{ position: 'fixed', top: 0, left: '-9999px', pointerEvents: 'none', zIndex: -1 }}>
+          <EchoCard echo={echo} score={score} cardRef={cardRef} maxedAt={maxedAt} />
+        </div>
+      )}
+
       {/* ── Result modal (auto-shows at +25) ─────────────────────── */}
       {showResultModal && echo && score && isMaxLevel && (
         <div
@@ -745,23 +752,17 @@ export default function Home() {
           onClick={() => setShowResultModal(false)}
         >
           <div
-            className="w-full max-w-sm mx-0 sm:mx-4 rounded-t-3xl sm:rounded-2xl bg-white shadow-2xl overflow-y-auto animate-fadeUp"
-            style={{ maxHeight: '92vh' }}
+            className="w-full max-w-sm mx-0 sm:mx-4 rounded-t-3xl sm:rounded-2xl bg-white shadow-2xl animate-fadeUp"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drag handle */}
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full bg-[#e5e7eb]" />
+            <div className="flex justify-center pt-2.5 pb-1">
+              <div className="w-8 h-1 rounded-full bg-[#e5e7eb]" />
             </div>
 
-            <div className="px-4 pt-2 pb-8 flex flex-col gap-4">
-              {/* Title */}
-              <p className="text-center text-base font-semibold text-[#222222]">
-                {T.resultModalTitle}
-              </p>
-
-              {/* Card (with cardRef for image export) */}
-              <EchoCard echo={echo} score={score} cardRef={cardRef} maxedAt={maxedAt} />
+            <div className="px-4 pt-1 pb-5 flex flex-col gap-3">
+              {/* Compact card (display only — image export uses hidden full card) */}
+              <EchoCard echo={echo} score={score} maxedAt={maxedAt} compact />
 
               {/* Action buttons */}
               <div className="flex gap-2">
@@ -810,26 +811,14 @@ export default function Home() {
                 )}
               </div>
 
-              {/* Save CTA (no slots) */}
+              {/* Save CTA — compact single button (no card) */}
               {saveSlots === 0 && (
-                <div
-                  className="w-full rounded-xl overflow-hidden"
-                  style={{ border: '1px solid #e5e7eb' }}
+                <button
+                  onClick={() => { openAdModal('saves'); setShowResultModal(false); }}
+                  className="w-full py-2.5 rounded-[500px] text-sm font-medium text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
                 >
-                  <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, #0275fd, #60a5fa)' }} />
-                  <div className="p-4 flex flex-col gap-3">
-                    <div>
-                      <p className="text-sm font-semibold text-[#222222] mb-0.5">{T.saveCTATitle}</p>
-                      <p className="text-xs text-[#9ca3af]">{interpolate(T.saveCTASub, [SAVE_PER_AD])}</p>
-                    </div>
-                    <button
-                      onClick={() => { openAdModal('saves'); setShowResultModal(false); }}
-                      className="w-full py-2.5 rounded-[500px] text-sm font-medium text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
-                    >
-                      {interpolate(T.saveCTABtn, [SAVE_PER_AD])}
-                    </button>
-                  </div>
-                </div>
+                  {interpolate(T.saveCTABtn, [SAVE_PER_AD])}
+                </button>
               )}
 
               {/* Close */}

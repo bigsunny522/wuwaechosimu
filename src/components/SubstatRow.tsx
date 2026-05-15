@@ -10,6 +10,7 @@ interface Props {
   index: number;
   animated?: boolean;
   category?: SubstatCategory;
+  compact?: boolean;
 }
 
 function tierColor(tier: number): string {
@@ -38,21 +39,57 @@ function resolveBg(tier: number, category: SubstatCategory | undefined): string 
   return tierBg(tier);
 }
 
-export default function SubstatRow({ substat, index, animated = true, category }: Props) {
+export default function SubstatRow({ substat, index, animated = true, category, compact = false }: Props) {
   const { locale } = useLocale();
   const label    = locale === 'en' ? (SUBSTAT_LABEL_EN[substat.key] ?? substat.label) : substat.label;
   const pct      = Math.round((substat.value / substat.maxValue) * 100);
   const color    = resolveColor(substat.tier, category);
   const catColor = category ? CATEGORY_COLORS[category] : undefined;
 
+  const borderLeft = catColor && category !== 'unnecessary'
+    ? `3px solid ${catColor}` : '3px solid transparent';
+
+  /* ── Compact (single-line) ── */
+  if (compact) {
+    return (
+      <div
+        className={`flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all ${animated ? 'animate-fadeSlideIn' : ''}`}
+        style={{
+          background: resolveBg(substat.tier, category),
+          animationDelay: `${index * 80}ms`,
+          borderLeft,
+        }}
+      >
+        <span className="text-[10px] text-[#9ca3af] w-3 shrink-0 select-none text-center">
+          {index + 1}
+        </span>
+        <span className="text-xs font-medium text-[#222222] w-28 shrink-0 truncate leading-none">
+          {label}
+        </span>
+        <div className="flex-1 h-1 bg-[#e5e7eb] rounded-full overflow-hidden min-w-0">
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{ width: `${pct}%`, background: color }}
+          />
+        </div>
+        <span
+          className="text-xs font-semibold tabular-nums w-12 text-right shrink-0 leading-none"
+          style={{ color }}
+        >
+          {substat.value}{substat.unit}
+        </span>
+      </div>
+    );
+  }
+
+  /* ── Default (two-line) ── */
   return (
     <div
       className={`flex gap-2 px-3 py-2 rounded-lg transition-all ${animated ? 'animate-fadeSlideIn' : ''}`}
       style={{
         background: resolveBg(substat.tier, category),
         animationDelay: `${index * 80}ms`,
-        borderLeft: catColor && category !== 'unnecessary'
-          ? `3px solid ${catColor}` : '3px solid transparent',
+        borderLeft,
       }}
     >
       {/* Index */}

@@ -14,6 +14,8 @@ interface Props {
   score: ScoreResult | null;
   cardRef?: React.RefObject<HTMLDivElement | null>;
   maxedAt?: number | null;
+  /** コンパクトモード: モーダル内表示用。単行サブスタ、レベルバー・日時なし */
+  compact?: boolean;
 }
 
 function formatMaxedDate(ts: number): string {
@@ -32,7 +34,7 @@ const COST_COLOR: Record<number, string> = {
   1: '#0d9488',
 };
 
-export default function EchoCard({ echo, score, cardRef, maxedAt }: Props) {
+export default function EchoCard({ echo, score, cardRef, maxedAt, compact = false }: Props) {
   const { locale } = useLocale();
   const T = TRANSLATIONS[locale];
 
@@ -49,6 +51,12 @@ export default function EchoCard({ echo, score, cardRef, maxedAt }: Props) {
     ? (locale === 'en' ? (HARMONY_SETS_EN[echo.activeHarmonySet] ?? echo.activeHarmonySet) : echo.activeHarmonySet)
     : '';
 
+  /* ── padding tokens by mode ── */
+  const hPad   = compact ? 'px-4'   : 'px-4';
+  const hPy    = compact ? 'pt-2.5 pb-2' : 'pt-3 pb-3';
+  const sPy    = compact ? 'py-2'   : 'py-3';
+  const subPad = compact ? 'px-2 py-1.5' : 'px-3 py-3';
+
   return (
     <div
       ref={cardRef}
@@ -60,13 +68,13 @@ export default function EchoCard({ echo, score, cardRef, maxedAt }: Props) {
           : '0 2px 8px rgba(0,0,0,0.06)',
       }}
     >
-      {/* Rank stripe — top */}
+      {/* Rank stripe */}
       {score && isMax && (
         <div className="h-0.5 w-full" style={{ background: rankColor }} />
       )}
 
       {/* Header */}
-      <div className="px-4 pt-3 pb-3" style={{ borderBottom: '1px solid #f3f4f6' }}>
+      <div className={`${hPad} ${hPy}`} style={{ borderBottom: '1px solid #f3f4f6' }}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
@@ -109,23 +117,23 @@ export default function EchoCard({ echo, score, cardRef, maxedAt }: Props) {
           </div>
         </div>
 
-        {/* Level bar */}
-        <div className="mt-2 w-full h-1 bg-[#e5e7eb] rounded-full overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-500"
-            style={{
-              width: `${(echo.level / 25) * 100}%`,
-              background: '#0275fd',
-            }}
-          />
-        </div>
+        {/* Level bar — hidden in compact mode */}
+        {!compact && (
+          <div className="mt-2 w-full h-1 bg-[#e5e7eb] rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{ width: `${(echo.level / 25) * 100}%`, background: '#0275fd' }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Score section */}
       {score && isMax && (
-        <div className="px-4 py-3" style={{ borderBottom: '1px solid #f3f4f6' }}>
+        <div className={`${hPad} ${sPy}`} style={{ borderBottom: '1px solid #f3f4f6' }}>
           <ScoreBadge result={score} />
-          {maxedAt && (
+          {/* maxedAt date — hidden in compact mode */}
+          {!compact && maxedAt && (
             <div
               className="mt-1.5 text-center text-[10px] text-[#9ca3af] tracking-wide"
               style={{ fontFamily: '"IBM Plex Mono", monospace' }}
@@ -137,24 +145,28 @@ export default function EchoCard({ echo, score, cardRef, maxedAt }: Props) {
       )}
 
       {/* Substats */}
-      <div className="px-3 py-3 flex flex-col gap-0.5">
+      <div className={`${subPad} flex flex-col gap-0.5`}>
         {echo.substats.length === 0 ? (
-          <div className="text-center text-[#9ca3af] text-sm py-4">
+          <div className={`text-center text-[#9ca3af] ${compact ? 'text-xs py-3' : 'text-sm py-4'}`}>
             {T.levelHint}
           </div>
         ) : (
           echo.substats.map((sub, i) => {
             const cat = score?.breakdown.find((b) => b.key === sub.key)?.category;
-            return <SubstatRow key={sub.key} substat={sub} index={i} category={cat} />;
+            return <SubstatRow key={sub.key} substat={sub} index={i} category={cat} compact={compact} />;
           })
         )}
         {Array.from({ length: emptyCount }).map((_, i) => (
           <div
             key={`empty-${i}`}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-[#e5e7eb]"
+            className={`flex items-center gap-2 rounded-lg border border-dashed border-[#e5e7eb] ${compact ? 'px-2 py-1.5' : 'px-3 py-2'}`}
           >
-            <span className="text-xs text-[#d1d5db] w-4">{echo.substats.length + i + 1}</span>
-            <span className="flex-1 text-sm text-[#d1d5db] italic">{T.unlockedSlot}</span>
+            <span className={`text-[#d1d5db] ${compact ? 'text-[10px] w-3 text-center' : 'text-xs w-4'}`}>
+              {echo.substats.length + i + 1}
+            </span>
+            <span className={`flex-1 text-[#d1d5db] italic ${compact ? 'text-xs' : 'text-sm'}`}>
+              {T.unlockedSlot}
+            </span>
           </div>
         ))}
       </div>
