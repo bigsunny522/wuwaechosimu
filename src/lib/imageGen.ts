@@ -3,14 +3,29 @@ import { SUBSTAT_LABEL_EN } from '@/data/translations';
 
 const SITE_URL = 'https://wuwaechosimu.xyzack271.com';
 
-export async function generateResultCard(
-  cardRef: HTMLElement,
-): Promise<string> {
-  const { toPng } = await import('html-to-image');
-  return toPng(cardRef, {
-    quality: 1,
-    pixelRatio: 2,
-    backgroundColor: '#0f1117',
+// モジュールを一度だけ読み込んでキャッシュしておく
+let toPngFn: ((node: HTMLElement, options?: object) => Promise<string>) | null = null;
+
+/** +25 到達時に呼び出してプリロードしておく */
+export async function preloadImageGen(): Promise<void> {
+  if (toPngFn) return;
+  const mod = await import('html-to-image');
+  toPngFn = mod.toPng;
+}
+
+export async function generateResultCard(cardRef: HTMLElement): Promise<string> {
+  // まだプリロードされていなければここで初回ロード
+  if (!toPngFn) {
+    const mod = await import('html-to-image');
+    toPngFn = mod.toPng;
+  }
+
+  return toPngFn(cardRef, {
+    quality:          1,
+    pixelRatio:       1.5,   // 2→1.5 でファイルサイズ・速度を改善
+    backgroundColor:  '#0f1117',
+    skipFonts:        false,
+    cacheBust:        false, // キャッシュを再利用して高速化
   });
 }
 

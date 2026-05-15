@@ -13,7 +13,7 @@ import ResourceCounter from '@/components/ResourceCounter';
 import ScoreDebugPanel from '@/components/ScoreDebugPanel';
 import AdBonusModal from '@/components/AdBonusModal';
 import SavedResultsModal, { type SavedResult } from '@/components/SavedResultsModal';
-import { generateResultCard, buildShareText } from '@/lib/imageGen';
+import { generateResultCard, buildShareText, preloadImageGen } from '@/lib/imageGen';
 import { useLocale } from '@/lib/locale';
 import { TRANSLATIONS, MAINSTAT_LABEL_EN, interpolate } from '@/data/translations';
 import CustomSelect from '@/components/CustomSelect';
@@ -166,6 +166,7 @@ export default function Home() {
     if (next.level === 25) {
       setMaxedAt(Date.now());
       setShowResultModal(true);
+      preloadImageGen();
     }
   }, [echo, selectedCharId]);
 
@@ -177,6 +178,7 @@ export default function Home() {
     setScore(scoreEcho(maxed, build));
     setMaxedAt(Date.now());
     setShowResultModal(true);
+    preloadImageGen();
   }, [echo, selectedCharId]);
 
   const handleReset = useCallback(() => {
@@ -738,8 +740,9 @@ export default function Home() {
       )}
 
       {/* ── Hidden full-quality card for image export (always mounted at +25) ── */}
+      {/* opacity:0 + 画面内配置 → ブラウザが確実にスタイルを計算・描画する */}
       {echo && score && isMaxLevel && (
-        <div style={{ position: 'fixed', top: 0, left: '-9999px', pointerEvents: 'none', zIndex: -1 }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '384px', opacity: 0, pointerEvents: 'none', zIndex: -1 }}>
           <EchoCard echo={echo} score={score} cardRef={cardRef} maxedAt={maxedAt} />
         </div>
       )}
