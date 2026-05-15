@@ -63,10 +63,10 @@ export default function SubstatRow({ substat, index, animated = true, category, 
         <span className="text-[10px] text-[#9ca3af] w-3 shrink-0 select-none text-center">
           {index + 1}
         </span>
-        <span className="text-xs font-medium text-[#222222] w-28 shrink-0 truncate leading-none">
+        <span className="text-xs font-medium text-[#222222] flex-1 min-w-0 leading-snug">
           {label}
         </span>
-        <div className="flex-1 h-1 bg-[#e5e7eb] rounded-full overflow-hidden min-w-0">
+        <div className="w-12 shrink-0 h-1 bg-[#e5e7eb] rounded-full overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-500"
             style={{ width: `${pct}%`, background: color }}
