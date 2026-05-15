@@ -291,7 +291,7 @@ export const ECHOES_BY_COST: Record<EchoCost, EchoInfo[]> = {
 };
 
 export const DEFAULT_ECHO_ID: Record<EchoCost, string> = {
-  4: 'thundering_mephis',
+  4: 'sigillum',
   3: 'violet_feathered_heron',
   1: 'vanguard_junrock',
 };
