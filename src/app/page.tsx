@@ -9,6 +9,7 @@ import { SUBSTAT_COUNT, MAINSTAT_POOLS } from '@/data/mainstats';
 import { ECHOES_BY_COST, ECHOES, DEFAULT_ECHO_ID, HARMONY_SETS, HARMONY_SETS_EN } from '@/data/echoes';
 import { CHARACTER_LIST, CHARACTER_MAP } from '@/data/characters';
 import EchoCard from '@/components/EchoCard';
+import ResultCardVisual from '@/components/ResultCardVisual';
 import ResourceCounter from '@/components/ResourceCounter';
 import ScoreDebugPanel from '@/components/ScoreDebugPanel';
 import AdBonusModal from '@/components/AdBonusModal';
@@ -743,7 +744,7 @@ export default function Home() {
       {/* opacity:0 + 画面内配置 → ブラウザが確実にスタイルを計算・描画する */}
       {echo && score && isMaxLevel && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '384px', opacity: 0, pointerEvents: 'none', zIndex: -1 }}>
-          <EchoCard echo={echo} score={score} cardRef={cardRef} maxedAt={maxedAt} />
+          <ResultCardVisual echo={echo} score={score} cardRef={cardRef} maxedAt={maxedAt ?? undefined} />
         </div>
       )}
 

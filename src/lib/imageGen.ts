@@ -24,7 +24,7 @@ export async function generateResultCard(cardRef: HTMLElement): Promise<string> 
     quality:          1,
     pixelRatio:       1.5,   // 2→1.5 でファイルサイズ・速度を改善
     backgroundColor:  '#0f1117',
-    skipFonts:        false,
+    skipFonts:        true,
     cacheBust:        false, // キャッシュを再利用して高速化
   });
 }
