@@ -31,6 +31,7 @@ function formatDate(ts: number): string {
   return `${d.getFullYear()}/${p(d.getMonth() + 1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
+// Rounded rectangle path helper
 function rrect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   const rr = Math.min(r, w / 2, h / 2);
   ctx.beginPath();
@@ -42,11 +43,15 @@ function rrect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h
   ctx.closePath();
 }
 
-const W   = 320;
-const PAD = 16;
-const GAP = 12;
-const SANS = 'Inter, "Noto Sans JP", -apple-system, BlinkMacSystemFont, sans-serif';
-const MONO = '"IBM Plex Mono", ui-monospace, "Courier New", monospace';
+// Layout constants
+const CARD_W  = 320;
+const PAD     = 16;
+const GAP     = 12;
+const MARGIN  = 20;   // outer margin around card for shadow
+const STRIPE  = 3;
+const RADIUS  = 16;
+const SANS    = 'Inter, "Noto Sans JP", -apple-system, BlinkMacSystemFont, sans-serif';
+const MONO    = '"IBM Plex Mono", ui-monospace, "Courier New", monospace';
 
 export function renderCardToCanvas(
   echo: EchoState,
@@ -54,10 +59,10 @@ export function renderCardToCanvas(
   locale: 'ja' | 'en',
   maxedAt?: number,
 ): HTMLCanvasElement {
-  const rankColor  = RANK_COLORS[score.rank];
-  const costColor  = COST_COLOR[echo.cost] ?? '#9ca3af';
-  const echoName   = locale === 'en' ? (echo.echoNameEn ?? echo.echoName) : echo.echoName;
-  const mainLabel  = locale === 'en'
+  const rankColor = RANK_COLORS[score.rank];
+  const costColor = COST_COLOR[echo.cost] ?? '#9ca3af';
+  const echoName  = locale === 'en' ? (echo.echoNameEn ?? echo.echoName) : echo.echoName;
+  const mainLabel = locale === 'en'
     ? (MAINSTAT_LABEL_EN[echo.mainstat.key] ?? echo.mainstat.label)
     : echo.mainstat.label;
   const harmonyDisplay = echo.activeHarmonySet
@@ -70,62 +75,99 @@ export function renderCardToCanvas(
     (score.setBonus      !== undefined && score.setBonus      !== 0)
   ));
 
-  // Layout constants
-  const STRIPE    = 3;
-  const HEADER_H  = 14 + 4 + 22 + 4 + 16; // cost row + gap + name row + gap + mainstat row
+  // Card content height
+  const HEADER_H  = 14 + 4 + 22 + 4 + 16;   // cost + name + mainstat rows
   const SCORE_H   = hasBonusLine ? 74 : 62;
   const SUB_ROW_H = 28;
   const SUB_GAP   = 2;
   const SUBS_H    = echo.substats.length * (SUB_ROW_H + SUB_GAP) - SUB_GAP;
   const FOOTER_H  = 1 + 8 + 14;
-  const totalH    = STRIPE + PAD + HEADER_H + GAP + SCORE_H + GAP + SUBS_H + GAP + FOOTER_H + PAD;
+  const CARD_H    = STRIPE + PAD + HEADER_H + GAP + SCORE_H + GAP + SUBS_H + GAP + FOOTER_H + PAD;
 
-  const SCALE = 2;
+  const CANVAS_W = CARD_W + MARGIN * 2;
+  const CANVAS_H = CARD_H + MARGIN * 2;
+  const SCALE    = 2;
+
   const canvas = document.createElement('canvas');
-  canvas.width  = W * SCALE;
-  canvas.height = totalH * SCALE;
+  canvas.width  = CANVAS_W * SCALE;
+  canvas.height = CANVAS_H * SCALE;
   const ctx = canvas.getContext('2d')!;
   ctx.scale(SCALE, SCALE);
 
-  // ── Background ──────────────────────────────────────────────────────────
-  ctx.fillStyle = '#ffffff';
-  rrect(ctx, 0, 0, W, totalH, 16);
+  // Card origin within canvas
+  const OX = MARGIN;
+  const OY = MARGIN;
+
+  // ── Outer background (gradient, like the website) ──────────────────────
+  const bg = ctx.createLinearGradient(0, 0, CANVAS_W, CANVAS_H);
+  bg.addColorStop(0, '#f0f7ff');
+  bg.addColorStop(1, '#fafbff');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+  // ── Card shadow ─────────────────────────────────────────────────────────
+  ctx.save();
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 4;
+  ctx.shadowBlur    = 24;
+  ctx.shadowColor   = `${rankColor}20`;
+  ctx.fillStyle     = '#ffffff';
+  rrect(ctx, OX, OY, CARD_W, CARD_H, RADIUS);
   ctx.fill();
 
-  // ── Top stripe ──────────────────────────────────────────────────────────
-  ctx.fillStyle = rankColor;
-  ctx.fillRect(0, 0, W, STRIPE);
+  // Second shadow pass for depth
+  ctx.shadowOffsetY = 2;
+  ctx.shadowBlur    = 8;
+  ctx.shadowColor   = 'rgba(0,0,0,0.07)';
+  ctx.fill();
+  ctx.restore();
 
-  let y = STRIPE + PAD;
+  // ── Card border ─────────────────────────────────────────────────────────
+  ctx.strokeStyle = `${rankColor}55`;
+  ctx.lineWidth   = 1;
+  rrect(ctx, OX + 0.5, OY + 0.5, CARD_W - 1, CARD_H - 1, RADIUS - 0.5);
+  ctx.stroke();
+
+  // ── Clip all card content to rounded rect ───────────────────────────────
+  ctx.save();
+  rrect(ctx, OX, OY, CARD_W, CARD_H, RADIUS);
+  ctx.clip();
+
+  // ── Top stripe (clipped to card) ────────────────────────────────────────
+  ctx.fillStyle = rankColor;
+  ctx.fillRect(OX, OY, CARD_W, STRIPE);
+
+  // ── Content starts below stripe ─────────────────────────────────────────
+  let y = OY + STRIPE + PAD;
 
   // ── Echo header ─────────────────────────────────────────────────────────
 
-  // Row 1: "COST X · Echo"
+  // Row 1: "COST X · 音骸"
   ctx.font         = `bold 10px ${MONO}`;
   ctx.fillStyle    = costColor;
   ctx.textBaseline = 'middle';
   ctx.textAlign    = 'left';
-  ctx.fillText(`COST ${echo.cost}`, PAD, y + 7);
+  ctx.fillText(`COST ${echo.cost}`, OX + PAD, y + 7);
   const costLabelW = ctx.measureText(`COST ${echo.cost}`).width;
   ctx.font      = `10px ${MONO}`;
   ctx.fillStyle = '#9ca3af';
-  ctx.fillText(` · ${echoTypeLabel}`, PAD + costLabelW, y + 7);
+  ctx.fillText(` · ${echoTypeLabel}`, OX + PAD + costLabelW, y + 7);
   y += 14 + 4;
 
   // Row 2: echo name + optional harmony chip
   ctx.font         = `bold 14px ${SANS}`;
   ctx.fillStyle    = '#111827';
   ctx.textBaseline = 'middle';
-  ctx.fillText(echoName, PAD, y + 11);
+  ctx.fillText(echoName, OX + PAD, y + 11);
 
   if (harmonyDisplay) {
-    const nameW = ctx.measureText(echoName).width;
-    ctx.font    = `600 11px ${SANS}`;
+    const nameW     = ctx.measureText(echoName).width;
+    ctx.font        = `600 11px ${SANS}`;
     const chipTextW = ctx.measureText(harmonyDisplay).width;
     const chipPadX  = 8;
     const chipW     = chipTextW + chipPadX * 2;
     const chipH     = 18;
-    const chipX     = PAD + nameW + 6;
+    const chipX     = OX + PAD + nameW + 6;
     const chipY     = y + 2;
     ctx.fillStyle   = '#eef9ff';
     rrect(ctx, chipX, chipY, chipW, chipH, 9);
@@ -141,44 +183,44 @@ export function renderCardToCanvas(
   ctx.fillStyle    = '#6b7280';
   ctx.textBaseline = 'middle';
   ctx.textAlign    = 'left';
-  ctx.fillText(mainLabel, PAD, y + 8);
+  ctx.fillText(mainLabel, OX + PAD, y + 8);
   const mlW = ctx.measureText(mainLabel).width;
 
   ctx.font      = `bold 11px ${SANS}`;
   ctx.fillStyle = costColor;
-  ctx.fillText(`${echo.mainstat.value}${echo.mainstat.unit}`, PAD + mlW + 4, y + 8);
+  ctx.fillText(`${echo.mainstat.value}${echo.mainstat.unit}`, OX + PAD + mlW + 4, y + 8);
 
   ctx.font      = `10px ${MONO}`;
   ctx.fillStyle = '#9ca3af';
   ctx.textAlign = 'right';
-  ctx.fillText('+25', W - PAD, y + 8);
+  ctx.fillText('+25', OX + CARD_W - PAD, y + 8);
   ctx.textAlign = 'left';
   y += 16;
 
   y += GAP;
 
   // ── Score block ─────────────────────────────────────────────────────────
-  const sbX = PAD;
-  const sbW = W - PAD * 2;
+  const sbX = OX + PAD;
+  const sbW = CARD_W - PAD * 2;
 
-  ctx.fillStyle   = `${rankColor}0e`;
+  ctx.fillStyle = `${rankColor}0e`;
   rrect(ctx, sbX, y, sbW, SCORE_H, 12);
   ctx.fill();
   ctx.strokeStyle = `${rankColor}33`;
   ctx.lineWidth   = 1;
-  rrect(ctx, sbX, y, sbW, SCORE_H, 12);
+  rrect(ctx, sbX + 0.5, y + 0.5, sbW - 1, SCORE_H - 1, 11.5);
   ctx.stroke();
 
-  // Rank letter (centered vertically in score block)
+  // Rank letter
   const rankFontSize = score.rank.length <= 2 ? 44 : 28;
   ctx.font         = `bold ${rankFontSize}px ${SANS}`;
   ctx.fillStyle    = rankColor;
   ctx.textAlign    = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(score.rank, sbX + 33, y + SCORE_H / 2);
-  ctx.textAlign    = 'left';
+  ctx.textAlign = 'left';
 
-  // Score text + bar + bonuses (right column)
+  // Score text + bar
   const scX    = sbX + 60;
   const scMaxW = sbW - 60 - 14;
   let sy = y + 12;
@@ -192,7 +234,6 @@ export function renderCardToCanvas(
   );
   sy += 12 + 6;
 
-  // Bar
   ctx.fillStyle = '#e5e7eb';
   rrect(ctx, scX, sy, scMaxW, 6, 3);
   ctx.fill();
@@ -201,7 +242,7 @@ export function renderCardToCanvas(
   ctx.fill();
   sy += 6;
 
-  // Bonus text
+  // Bonus texts
   if (hasBonusLine) {
     sy += 5;
     let bx = scX;
@@ -236,30 +277,29 @@ export function renderCardToCanvas(
 
     if (hasBg) {
       ctx.fillStyle = `${sColor}0a`;
-      rrect(ctx, PAD, rowY, W - PAD * 2, SUB_ROW_H, 8);
+      rrect(ctx, OX + PAD, rowY, CARD_W - PAD * 2, SUB_ROW_H, 8);
       ctx.fill();
     }
 
-    // Left border
+    // Left border accent
     ctx.fillStyle = sColor;
-    ctx.fillRect(PAD, rowY, 2, SUB_ROW_H);
+    ctx.fillRect(OX + PAD, rowY, 2, SUB_ROW_H);
 
     // Index
     ctx.font         = `10px ${MONO}`;
     ctx.fillStyle    = '#9ca3af';
     ctx.textAlign    = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(String(i + 1), PAD + 13, rowY + SUB_ROW_H / 2);
+    ctx.fillText(String(i + 1), OX + PAD + 13, rowY + SUB_ROW_H / 2);
     ctx.textAlign = 'left';
 
-    // Value + bar widths
-    const valW   = 44;
-    const barW   = 44;
-    const labelX = PAD + 26;
-    const barX2  = W - PAD - valW - 8 - barW;
+    // Label (clip with ellipsis if needed)
+    const valW      = 44;
+    const barW      = 44;
+    const labelX    = OX + PAD + 26;
+    const barX2     = OX + CARD_W - PAD - valW - 8 - barW;
     const maxLabelW = barX2 - labelX - 6;
 
-    // Label (clip with ellipsis if too long)
     ctx.font      = `500 11px ${SANS}`;
     ctx.fillStyle = '#1f2937';
     ctx.textBaseline = 'middle';
@@ -270,7 +310,7 @@ export function renderCardToCanvas(
     if (lbl !== label) lbl = lbl.slice(0, -1) + '…';
     ctx.fillText(lbl, labelX, rowY + SUB_ROW_H / 2);
 
-    // Bar
+    // Mini bar
     const barY2 = rowY + SUB_ROW_H / 2 - 2;
     ctx.fillStyle = '#e5e7eb';
     rrect(ctx, barX2, barY2, barW, 4, 2);
@@ -284,7 +324,7 @@ export function renderCardToCanvas(
     ctx.fillStyle    = sColor;
     ctx.textAlign    = 'right';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`${sub.value}${sub.unit}`, W - PAD, rowY + SUB_ROW_H / 2);
+    ctx.fillText(`${sub.value}${sub.unit}`, OX + CARD_W - PAD, rowY + SUB_ROW_H / 2);
     ctx.textAlign = 'left';
   }
 
@@ -294,8 +334,8 @@ export function renderCardToCanvas(
   ctx.strokeStyle = '#f3f4f6';
   ctx.lineWidth   = 1;
   ctx.beginPath();
-  ctx.moveTo(PAD,     y);
-  ctx.lineTo(W - PAD, y);
+  ctx.moveTo(OX + PAD,          y);
+  ctx.lineTo(OX + CARD_W - PAD, y);
   ctx.stroke();
   y += 9;
 
@@ -303,15 +343,17 @@ export function renderCardToCanvas(
     ctx.font         = `10px ${MONO}`;
     ctx.fillStyle    = '#9ca3af';
     ctx.textBaseline = 'alphabetic';
-    ctx.fillText(`+25: ${formatDate(maxedAt)}`, PAD, y + 11);
+    ctx.fillText(`+25: ${formatDate(maxedAt)}`, OX + PAD, y + 11);
   }
 
   ctx.font      = `10px ${MONO}`;
   ctx.fillStyle = '#d1d5db';
   ctx.textAlign = 'right';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText('wuwaechosimu.xyzack271.com', W - PAD, y + 11);
+  ctx.fillText('wuwaechosimu.xyzack271.com', OX + CARD_W - PAD, y + 11);
   ctx.textAlign = 'left';
+
+  ctx.restore(); // end card clip
 
   return canvas;
 }
