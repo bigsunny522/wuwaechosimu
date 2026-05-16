@@ -164,7 +164,7 @@ export default function Home() {
     setScore(scoreEcho(next, build));
     if (next.level === 25) {
       setMaxedAt(Date.now());
-      setShowResultModal(true);
+      if (window.innerWidth < 640) setShowResultModal(true);
     }
   }, [echo, selectedCharId]);
 
@@ -175,7 +175,7 @@ export default function Home() {
     const build = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
     setScore(scoreEcho(maxed, build));
     setMaxedAt(Date.now());
-    setShowResultModal(true);
+    if (window.innerWidth < 640) setShowResultModal(true);
   }, [echo, selectedCharId]);
 
   const handleReset = useCallback(() => {
@@ -479,12 +479,68 @@ export default function Home() {
             {score && isMaxLevel && (
               <>
                 <ScoreDebugPanel echo={echo} score={score} />
-                <button
-                  onClick={() => setShowResultModal(true)}
-                  className="w-full py-2.5 rounded-[500px] text-sm font-medium border border-[#0275fd44] text-[#0275fd] hover:bg-[#eef9ff] transition-colors"
-                >
-                  {T.resultShowBtn}
-                </button>
+
+                {/* ── PC: アクションボタンをインライン表示 ── */}
+                <div className="hidden sm:flex flex-col gap-2 w-full">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={async () => {
+                        if (!echo || !score) return;
+                        setDownloading(true);
+                        try {
+                          const dataUrl = await generateResultCard(echo, score, locale, maxedAt ?? undefined);
+                          const a = document.createElement('a');
+                          a.href = dataUrl;
+                          a.download = `echo-${score.rank}-${score.score}pt.png`;
+                          a.click();
+                        } finally { setDownloading(false); }
+                      }}
+                      disabled={downloading}
+                      className="flex-1 py-2.5 rounded-lg text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors disabled:opacity-50"
+                    >
+                      {downloading ? '⏳' : T.imgSave}
+                    </button>
+                    <button
+                      onClick={() => {
+                        const char = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
+                        const charName = char ? (locale === 'en' ? char.nameEn : char.name) : undefined;
+                        const text = buildShareText(echo, score, { locale, charName });
+                        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+                      }}
+                      className="flex-1 py-2.5 rounded-lg text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors"
+                    >
+                      {T.shareBtn}
+                    </button>
+                    {saveSlots > 0 && (
+                      <button
+                        onClick={handleSave}
+                        className="flex-1 py-2.5 rounded-lg text-sm font-medium border transition-colors"
+                        style={{ borderColor: '#10b98144', background: '#f0fdf4', color: '#059669' }}
+                      >
+                        {T.saveBtn}
+                        <span className="block text-[10px] opacity-70">{interpolate(T.saveSlotsLeft, [saveSlots])}</span>
+                      </button>
+                    )}
+                  </div>
+                  {saveSlots === 0 && (
+                    <button
+                      onClick={() => openAdModal('saves')}
+                      className="w-full py-2.5 rounded-[500px] text-sm font-medium text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
+                    >
+                      {interpolate(T.saveCTABtn, [SAVE_PER_AD])}
+                    </button>
+                  )}
+                </div>
+
+                {/* ── スマホ: モーダルを再表示するボタン ── */}
+                {!showResultModal && (
+                  <button
+                    onClick={() => setShowResultModal(true)}
+                    className="sm:hidden w-full py-2.5 rounded-[500px] text-sm font-medium border border-[#0275fd44] text-[#0275fd] hover:bg-[#eef9ff] transition-colors"
+                  >
+                    {T.resultShowBtn}
+                  </button>
+                )}
               </>
             )}
 
@@ -739,12 +795,12 @@ export default function Home() {
       {/* ── Result modal (auto-shows at +25) ─────────────────────── */}
       {showResultModal && echo && score && isMaxLevel && (
         <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+          className="sm:hidden fixed inset-0 z-50 flex items-end justify-center"
           style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}
           onClick={() => setShowResultModal(false)}
         >
           <div
-            className="w-full max-w-sm mx-0 sm:mx-4 rounded-t-3xl sm:rounded-2xl bg-white shadow-2xl animate-fadeUp"
+            className="w-full rounded-t-3xl bg-white shadow-2xl animate-fadeUp"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drag handle */}
