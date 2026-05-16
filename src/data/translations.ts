@@ -59,7 +59,7 @@ const JA = {
   harmonySelectLabel: 'ハーモニーセットを選択',
   harmonyCount:     '該当音骸 {0} 体からランダム抽選',
   // Action buttons
-  getEcho:          '✦ 音骸を入手',
+  getEcho:          '音骸を入手',
   maxed:            '✓ MAX',
   maxUpgrade:       '⚡ +25まで強化',
   resetBtn:         'リセット',
@@ -181,7 +181,7 @@ const EN: typeof JA = {
   echoSelectLabel:  'Select Echo',
   harmonySelectLabel: 'Select Sonata Effect',
   harmonyCount:     'Random pick from {0} echoes',
-  getEcho:          '✦ Get Echo',
+  getEcho:          'Get Echo',
   maxed:            '✓ MAX',
   maxUpgrade:       '⚡ Max to +25',
   resetBtn:         'Reset',
