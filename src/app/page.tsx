@@ -272,12 +272,7 @@ export default function Home() {
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
           {/* Logo */}
           <div className="flex items-center gap-2 shrink-0">
-            <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center"
-              style={{ background: ACCENT }}
-            >
-              <EchoIcon size={18} color="white" />
-            </div>
+            <EchoIcon size={28} color={ACCENT} />
             <span className="font-semibold text-[#222222] text-sm tracking-tight">{T.appTitle}</span>
           </div>
 
@@ -427,7 +422,7 @@ export default function Home() {
         {cost === 4 ? (
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-center gap-1.5">
-              <EchoIcon size={14} color="#9ca3af" />
+              <EchoIcon size={14} color={ACCENT} />
               <label
                 className="text-xs font-medium uppercase tracking-wider text-[#9ca3af]"
                 style={{ fontFamily: '"IBM Plex Mono", monospace' }}
@@ -447,7 +442,7 @@ export default function Home() {
         ) : (
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-center gap-1.5">
-              <EchoIcon size={14} color="#9ca3af" />
+              <EchoIcon size={14} color={ACCENT} />
               <label
                 className="text-xs font-medium uppercase tracking-wider text-[#9ca3af]"
                 style={{ fontFamily: '"IBM Plex Mono", monospace' }}
@@ -723,8 +718,9 @@ export default function Home() {
             /* ── No echo: Get Echo CTA ── */
             <button
               onClick={handleStart}
-              className="w-full py-3 rounded-[500px] font-semibold text-sm text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
+              className="w-full py-3 rounded-[500px] font-semibold text-sm text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
             >
+              <EchoIcon size={15} color="white" />
               {T.getEcho}
             </button>
           ) : !isMaxLevel ? (
@@ -758,8 +754,9 @@ export default function Home() {
             <div className="flex items-center gap-2">
               <button
                 onClick={handleStart}
-                className="flex-1 py-3 rounded-[500px] font-semibold text-sm text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
+                className="flex-1 py-3 rounded-[500px] font-semibold text-sm text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
               >
+                <EchoIcon size={15} color="white" />
                 {T.getEcho}
               </button>
               <button
