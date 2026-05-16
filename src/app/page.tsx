@@ -17,6 +17,7 @@ import { generateResultCard, buildShareText } from '@/lib/imageGen';
 import { useLocale } from '@/lib/locale';
 import { TRANSLATIONS, MAINSTAT_LABEL_EN, interpolate } from '@/data/translations';
 import CustomSelect from '@/components/CustomSelect';
+import EchoIcon from '@/components/EchoIcon';
 
 const COST_OPTIONS: EchoCost[] = [4, 3, 1];
 const ACCENT          = '#0275fd';
@@ -272,10 +273,10 @@ export default function Home() {
           {/* Logo */}
           <div className="flex items-center gap-2 shrink-0">
             <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-semibold text-white"
+              className="w-7 h-7 rounded-lg flex items-center justify-center"
               style={{ background: ACCENT }}
             >
-              ◈
+              <EchoIcon size={18} color="white" />
             </div>
             <span className="font-semibold text-[#222222] text-sm tracking-tight">{T.appTitle}</span>
           </div>
@@ -426,7 +427,7 @@ export default function Home() {
         {cost === 4 ? (
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-center gap-1.5">
-              <span className="text-sm">◈</span>
+              <EchoIcon size={14} color="#9ca3af" />
               <label
                 className="text-xs font-medium uppercase tracking-wider text-[#9ca3af]"
                 style={{ fontFamily: '"IBM Plex Mono", monospace' }}
@@ -446,7 +447,7 @@ export default function Home() {
         ) : (
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-center gap-1.5">
-              <span className="text-sm">◈</span>
+              <EchoIcon size={14} color="#9ca3af" />
               <label
                 className="text-xs font-medium uppercase tracking-wider text-[#9ca3af]"
                 style={{ fontFamily: '"IBM Plex Mono", monospace' }}
@@ -639,10 +640,10 @@ export default function Home() {
           <div className="flex flex-col items-center gap-6 py-8 text-center">
             <div>
               <div
-                className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4"
+                className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4"
                 style={{ background: '#eef9ff', border: `1px solid ${ACCENT}33` }}
               >
-                ◈
+                <EchoIcon size={48} color={ACCENT} />
               </div>
               <p className="text-[#707070] text-sm max-w-xs leading-relaxed mx-auto" style={{ lineHeight: 1.7 }}>
                 {T.emptyText}

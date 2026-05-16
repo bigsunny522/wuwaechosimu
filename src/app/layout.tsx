@@ -18,6 +18,10 @@ export const metadata: Metadata = {
     '音骸厳選', '音骸スコア', 'Wuthering Waves', 'Echo simulator',
     'echo farming', 'echo score', 'WuWa', 'サブステ', '再抽選',
   ],
+  icons: {
+    icon: '/echo.svg',
+    apple: '/echo.svg',
+  },
   authors: [{ name: '音骸シミュレーター' }],
   creator: '音骸シミュレーター',
   alternates: {
