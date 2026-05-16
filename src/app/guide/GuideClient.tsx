@@ -307,7 +307,7 @@ export default function GuideClient() {
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-white mb-5"
             style={{ background: 'linear-gradient(90deg, #0275fd, #60a5fa)' }}
           >
-            <EchoIcon size={14} color="white" />
+            <EchoIcon size={14} color="white" bgColor="#0275fd" />
             <span>{G.hero.tag}</span>
           </div>
           <h1 className="text-3xl font-semibold text-[#222222] mb-4 leading-snug whitespace-pre-line">

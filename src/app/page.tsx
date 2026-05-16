@@ -638,7 +638,7 @@ export default function Home() {
                 className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4"
                 style={{ background: '#eef9ff', border: `1px solid ${ACCENT}33` }}
               >
-                <EchoIcon size={48} color={ACCENT} />
+                <EchoIcon size={48} color={ACCENT} bgColor="#eef9ff" />
               </div>
               <p className="text-[#707070] text-sm max-w-xs leading-relaxed mx-auto" style={{ lineHeight: 1.7 }}>
                 {T.emptyText}
@@ -718,9 +718,8 @@ export default function Home() {
             /* ── No echo: Get Echo CTA ── */
             <button
               onClick={handleStart}
-              className="w-full py-3 rounded-[500px] font-semibold text-sm text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-[500px] font-semibold text-sm text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
             >
-              <EchoIcon size={15} color="white" />
               {T.getEcho}
             </button>
           ) : !isMaxLevel ? (
@@ -754,9 +753,8 @@ export default function Home() {
             <div className="flex items-center gap-2">
               <button
                 onClick={handleStart}
-                className="flex-1 py-3 rounded-[500px] font-semibold text-sm text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
+                className="flex-1 py-3 rounded-[500px] font-semibold text-sm text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
               >
-                <EchoIcon size={15} color="white" />
                 {T.getEcho}
               </button>
               <button
