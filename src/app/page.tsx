@@ -718,8 +718,9 @@ export default function Home() {
             /* ── No echo: Get Echo CTA ── */
             <button
               onClick={handleStart}
-              className="w-full py-3 rounded-[500px] font-semibold text-sm text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
+              className="w-full py-3 rounded-[500px] font-semibold text-sm text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
             >
+              <EchoIcon size={15} color="white" bgColor="#222222" />
               {T.getEcho}
             </button>
           ) : !isMaxLevel ? (
@@ -753,8 +754,9 @@ export default function Home() {
             <div className="flex items-center gap-2">
               <button
                 onClick={handleStart}
-                className="flex-1 py-3 rounded-[500px] font-semibold text-sm text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
+                className="flex-1 py-3 rounded-[500px] font-semibold text-sm text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
               >
+                <EchoIcon size={15} color="white" bgColor="#222222" />
                 {T.getEcho}
               </button>
               <button
