@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+// useEffect, useRef, useState は AdSense復元時に再度importする
+// import { useEffect, useRef, useState } from 'react';
 import { useLocale } from '@/lib/locale';
 import { TRANSLATIONS } from '@/data/translations';
 
@@ -11,7 +12,7 @@ import { TRANSLATIONS } from '@/data/translations';
 // ─────────────────────────────────────────────────────────────────────────────
 const REWARDED_AD_UNIT = '/YOUR_NETWORK_CODE/rewarded-bonus';
 
-type AdState = 'loading' | 'watching' | 'error';
+// type AdState = 'loading' | 'watching' | 'error'; // TODO: AdSense承認後に復元
 
 interface Props {
   title: string;
@@ -24,69 +25,50 @@ interface Props {
 declare let googletag: any;
 
 export default function AdBonusModal({ title, items, onGrantBonus, onClose }: Props) {
-  const [adState, setAdState] = useState<AdState>('loading');
   const { locale } = useLocale();
   const T = TRANSLATIONS[locale];
 
-  const onGrantBonusRef = useRef(onGrantBonus);
-  const onCloseRef      = useRef(onClose);
-  useEffect(() => { onGrantBonusRef.current = onGrantBonus; }, [onGrantBonus]);
-  useEffect(() => { onCloseRef.current      = onClose;      }, [onClose]);
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const slotRef    = useRef<any>(null);
-  const grantedRef = useRef(false);
-
-  useEffect(() => {
-    const gtag = (typeof googletag !== 'undefined' ? googletag : null)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ?? (window as any).googletag ?? null;
-
-    if (!gtag) { setAdState('error'); return; }
-
-    gtag.cmd = gtag.cmd || [];
-    gtag.cmd.push(() => {
-      const slot = gtag.defineOutOfPageSlot(
-        REWARDED_AD_UNIT,
-        gtag.enums.OutOfPageFormat.REWARDED,
-      );
-      if (!slot) { setAdState('error'); return; }
-
-      slotRef.current = slot;
-      slot.addService(gtag.pubads());
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const handleReady   = (e: any) => { if (e.slot !== slot) return; setAdState('watching'); e.makeRewardedVisible(); };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const handleGranted = (e: any) => { if (e.slot !== slot) return; grantedRef.current = true; };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const handleClosed  = (e: any) => {
-        if (e.slot !== slot) return;
-        cleanup();
-        if (grantedRef.current) onGrantBonusRef.current();
-        onCloseRef.current();
-      };
-      const cleanup = () => {
-        gtag.pubads().removeEventListener('rewardedSlotReady',   handleReady);
-        gtag.pubads().removeEventListener('rewardedSlotGranted', handleGranted);
-        gtag.pubads().removeEventListener('rewardedSlotClosed',  handleClosed);
-        if (slotRef.current) { gtag.destroySlots([slotRef.current]); slotRef.current = null; }
-      };
-
-      gtag.pubads().addEventListener('rewardedSlotReady',   handleReady);
-      gtag.pubads().addEventListener('rewardedSlotGranted', handleGranted);
-      gtag.pubads().addEventListener('rewardedSlotClosed',  handleClosed);
-      gtag.enableServices();
-      gtag.display(slot);
-    });
-
-    return () => {
-      if (slotRef.current && typeof googletag !== 'undefined' && googletag.destroySlots) {
-        googletag.destroySlots([slotRef.current]);
-        slotRef.current = null;
-      }
-    };
-  }, []);
+  // TODO: AdSense承認後に以下のコードブロックを復元し、上の2行（useState除く）と差し替える
+  // const [adState, setAdState] = useState<AdState>('loading');
+  // const onGrantBonusRef = useRef(onGrantBonus);
+  // const onCloseRef      = useRef(onClose);
+  // useEffect(() => { onGrantBonusRef.current = onGrantBonus; }, [onGrantBonus]);
+  // useEffect(() => { onCloseRef.current      = onClose;      }, [onClose]);
+  // const slotRef    = useRef<any>(null);
+  // const grantedRef = useRef(false);
+  // useEffect(() => {
+  //   const gtag = (typeof googletag !== 'undefined' ? googletag : null)
+  //     ?? (window as any).googletag ?? null;
+  //   if (!gtag) { setAdState('error'); return; }
+  //   gtag.cmd = gtag.cmd || [];
+  //   gtag.cmd.push(() => {
+  //     const slot = gtag.defineOutOfPageSlot(REWARDED_AD_UNIT, gtag.enums.OutOfPageFormat.REWARDED);
+  //     if (!slot) { setAdState('error'); return; }
+  //     slotRef.current = slot;
+  //     slot.addService(gtag.pubads());
+  //     const handleReady   = (e: any) => { if (e.slot !== slot) return; setAdState('watching'); e.makeRewardedVisible(); };
+  //     const handleGranted = (e: any) => { if (e.slot !== slot) return; grantedRef.current = true; };
+  //     const handleClosed  = (e: any) => {
+  //       if (e.slot !== slot) return;
+  //       gtag.pubads().removeEventListener('rewardedSlotReady',   handleReady);
+  //       gtag.pubads().removeEventListener('rewardedSlotGranted', handleGranted);
+  //       gtag.pubads().removeEventListener('rewardedSlotClosed',  handleClosed);
+  //       if (slotRef.current) { gtag.destroySlots([slotRef.current]); slotRef.current = null; }
+  //       if (grantedRef.current) onGrantBonusRef.current();
+  //       onCloseRef.current();
+  //     };
+  //     gtag.pubads().addEventListener('rewardedSlotReady',   handleReady);
+  //     gtag.pubads().addEventListener('rewardedSlotGranted', handleGranted);
+  //     gtag.pubads().addEventListener('rewardedSlotClosed',  handleClosed);
+  //     gtag.enableServices();
+  //     gtag.display(slot);
+  //   });
+  //   return () => {
+  //     if (slotRef.current && typeof googletag !== 'undefined' && googletag.destroySlots) {
+  //       googletag.destroySlots([slotRef.current]); slotRef.current = null;
+  //     }
+  //   };
+  // }, []);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
@@ -148,67 +130,48 @@ export default function AdBonusModal({ title, items, onGrantBonus, onClose }: Pr
             </div>
           </div>
 
-          {/* State: loading */}
+          {/* TODO: AdSense承認後に上記コメントアウトのad状態UIを復元してこのブロックを削除 */}
+          <button
+            onClick={() => { onGrantBonus(); onClose(); }}
+            className="w-full py-3 rounded-[500px] text-sm font-semibold text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
+          >
+            🎁 {locale === 'ja' ? '受け取る' : 'Claim'}
+          </button>
+
+          {/* --- 広告状態UI (AdSense承認後に復元) ---
           {adState === 'loading' && (
             <div className="flex flex-col items-center py-6 gap-4">
-              <div
-                className="w-12 h-12 rounded-full border-2 border-[#e5e7eb] border-t-[#0275fd] animate-spin"
-              />
+              <div className="w-12 h-12 rounded-full border-2 border-[#e5e7eb] border-t-[#0275fd] animate-spin" />
               <div className="text-center">
                 <p className="text-sm font-medium text-[#222222]">{T.adLoading}</p>
                 <p className="text-xs text-[#9ca3af] mt-1">{T.bonusAdNote}</p>
               </div>
             </div>
           )}
-
-          {/* State: watching */}
           {adState === 'watching' && (
             <div className="flex flex-col items-center py-6 gap-4">
-              {/* Animated play icon */}
-              <div
-                className="w-16 h-16 rounded-full flex items-center justify-center text-3xl"
-                style={{ background: '#eef9ff', border: '2px solid #0275fd33' }}
-              >
-                ▶️
-              </div>
+              <div className="w-16 h-16 rounded-full flex items-center justify-center text-3xl" style={{ background: '#eef9ff', border: '2px solid #0275fd33' }}>▶️</div>
               <div className="text-center">
                 <p className="text-base font-semibold text-[#222222]">{T.adWatching}</p>
                 <p className="text-sm text-[#707070] mt-1">{T.adWatchHint}</p>
               </div>
-              {/* Progress bar (visual feedback — not real timer) */}
               <div className="w-full h-1.5 bg-[#e5e7eb] rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[#0275fd] rounded-full"
-                  style={{ animation: 'shimmer 3s linear infinite', width: '60%' }}
-                />
+                <div className="h-full bg-[#0275fd] rounded-full" style={{ animation: 'shimmer 3s linear infinite', width: '60%' }} />
               </div>
               <p className="text-xs text-[#9ca3af] text-center">{T.adWatchingSub}</p>
             </div>
           )}
-
-          {/* State: error */}
           {adState === 'error' && (
             <div className="flex flex-col items-center py-4 gap-4">
-              <div
-                className="w-14 h-14 rounded-full flex items-center justify-center text-2xl"
-                style={{ background: '#fef2f2', border: '1px solid #fecaca' }}
-              >
-                ⚠️
-              </div>
+              <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl" style={{ background: '#fef2f2', border: '1px solid #fecaca' }}>⚠️</div>
               <div className="text-center">
                 <p className="text-sm font-medium text-[#222222] mb-1">{T.adWatching.replace('中', 'エラー')}</p>
-                <p className="text-xs text-[#707070] leading-relaxed max-w-xs">
-                  {T.adErrorTip}
-                </p>
+                <p className="text-xs text-[#707070] leading-relaxed max-w-xs">{T.adErrorTip}</p>
               </div>
-              <button
-                onClick={onClose}
-                className="w-full py-2.5 rounded-[500px] text-sm font-medium text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
-              >
-                {T.adCloseBtn}
-              </button>
+              <button onClick={onClose} className="w-full py-2.5 rounded-[500px] text-sm font-medium text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity">{T.adCloseBtn}</button>
             </div>
           )}
+          --- */}
         </div>
       </div>
     </div>
