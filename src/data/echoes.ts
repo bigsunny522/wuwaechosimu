@@ -99,6 +99,42 @@ export const HARMONY_SETS_EN: Record<string, string> = {
   'ゴールデン・ヴァリアント': 'Rite of Gilded Revelation',
 };
 
+// ── ハーモニーセット別バッジカラー（属性区分） ────────────────────────────
+export const HARMONY_SET_COLORS: Record<string, { bg: string; text: string }> = {
+  // 凝縮 (Ice)
+  '夜にこびり付く白霜':       { bg: '#e0f2fe', text: '#0284c7' },
+  'フロステッド・ハート':      { bg: '#e0f2fe', text: '#0284c7' },
+  '静寂祈念の雪':              { bg: '#e0f2fe', text: '#0284c7' },
+  // 焦熱 (Fire)
+  '山を轟かせる崩火':          { bg: '#fff3e0', text: '#ea580c' },
+  'ハウリング・フレイム':      { bg: '#fff3e0', text: '#ea580c' },
+  'インフェルノ・シャドウ':    { bg: '#fff3e0', text: '#ea580c' },
+  'パティナ・フォーム':        { bg: '#fff3e0', text: '#ea580c' },
+  'アストロ・ロード':          { bg: '#fff3e0', text: '#ea580c' },
+  // 電導 (Electro)
+  '空を切り裂く冥雷':          { bg: '#f3e8ff', text: '#9333ea' },
+  // 気動 (Aero)
+  '谷を突き抜ける長風':        { bg: '#dcfce7', text: '#16a34a' },
+  'バウンドレス・スカイ':      { bg: '#dcfce7', text: '#16a34a' },
+  'グロリアス・ウィンド':      { bg: '#dcfce7', text: '#16a34a' },
+  'セマンティック・ウィッシュ': { bg: '#dcfce7', text: '#16a34a' },
+  // 回折 (Spectro)
+  '闇を取り払う浮星':          { bg: '#fef9c3', text: '#b45309' },
+  'エターナル・ライト':        { bg: '#fef9c3', text: '#b45309' },
+  'ゴールデン・ヴァリアント':  { bg: '#fef9c3', text: '#b45309' },
+  'リフレクト・ブレイズ':      { bg: '#fef9c3', text: '#b45309' },
+  // 消滅 (Havoc)
+  '二度と輝かない沈日':        { bg: '#ede9fe', text: '#7c3aed' },
+  'ミッドナイト・ベール':      { bg: '#ede9fe', text: '#7c3aed' },
+  '命理崩壊の弦':              { bg: '#ede9fe', text: '#7c3aed' },
+};
+
+const HARMONY_BADGE_DEFAULT = { bg: '#f3f4f6', text: '#6b7280' };
+
+export function getHarmonyBadgeColor(setName: string): { bg: string; text: string } {
+  return HARMONY_SET_COLORS[setName] ?? HARMONY_BADGE_DEFAULT;
+}
+
 const S = HARMONY_SETS; // 短縮エイリアス
 
 export interface EchoInfo {

@@ -3,7 +3,7 @@
 import type { EchoState, ScoreResult } from '@/types/echo';
 import { RANK_COLORS } from '@/lib/scorer';
 import { SUBSTAT_LABEL_EN, MAINSTAT_LABEL_EN } from '@/data/translations';
-import { HARMONY_SETS_EN } from '@/data/echoes';
+import { HARMONY_SETS_EN, getHarmonyBadgeColor } from '@/data/echoes';
 
 const COST_COLOR: Record<number, string> = { 4: '#e6b800', 3: '#a855f7', 1: '#0d9488' };
 const CAT_COLOR: Record<string, string> = {
@@ -160,7 +160,8 @@ export function renderCardToCanvas(
   ctx.textBaseline = 'middle';
   ctx.fillText(echoName, OX + PAD, y + 11);
 
-  if (harmonyDisplay) {
+  if (harmonyDisplay && echo.activeHarmonySet) {
+    const { bg: chipBg, text: chipText } = getHarmonyBadgeColor(echo.activeHarmonySet);
     const nameW     = ctx.measureText(echoName).width;
     ctx.font        = `600 11px ${SANS}`;
     const chipTextW = ctx.measureText(harmonyDisplay).width;
@@ -169,10 +170,10 @@ export function renderCardToCanvas(
     const chipH     = 18;
     const chipX     = OX + PAD + nameW + 6;
     const chipY     = y + 2;
-    ctx.fillStyle   = '#eef9ff';
+    ctx.fillStyle   = chipBg;
     rrect(ctx, chipX, chipY, chipW, chipH, 9);
     ctx.fill();
-    ctx.fillStyle    = '#0275fd';
+    ctx.fillStyle    = chipText;
     ctx.textBaseline = 'middle';
     ctx.fillText(harmonyDisplay, chipX + chipPadX, chipY + chipH / 2);
   }

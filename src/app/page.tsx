@@ -149,7 +149,8 @@ export default function Home() {
     if (bonusEndTime && Date.now() < bonusEndTime && lockedMainstatKey) {
       fixedMain = MAINSTAT_POOLS[cost].find(m => m.key === lockedMainstatKey);
     }
-    setEcho(createEcho(cost, echoId, fixedMain));
+    const harmonyForEcho = cost !== 4 ? selectedHarmonySet : undefined;
+    setEcho(createEcho(cost, echoId, fixedMain, harmonyForEcho));
     setScore(null);
     setMaxedAt(null);
     setRerollUsed(false);

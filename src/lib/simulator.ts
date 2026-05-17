@@ -47,12 +47,21 @@ function pickMainstat(cost: EchoCost): MainstatInfo {
   return pool[pool.length - 1];
 }
 
-export function createEcho(cost: EchoCost, echoId?: string, fixedMainstat?: MainstatInfo): EchoState {
+export function createEcho(
+  cost: EchoCost,
+  echoId?: string,
+  fixedMainstat?: MainstatInfo,
+  fixedHarmonySet?: string,
+): EchoState {
   const id = echoId ?? DEFAULT_ECHO_ID[cost];
   const echoInfo = ECHOES_BY_COST[cost].find((e) => e.id === id);
   const sets = echoInfo?.sets ?? [];
   const activeHarmonySet =
-    sets.length > 0 ? sets[Math.floor(Math.random() * sets.length)] : '';
+    fixedHarmonySet && sets.includes(fixedHarmonySet)
+      ? fixedHarmonySet
+      : sets.length > 0
+        ? sets[Math.floor(Math.random() * sets.length)]
+        : '';
   return {
     cost,
     echoId: id,

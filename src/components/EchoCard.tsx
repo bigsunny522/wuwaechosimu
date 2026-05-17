@@ -2,7 +2,7 @@
 
 import type { EchoState, ScoreResult } from '@/types/echo';
 import { SUBSTAT_COUNT } from '@/data/mainstats';
-import { HARMONY_SETS_EN } from '@/data/echoes';
+import { HARMONY_SETS_EN, getHarmonyBadgeColor } from '@/data/echoes';
 import SubstatRow from './SubstatRow';
 import ScoreBadge from './ScoreBadge';
 import { RANK_COLORS } from '@/lib/scorer';
@@ -90,14 +90,17 @@ export default function EchoCard({ echo, score, cardRef, maxedAt, compact = fals
               <span className="text-sm font-semibold text-[#222222] leading-snug">
                 {echoDisplayName}
               </span>
-              {harmonyDisplay && (
-                <span
-                  className="text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0"
-                  style={{ background: '#eef9ff', color: '#0275fd' }}
-                >
-                  {harmonyDisplay}
-                </span>
-              )}
+              {harmonyDisplay && echo.activeHarmonySet && (() => {
+                const { bg, text } = getHarmonyBadgeColor(echo.activeHarmonySet);
+                return (
+                  <span
+                    className="text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0"
+                    style={{ background: bg, color: text }}
+                  >
+                    {harmonyDisplay}
+                  </span>
+                );
+              })()}
             </div>
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-xs text-[#707070]">{mainstatLabel}</span>

@@ -63,7 +63,7 @@ export const CHARACTERS: CharacterBuild[] = [
     },
     mainstat: {
       cost4: { recommended: ['critDmg'],   acceptable: ['critRate', 'atkPercent'] },
-      cost3: { recommended: ['GlacioDmg'],             acceptable: ['atkPercent'] },
+      cost3: { recommended: ['GlacioDmg', 'atkPercent'],             acceptable: [] },
       cost1: { recommended: ['atkPercent'],            acceptable: [] },
     },
     harmonySets: { recommended: [SET.SNOWY], acceptable: [SET.FROST,SET.FROSTY] },
@@ -214,7 +214,7 @@ export const CHARACTERS: CharacterBuild[] = [
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
-      cost3: { recommended: ['AeroDmg'],               acceptable: ['atkPercent', 'Resonanceeff'] },
+      cost3: { recommended: ['AeroDmg', 'atkPercent'],               acceptable: ['Resonanceeff'] },
       cost1: { recommended: ['atkPercent'],            acceptable: [] },
     },
     harmonySets: { recommended: [SET.SEMANTIC], acceptable: [SET.GALE, SET.GLORY_WIND] },
@@ -236,7 +236,7 @@ export const CHARACTERS: CharacterBuild[] = [
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
-      cost3: { recommended: ['FusionDmg'],             acceptable: ['atkPercent'] },
+      cost3: { recommended: ['FusionDmg', 'atkPercent'],             acceptable: [] },
       cost1: { recommended: ['atkPercent'],            acceptable: [] },
     },
     harmonySets: { recommended: [ SET.FLAMING,SET.INFERNO], acceptable: [SET.MOLTEN,SET.LINGERING] },
@@ -257,7 +257,7 @@ export const CHARACTERS: CharacterBuild[] = [
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent']  },
-      cost3: { recommended: ['AeroDmg'],    acceptable: ['atkPercent'] },
+      cost3: { recommended: ['AeroDmg', 'atkPercent'],    acceptable: [] },
       cost1: { recommended: ['atkPercent'],                    acceptable: [] },
     },
     harmonySets: { recommended: [SET.GLORY_CROWN], acceptable: [SET.BOUNDLESS, SET.GLORY_WIND] },
@@ -302,7 +302,7 @@ export const CHARACTERS: CharacterBuild[] = [
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
-      cost3: { recommended: ['HavocDmg'],              acceptable: ['atkPercent'] },
+      cost3: { recommended: ['HavocDmg', 'atkPercent'],              acceptable: [] },
       cost1: { recommended: ['atkPercent'],            acceptable: [] },
     },
     harmonySets: { recommended: [SET.LOST_DREAM], acceptable: [SET.MIDNIGHT, SET.HAVOC_OLD] },
@@ -324,7 +324,7 @@ export const CHARACTERS: CharacterBuild[] = [
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],               acceptable: ['atkPercent'] },
-      cost3: { recommended: ['FusionDmg'],         acceptable: ['atkPercent'] },
+      cost3: { recommended: ['FusionDmg', 'atkPercent'],         acceptable: [] },
       cost1: { recommended: ['atkPercent'],           acceptable: [] },
     },
     harmonySets: { recommended: [SET.FLAMING], acceptable: [SET.MOLTEN] },
@@ -346,7 +346,7 @@ export const CHARACTERS: CharacterBuild[] = [
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
-      cost3: { recommended: ['AeroDmg'],               acceptable: ['atkPercent'] },
+      cost3: { recommended: ['AeroDmg', 'atkPercent'],               acceptable: [] },
       cost1: { recommended: ['hpPercent'],            acceptable: ['atkPercent'] },
     },
     harmonySets: { recommended: [ SET.GLORY_WIND], acceptable: [SET.GALE] },
@@ -367,7 +367,7 @@ export const CHARACTERS: CharacterBuild[] = [
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],               acceptable: ['atkPercent', 'hpPercent'] },
-      cost3: { recommended: ['Resonanceeff', 'AeroDmg'],           acceptable: ['atkPercent', 'hpPercent'] },
+      cost3: { recommended: ['Resonanceeff', 'AeroDmg', 'atkPercent'],           acceptable: ['hpPercent'] },
       cost1: { recommended: ['atkPercent', 'hpPercent'],           acceptable: [] },
     },
     harmonySets: { recommended: [SET.GALE, SET.GLORY_WIND], acceptable: [SET.LINGERING] },
@@ -389,7 +389,7 @@ export const CHARACTERS: CharacterBuild[] = [
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
-      cost3: { recommended: ['SpectroDmg'],            acceptable: ['atkPercent',] },
+      cost3: { recommended: ['SpectroDmg', 'atkPercent'],            acceptable: [] },
       cost1: { recommended: ['atkPercent'],            acceptable: [] },
     },
     harmonySets: { recommended: [SET.CELESTIAL, SET.ETERNAL], acceptable: [] },
@@ -433,7 +433,7 @@ export const CHARACTERS: CharacterBuild[] = [
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],    acceptable: ['atkPercent'] },
-      cost3: { recommended: ['FusionDmg','Resonanceeff'],    acceptable: [ 'atkPercent'] },
+      cost3: { recommended: ['FusionDmg', 'Resonanceeff', 'atkPercent'],    acceptable: [] },
       cost1: { recommended: ['atkPercent'],                    acceptable: [] },
     },
     harmonySets: { recommended: [SET.TIDEBREAK], acceptable: [SET.MOLTEN, SET.FLAMING] },
@@ -457,7 +457,7 @@ export const CHARACTERS: CharacterBuild[] = [
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
-      cost3: { recommended: ['SpectroDmg'],            acceptable: ['atkPercent'] },
+      cost3: { recommended: ['SpectroDmg', 'atkPercent'],            acceptable: [] },
       cost1: { recommended: ['atkPercent'],            acceptable: [] },
     },
     harmonySets: { recommended: [SET.ETERNAL], acceptable: [SET.CELESTIAL,SET.LINGERING] },
@@ -479,7 +479,7 @@ export const CHARACTERS: CharacterBuild[] = [
     },
     mainstat: {
       cost4: { recommended: ['critRate'],   acceptable: ['atkPercent', 'critDmg'] },
-      cost3: { recommended: ['HavocDmg'],              acceptable: ['atkPercent', 'Resonanceeff'] },
+      cost3: { recommended: ['HavocDmg', 'atkPercent'],              acceptable: ['Resonanceeff'] },
       cost1: { recommended: ['atkPercent'],            acceptable: [] },
     },
     harmonySets: { recommended: [SET.MIDNIGHT, SET.INFERNO], acceptable: [SET.HAVOC_OLD,SET.MOONLIT] },
@@ -546,7 +546,7 @@ export const CHARACTERS: CharacterBuild[] = [
     },
     mainstat: {
       cost4: { recommended: ['healingBonus'],    acceptable: ['critDmg'] },
-      cost3: { recommended: ['Resonanceeff', 'SpectroDmg'],    acceptable: ['SpectroDmg', 'atkPercent'] },
+      cost3: { recommended: ['Resonanceeff', 'SpectroDmg', 'atkPercent'],    acceptable: ['SpectroDmg'] },
       cost1: { recommended: ['hpPercent'],  acceptable: ['atkPercent'] },
     },
     harmonySets: { recommended: [SET.HEALER], acceptable: [SET.CELESTIAL, SET.MOONLIT] },
@@ -568,7 +568,7 @@ export const CHARACTERS: CharacterBuild[] = [
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
-      cost3: { recommended: ['ElectroDmg'],            acceptable: ['atkPercent'] },
+      cost3: { recommended: ['ElectroDmg', 'atkPercent'],            acceptable: [] },
       cost1: { recommended: ['atkPercent'],            acceptable: [] },
     },
     harmonySets: { recommended: [SET.VOID], acceptable: [SET.LINGERING] },
@@ -683,7 +683,7 @@ export const CHARACTERS: CharacterBuild[] = [
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
-      cost3: { recommended: ['AeroDmg'],               acceptable: ['atkPercent', 'Resonanceeff'] },
+      cost3: { recommended: ['AeroDmg', 'atkPercent'],               acceptable: ['Resonanceeff'] },
       cost1: { recommended: ['atkPercent'],            acceptable: [] },
     },
     harmonySets: { recommended: [SET.GALE, SET.GLORY_WIND], acceptable: [SET.BOUNDLESS] },
@@ -705,7 +705,7 @@ export const CHARACTERS: CharacterBuild[] = [
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
-      cost3: { recommended: ['GlacioDmg'],             acceptable: ['atkPercent'] },
+      cost3: { recommended: ['GlacioDmg', 'atkPercent'],             acceptable: [] },
       cost1: { recommended: ['atkPercent'],            acceptable: [] },
     },
     harmonySets: { recommended: [SET.FROST, SET.FROSTY], acceptable: [] },
@@ -727,7 +727,7 @@ export const CHARACTERS: CharacterBuild[] = [
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
-      cost3: { recommended: ['FusionDmg'],             acceptable: ['atkPercent', 'Resonanceeff'] },
+      cost3: { recommended: ['FusionDmg', 'atkPercent'],             acceptable: ['Resonanceeff'] },
       cost1: { recommended: ['atkPercent'],            acceptable: [] },
     },
     harmonySets: { recommended: [SET.MOLTEN], acceptable: [SET.FLAMING] },
@@ -749,7 +749,7 @@ export const CHARACTERS: CharacterBuild[] = [
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
-      cost3: { recommended: ['ElectroDmg'],            acceptable: ['atkPercent'] },
+      cost3: { recommended: ['ElectroDmg', 'atkPercent'],            acceptable: [] },
       cost1: { recommended: ['atkPercent'],            acceptable: [] },
     },
     harmonySets: { recommended: [SET.VOID], acceptable: [] },
