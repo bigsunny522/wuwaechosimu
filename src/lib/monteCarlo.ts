@@ -100,9 +100,9 @@ export function simulateCompletion(
     : 1;
 
   const recommendation =
-    ratio >= 1.15 ? 'great' :
-    ratio >= 1.00 ? 'good'  :
-    ratio >= 0.85 ? 'borderline' : 'scrap';
+    ratio >= 1.20 ? 'great' :
+    ratio >= 1.08 ? 'good'  :
+    ratio >= 0.95 ? 'borderline' : 'scrap';
 
   return {
     ...current,
