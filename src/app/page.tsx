@@ -4,11 +4,13 @@ import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import type { EchoCost, EchoState, ScoreResult, MainstatInfo } from '@/types/echo';
 import { createEcho, upgradeEcho, upgradeToFull, rerollSubstats } from '@/lib/simulator';
+import { simulateCompletion, clearBaselineCache, type AdvisorResult } from '@/lib/monteCarlo';
 import { scoreEcho } from '@/lib/scorer';
 import { SUBSTAT_COUNT, MAINSTAT_POOLS } from '@/data/mainstats';
 import { ECHOES_BY_COST, ECHOES, DEFAULT_ECHO_ID, HARMONY_SETS, HARMONY_SETS_EN } from '@/data/echoes';
 import { CHARACTER_LIST, CHARACTER_MAP } from '@/data/characters';
 import EchoCard from '@/components/EchoCard';
+import EchoAdvisor from '@/components/EchoAdvisor';
 import ResourceCounter from '@/components/ResourceCounter';
 import ScoreDebugPanel from '@/components/ScoreDebugPanel';
 import AdBonusModal from '@/components/AdBonusModal';
@@ -93,6 +95,7 @@ export default function Home() {
   const [savedResults, setSavedResults]       = useState<SavedResult[]>([]);
   const [historyOpen, setHistoryOpen]         = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
+  const [advisorResult, setAdvisorResult]     = useState<AdvisorResult | null>(null);
 
   /* ── Ad configs (locale-aware) ──────────────────────────────── */
   const adConfigs: Record<AdPurpose, { title: string; items: string[] }> = useMemo(() => ({
@@ -156,6 +159,7 @@ export default function Home() {
     setRerollUsed(false);
     setRerollIndices(new Set());
     setShowResultModal(false);
+    setAdvisorResult(null);
   }, [echo, cost, selectedEchoId, selectedHarmonySet, bonusEndTime, lockedMainstatKey]);
 
   const handleUpgrade = useCallback(() => {
@@ -166,7 +170,10 @@ export default function Home() {
     setScore(scoreEcho(next, build));
     if (next.level === 25) {
       setMaxedAt(Date.now());
+      setAdvisorResult(null);
       if (window.innerWidth < 640) setShowResultModal(true);
+    } else {
+      setAdvisorResult(simulateCompletion(next, build));
     }
   }, [echo, selectedCharId]);
 
@@ -184,7 +191,7 @@ export default function Home() {
     if (echo) setLifetimeCost(prev => addCost(prev, echo.totalCost));
     setEcho(null); setScore(null); setMaxedAt(null);
     setRerollUsed(false); setRerollIndices(new Set());
-    setShowResultModal(false);
+    setShowResultModal(false); setAdvisorResult(null);
   }, [echo]);
 
   const handleReroll = useCallback(() => {
@@ -355,7 +362,7 @@ export default function Home() {
           </div>
           <CustomSelect
             value={selectedCharId}
-            onChange={(v) => { setSelectedCharId(v); setScore(null); }}
+            onChange={(v) => { setSelectedCharId(v); setScore(null); clearBaselineCache(); }}
             options={charOptions}
             accentColor="#0275fd"
             background="linear-gradient(135deg, #f0f7ff 0%, #fafbff 100%)"
@@ -472,6 +479,11 @@ export default function Home() {
         {echo && (
           <div ref={echoSectionRef} className="flex flex-col items-center gap-4">
             <EchoCard echo={echo} score={score} maxedAt={maxedAt} />
+
+            {/* アドバイザー: +5〜+20 の間（サブステが1つ以上出た後）に表示 */}
+            {advisorResult && echo.level > 0 && echo.level < 25 && (
+              <EchoAdvisor result={advisorResult} />
+            )}
 
             {score && isMaxLevel && (
               <>
