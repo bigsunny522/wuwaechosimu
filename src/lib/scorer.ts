@@ -24,7 +24,7 @@ const GENERIC_ACCEPTABLE  = new Set<SubstatKey>(['energyRegen', 'hpPercent', 'de
 //  Tier0 → 0.417、Tier7（最高） → 1.000
 // ═══════════════════════════════════════════════════════════════════════════
 export function normalizedTier(tier: number): number {
-  return (tier + 6) / 12;
+  return (tier + 5) / 12;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
