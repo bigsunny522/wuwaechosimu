@@ -52,6 +52,7 @@ const STRIPE  = 3;
 const RADIUS  = 16;
 const SANS    = 'Inter, "Noto Sans JP", -apple-system, BlinkMacSystemFont, sans-serif';
 const MONO    = '"IBM Plex Mono", ui-monospace, "Courier New", monospace';
+const SUB_ROW_H = 42;   // two-line layout: label line + bar+value line
 
 export function renderCardToCanvas(
   echo: EchoState,
@@ -78,8 +79,7 @@ export function renderCardToCanvas(
   // Card content height
   const HEADER_H  = 14 + 4 + 22 + 4 + 16;   // cost + name + mainstat rows
   const SCORE_H   = hasBonusLine ? 74 : 62;
-  const SUB_ROW_H = 28;
-  const SUB_GAP   = 2;
+  const SUB_GAP   = 4;
   const SUBS_H    = echo.substats.length * (SUB_ROW_H + SUB_GAP) - SUB_GAP;
   const FOOTER_H  = 1 + 8 + 14;
   const CARD_H    = STRIPE + PAD + HEADER_H + GAP + SCORE_H + GAP + SUBS_H + GAP + FOOTER_H + PAD;
@@ -266,7 +266,7 @@ export function renderCardToCanvas(
 
   y += SCORE_H + GAP;
 
-  // ── Substats ────────────────────────────────────────────────────────────
+  // ── Substats (two-line: label / bar + value) ────────────────────────────
   for (let i = 0; i < echo.substats.length; i++) {
     const sub    = echo.substats[i];
     const label  = locale === 'en' ? (SUBSTAT_LABEL_EN[sub.key] ?? sub.label) : sub.label;
@@ -276,56 +276,55 @@ export function renderCardToCanvas(
     const hasBg  = cat !== 'unnecessary' && cat !== undefined;
     const rowY   = y + i * (SUB_ROW_H + SUB_GAP);
 
+    // Background tint
     if (hasBg) {
       ctx.fillStyle = `${sColor}0a`;
       rrect(ctx, OX + PAD, rowY, CARD_W - PAD * 2, SUB_ROW_H, 8);
       ctx.fill();
     }
 
-    // Left border accent
+    // Left border accent (3px, full row height)
     ctx.fillStyle = sColor;
-    ctx.fillRect(OX + PAD, rowY, 2, SUB_ROW_H);
+    ctx.fillRect(OX + PAD, rowY, 3, SUB_ROW_H);
 
-    // Index
+    // Index number (vertically centered)
     ctx.font         = `10px ${MONO}`;
     ctx.fillStyle    = '#9ca3af';
     ctx.textAlign    = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(String(i + 1), OX + PAD + 13, rowY + SUB_ROW_H / 2);
+    ctx.fillText(String(i + 1), OX + PAD + 14, rowY + SUB_ROW_H / 2);
     ctx.textAlign = 'left';
 
-    // Label (clip with ellipsis if needed)
-    const valW      = 44;
-    const barW      = 44;
-    const labelX    = OX + PAD + 26;
-    const barX2     = OX + CARD_W - PAD - valW - 8 - barW;
-    const maxLabelW = barX2 - labelX - 6;
+    const contentX = OX + PAD + 28;  // content area starts after index
 
-    ctx.font      = `500 11px ${SANS}`;
-    ctx.fillStyle = '#1f2937';
-    ctx.textBaseline = 'middle';
-    let lbl = label;
-    while (ctx.measureText(lbl).width > maxLabelW && lbl.length > 1) {
-      lbl = lbl.slice(0, -1);
-    }
-    if (lbl !== label) lbl = lbl.slice(0, -1) + '…';
-    ctx.fillText(lbl, labelX, rowY + SUB_ROW_H / 2);
+    // ── Line 1: label ───────────────────────────────────────────────────────
+    ctx.font         = `500 13px ${SANS}`;
+    ctx.fillStyle    = '#222222';
+    ctx.textBaseline = 'top';
+    ctx.fillText(label, contentX, rowY + 7);
 
-    // Mini bar
-    const barY2 = rowY + SUB_ROW_H / 2 - 2;
+    // ── Line 2: full-width bar (flex-1) + value right-aligned ───────────────
+    const barY      = rowY + 27;   // top of bar  (7 label-top + 13 text + 7 gap)
+    const barH      = 4;
+    const valReserve = 52;         // px reserved for value text + gap
+    const barTrackW = (OX + CARD_W - PAD - valReserve) - contentX;
+
+    // Bar track
     ctx.fillStyle = '#e5e7eb';
-    rrect(ctx, barX2, barY2, barW, 4, 2);
-    ctx.fill();
-    ctx.fillStyle = sColor;
-    rrect(ctx, barX2, barY2, barW * pct / 100, 4, 2);
+    rrect(ctx, contentX, barY, barTrackW, barH, 2);
     ctx.fill();
 
-    // Value
-    ctx.font         = `bold 11px ${MONO}`;
+    // Bar fill
+    ctx.fillStyle = sColor;
+    rrect(ctx, contentX, barY, barTrackW * Math.min(pct / 100, 1), barH, 2);
+    ctx.fill();
+
+    // Value (right edge, vertically centred on bar)
+    ctx.font         = `bold 13px ${MONO}`;
     ctx.fillStyle    = sColor;
     ctx.textAlign    = 'right';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`${sub.value}${sub.unit}`, OX + CARD_W - PAD, rowY + SUB_ROW_H / 2);
+    ctx.fillText(`${sub.value}${sub.unit}`, OX + CARD_W - PAD, barY + barH / 2);
     ctx.textAlign = 'left';
   }
 
