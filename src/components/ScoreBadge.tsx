@@ -22,7 +22,7 @@ export default function ScoreBadge({ result }: Props) {
     <div className="flex items-center gap-4">
       {/* Rank letter */}
       <div
-        className="text-5xl font-semibold tracking-tight animate-popIn shrink-0 w-14 text-center"
+        className={`${result.rank === 'GOD' ? 'text-3xl' : 'text-5xl'} font-semibold tracking-tight animate-popIn shrink-0 w-14 text-center`}
         style={{ color, fontFamily: 'Inter, sans-serif' }}
       >
         {result.rank}
