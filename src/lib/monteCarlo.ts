@@ -3,7 +3,7 @@ import type { CharacterBuild } from '@/types/character';
 import { pickSubstat } from '@/lib/simulator';
 import { scoreEcho } from '@/lib/scorer';
 
-const ITERATIONS = 10_000;
+const ITERATIONS = 50_000;
 
 // ── ランク閾値（scorer.ts の toRank と一致させること） ──────────────────────
 const RANK_THRESHOLD: Record<'A' | 'S' | 'S+', number> = {
