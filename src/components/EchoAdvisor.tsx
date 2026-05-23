@@ -76,13 +76,13 @@ export default function EchoAdvisor({ result, compact = false }: Props) {
         {/* Row 1: バッジ + 期待スコア + 平均比 */}
         <div className="flex items-center gap-2">
           <span
-            className="text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0"
+            className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0"
             style={{ background: rec.color, color: '#fff' }}
           >
             {label}
           </span>
           <span
-            className="text-[12px] font-semibold shrink-0"
+            className="text-[13px] font-semibold shrink-0"
             style={{ color: rec.color, fontFamily: '"IBM Plex Mono", monospace' }}
           >
             {Math.round(result.expectedScore)} pts
@@ -93,7 +93,8 @@ export default function EchoAdvisor({ result, compact = false }: Props) {
           </span>
         </div>
 
-        {/* Row 2: A / S / S+ 確率（区切り線あり） */}
+        {/* Row 2: A / S / S+ 確率（区切り線あり）
+            % と差分を同じ行に並べることで縦スペースを節約 → % を大きくできる */}
         <div className="flex divide-x divide-[#e5e7eb]">
           {PROB_ROWS.map(({ jaLabel, enLabel, probKey, baseKey, color }) => {
             const pct  = Math.round(result[probKey] * 100);
@@ -103,16 +104,18 @@ export default function EchoAdvisor({ result, compact = false }: Props) {
                 <span className="text-[9px] font-medium text-[#9ca3af] uppercase tracking-wide">
                   {locale === 'ja' ? jaLabel : enLabel}
                 </span>
-                <span
-                  className="text-[15px] font-bold leading-none"
-                  style={{ color, fontFamily: '"IBM Plex Mono", monospace' }}
-                >
-                  {pct}%
-                </span>
-                <span className="text-[9px] text-[#9ca3af]">
-                  {diff > 0 ? `+${diff}` : diff === 0 ? '±0' : `${diff}`}
-                  <span className="opacity-60"> vs</span>
-                </span>
+                {/* % + 差分を横並びにして % を大きく表示 */}
+                <div className="flex items-baseline gap-1">
+                  <span
+                    className="text-lg font-bold leading-none"
+                    style={{ color, fontFamily: '"IBM Plex Mono", monospace' }}
+                  >
+                    {pct}%
+                  </span>
+                  <span className="text-[9px] text-[#9ca3af] leading-none">
+                    {diff > 0 ? `+${diff}` : diff === 0 ? '±0' : `${diff}`}
+                  </span>
+                </div>
               </div>
             );
           })}
