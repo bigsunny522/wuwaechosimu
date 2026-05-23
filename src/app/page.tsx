@@ -349,7 +349,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className={`flex-1 max-w-2xl w-full mx-auto px-4 py-8 flex flex-col gap-8 sm:pb-28 ${showAdvisorInBar ? 'pb-80' : 'pb-28'}`}>
+      <main className={`flex-1 max-w-2xl w-full mx-auto px-4 py-8 flex flex-col gap-8 sm:pb-28 ${showAdvisorInBar ? 'pb-56' : 'pb-28'}`}>
 
         {/* Character selector */}
         <div className="flex flex-col gap-2">
@@ -721,10 +721,10 @@ export default function Home() {
         style={{ borderTop: '1px solid #e5e7eb', paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <div className="max-w-2xl mx-auto px-4 pt-2 pb-3">
-          {/* アドバイザー: スマホのみ（PCはメインコンテンツに表示） */}
+          {/* アドバイザー: スマホのみ・コンパクト版（PCはメインコンテンツに表示） */}
           {showAdvisorInBar && (
             <div className="sm:hidden mb-2">
-              <EchoAdvisor result={advisorResult!} />
+              <EchoAdvisor result={advisorResult!} compact />
             </div>
           )}
 
