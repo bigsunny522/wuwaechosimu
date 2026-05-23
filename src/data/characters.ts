@@ -49,6 +49,28 @@ export const CHARACTERS: CharacterBuild[] = [
   // ── 5★ キャラクター（実装降順）────────────────────────────────────────
 
   {
+    id: 'denia', name: 'ダーニャ', nameEn: 'Denia', element: '焦熱', weapon: '長刃',
+    role: 'メインアタッカー',
+    substats: {
+      recommended: [
+        { key: 'critRate' },
+        { key: 'critDmg' },
+        { key: 'atkPercent' },
+        { key: 'resonanceLibDmg' },
+        { key: 'energyRegen' },
+      ],
+      preferred:   [{ key: 'atkFlat' }],
+      acceptable:  [],
+    },
+    mainstat: {
+      cost4: { recommended: ['critDmg', 'critRate'],      acceptable: ['atkPercent'] },
+      cost3: { recommended: ['FusionDmg', 'atkPercent'],  acceptable: [] },
+      cost1: { recommended: ['atkPercent'],               acceptable: [] },
+    },
+    harmonySets: { recommended: [SET.PATINA, SET.MONTAGE, SET.REFLECT, SET.MOONLIT], acceptable: [] },
+  },
+
+  {
     id: 'hiyuki', name: '緋雪', nameEn: 'Hiyuki', element: '凝縮', weapon: '迅刀',
     role: 'メイン/サブ火力',
     substats: {
