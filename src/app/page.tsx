@@ -229,6 +229,8 @@ export default function Home() {
   }, []);
 
   const isMaxLevel  = echo?.level === 25;
+  // スマホ：アドバイザーを下固定バーに表示するフラグ
+  const showAdvisorInBar = !!(advisorResult && echo && echo.level > 0 && echo.level < 25);
   const displayCost = addCost(lifetimeCost, echo?.totalCost ?? ZERO_COST);
   const hasAnyCost  = displayCost.shellCoins > 0;
   const echoList    = ECHOES_BY_COST[cost];
@@ -347,7 +349,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-8 flex flex-col gap-8 pb-28">
+      <main className={`flex-1 max-w-2xl w-full mx-auto px-4 py-8 flex flex-col gap-8 sm:pb-28 ${showAdvisorInBar ? 'pb-80' : 'pb-28'}`}>
 
         {/* Character selector */}
         <div className="flex flex-col gap-2">
@@ -480,9 +482,11 @@ export default function Home() {
           <div ref={echoSectionRef} className="flex flex-col items-center gap-4">
             <EchoCard echo={echo} score={score} maxedAt={maxedAt} />
 
-            {/* アドバイザー: +5〜+20 の間（サブステが1つ以上出た後）に表示 */}
+            {/* アドバイザー: PC は直下に表示 / スマホは下固定バーに表示（showAdvisorInBar） */}
             {advisorResult && echo.level > 0 && echo.level < 25 && (
-              <EchoAdvisor result={advisorResult} />
+              <div className="hidden sm:block w-full">
+                <EchoAdvisor result={advisorResult} />
+              </div>
             )}
 
             {score && isMaxLevel && (
@@ -717,6 +721,13 @@ export default function Home() {
         style={{ borderTop: '1px solid #e5e7eb', paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <div className="max-w-2xl mx-auto px-4 pt-2 pb-3">
+          {/* アドバイザー: スマホのみ（PCはメインコンテンツに表示） */}
+          {showAdvisorInBar && (
+            <div className="sm:hidden mb-2">
+              <EchoAdvisor result={advisorResult!} />
+            </div>
+          )}
+
           {/* Progress hint */}
           {echo && !isMaxLevel && echo.level > 0 && (
             <p
