@@ -116,7 +116,7 @@ function scoreGeneric(echo: EchoState): ScoreResult {
   const score: number = Math.min(100, rawScore);
   const rank: ScoreRank = rawScore >= 100 ? 'GOD' : toRank(score);
 
-  return { score, rank, breakdown };
+  return { score, rank, breakdown, theoreticalMax, idealMult: IDEAL_MULT };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -140,10 +140,10 @@ function scoreWithBuild(echo: EchoState, build: CharacterBuild): ScoreResult {
   // roleTemplate あり: 全13サブステの有効カテゴリから動的計算
   // roleTemplate なし: 従来の固定 IDEAL_MULT を使用
   const substatCount = SUBSTAT_COUNT[echo.cost];
-  const theoreticalMax = roleTemplate
-    ? substatCount * normalizedTier(REFERENCE_TIER) *
-      calcTemplateIdealMult(recKeys, prefKeys, accKeys, roleTemplate, substatCount)
-    : calcTheoreticalMax(echo.cost);
+  const usedIdealMult = roleTemplate
+    ? calcTemplateIdealMult(recKeys, prefKeys, accKeys, roleTemplate, substatCount)
+    : IDEAL_MULT;
+  const theoreticalMax = substatCount * normalizedTier(REFERENCE_TIER) * usedIdealMult;
   const raw = breakdown.reduce((s, b) => s + b.points, 0);
   const substatScore = (raw / theoreticalMax) * 100;
 
@@ -171,6 +171,8 @@ function scoreWithBuild(echo: EchoState, build: CharacterBuild): ScoreResult {
     score,
     rank,
     breakdown,
+    theoreticalMax,
+    idealMult: usedIdealMult,
     mainstatBonus,
     setBonus,
     isCharacterScore: true,

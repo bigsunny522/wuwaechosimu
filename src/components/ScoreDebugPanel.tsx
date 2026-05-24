@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import type { EchoState, ScoreResult, SubstatCategory } from '@/types/echo';
 import { SUBSTAT_COUNT } from '@/data/mainstats';
-import { MULT, IDEAL_MULT, REFERENCE_TIER, normalizedTier, CATEGORY_COLORS } from '@/lib/scorer';
+import { MULT, REFERENCE_TIER, normalizedTier, CATEGORY_COLORS } from '@/lib/scorer';
 import { useLocale } from '@/lib/locale';
 import { TRANSLATIONS, SUBSTAT_LABEL_EN } from '@/data/translations';
 
@@ -24,7 +24,8 @@ export default function ScoreDebugPanel({ echo, score }: Props) {
     unnecessary: T.catUnnecessary,
   };
 
-  const theoreticalMax = SUBSTAT_COUNT[echo.cost] * normalizedTier(REFERENCE_TIER) * IDEAL_MULT;
+  const theoreticalMax = score.theoreticalMax;
+  const idealMult      = score.idealMult;
   const rawTotal       = score.breakdown.reduce((s, b) => s + b.points, 0);
   const substatScore   = (rawTotal / theoreticalMax) * 100;
 
@@ -120,7 +121,7 @@ export default function ScoreDebugPanel({ echo, score }: Props) {
               <span>
                 {T.debugMax}
                 <span className="ml-1 text-[10px]">
-                  ({SUBSTAT_COUNT[echo.cost]}× {normalizedTier(REFERENCE_TIER).toFixed(3)} × {IDEAL_MULT.toFixed(3)})
+                  ({SUBSTAT_COUNT[echo.cost]}× {normalizedTier(REFERENCE_TIER).toFixed(3)} × {idealMult.toFixed(3)})
                 </span>
               </span>
               <span className="tabular-nums text-[#707070]">{theoreticalMax.toFixed(4)}</span>
