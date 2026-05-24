@@ -1,6 +1,9 @@
 import type { EchoState, EchoCost, ScoreResult, ScoreRank, SubstatKey, SubstatCategory } from '@/types/echo';
 import type { CharacterBuild } from '@/types/character';
 import { SUBSTAT_COUNT } from '@/data/mainstats';
+import { SUBSTAT_DATA } from '@/data/substats';
+import { ROLE_TEMPLATE_CATEGORIES } from '@/data/roleTemplates';
+import type { RoleTemplate } from '@/data/roleTemplates';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  カテゴリ固定倍率
@@ -11,6 +14,41 @@ export const MULT: Record<SubstatCategory, number> = {
   acceptable:  0.8,  // 妥協は少しだけ評価する
   unnecessary: 0.1,  // 不要はほぼ評価しない
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  ロールテンプレート対応ヘルパー
+// ═══════════════════════════════════════════════════════════════════════════
+
+// サブステのカテゴリを解決する：explicit list → roleTemplate → unnecessary の順
+function resolveCategory(
+  subKey: SubstatKey,
+  recKeys: Set<SubstatKey>,
+  prefKeys: Set<SubstatKey>,
+  accKeys: Set<SubstatKey>,
+  roleTemplate?: RoleTemplate,
+): SubstatCategory {
+  if (recKeys.has(subKey)) return 'recommended';
+  if (prefKeys.has(subKey)) return 'preferred';
+  if (accKeys.has(subKey)) return 'acceptable';
+  if (roleTemplate) return ROLE_TEMPLATE_CATEGORIES[roleTemplate][subKey];
+  return 'unnecessary';
+}
+
+// ロールテンプレートを持つキャラ用の動的 IDEAL_MULT
+// 全13サブステの有効カテゴリを求め、上位 count 枠の加重平均を返す
+function calcTemplateIdealMult(
+  recKeys: Set<SubstatKey>,
+  prefKeys: Set<SubstatKey>,
+  accKeys: Set<SubstatKey>,
+  roleTemplate: RoleTemplate,
+  count: number,
+): number {
+  const weights = SUBSTAT_DATA.map(s =>
+    MULT[resolveCategory(s.key, recKeys, prefKeys, accKeys, roleTemplate)]
+  );
+  weights.sort((a, b) => b - a);
+  return weights.slice(0, count).reduce((sum, w) => sum + w, 0) / count;
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  汎用モード：サブステのデフォルトカテゴリ分類
@@ -88,21 +126,24 @@ function scoreWithBuild(echo: EchoState, build: CharacterBuild): ScoreResult {
   const recKeys  = new Set(build.substats.recommended.map((s) => s.key));
   const prefKeys = new Set(build.substats.preferred.map((s) => s.key));
   const accKeys  = new Set((build.substats.acceptable ?? []).map((s) => s.key));
+  const { roleTemplate } = build;
 
   // ── サブステ貢献 ──────────────────────────────────────────────────────
+  // roleTemplate がある場合は resolveCategory でテンプレートフォールバックを使用
   const breakdown = echo.substats.map((sub) => {
-    let category: SubstatCategory;
-    if (recKeys.has(sub.key))       category = 'recommended';
-    else if (prefKeys.has(sub.key)) category = 'preferred';
-    else if (accKeys.has(sub.key))  category = 'acceptable';
-    else                            category = 'unnecessary';
-
+    const category = resolveCategory(sub.key, recKeys, prefKeys, accKeys, roleTemplate);
     const points = normalizedTier(sub.tier) * MULT[category];
     return { key: sub.key, label: sub.label, points, category };
   });
 
-  // ── 理論最大値（cost に応じてスケール） ─────────────────────────────────
-  const theoreticalMax = calcTheoreticalMax(echo.cost);
+  // ── 理論最大値 ────────────────────────────────────────────────────────
+  // roleTemplate あり: 全13サブステの有効カテゴリから動的計算
+  // roleTemplate なし: 従来の固定 IDEAL_MULT を使用
+  const substatCount = SUBSTAT_COUNT[echo.cost];
+  const theoreticalMax = roleTemplate
+    ? substatCount * normalizedTier(REFERENCE_TIER) *
+      calcTemplateIdealMult(recKeys, prefKeys, accKeys, roleTemplate, substatCount)
+    : calcTheoreticalMax(echo.cost);
   const raw = breakdown.reduce((s, b) => s + b.points, 0);
   const substatScore = (raw / theoreticalMax) * 100;
 

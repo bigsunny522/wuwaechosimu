@@ -511,24 +511,25 @@ export const CHARACTERS: CharacterBuild[] = [
 
   {
     id: 'carlotta', name: 'カルロッタ', nameEn: 'Carlotta', element: '凝縮', weapon: '拳銃',
-    role: 'メインアタッカー（共鳴スキル重視）',
+    role: 'メインアタッカー（共鳴解放重視）',
+    roleTemplate: 'DPS',
     substats: {
+      // 基本4推奨 + 共鳴解放（主力ダメージ系）
+      // atkFlat: テンプレートから preferred (1.6x)
+      // basicAttackDmg / heavyAttackDmg / resonanceSkillDmg: テンプレートから acceptable (0.8x)
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
-        { key: 'resonanceSkillDmg' },
-        { key: 'atkPercent' },
-      ],
-      preferred:   [
         { key: 'energyRegen' },
-        { key: 'atkFlat' },
+        { key: 'atkPercent' },
         { key: 'resonanceLibDmg' },
       ],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
-      cost3: { recommended: ['GlacioDmg' ,'atkPercent' ],            acceptable: ['Resonanceeff'] },
+      cost3: { recommended: ['GlacioDmg', 'atkPercent'],            acceptable: ['Resonanceeff'] },
       cost1: { recommended: ['atkPercent'],            acceptable: [] },
     },
     harmonySets: { recommended: [SET.FROSTY], acceptable: [SET.FROST] },
