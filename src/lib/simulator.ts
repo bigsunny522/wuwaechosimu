@@ -23,7 +23,13 @@ function weightedTier(numTiers: number): number {
 
 export function pickSubstat(excluded: Set<string>): Substat {
   const pool = SUBSTAT_DATA.filter((s) => !excluded.has(s.key));
-  const entry = pool[Math.floor(Math.random() * pool.length)];
+  const totalWeight = pool.reduce((sum, s) => sum + s.weight, 0);
+  let rand = Math.random() * totalWeight;
+  let entry = pool[pool.length - 1];
+  for (const s of pool) {
+    rand -= s.weight;
+    if (rand <= 0) { entry = s; break; }
+  }
   const tier = weightedTier(entry.values.length);
   return {
     key: entry.key,
