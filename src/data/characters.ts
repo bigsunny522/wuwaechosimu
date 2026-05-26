@@ -1,4 +1,4 @@
-﻿import type { CharacterBuild } from '@/types/character';
+import type { CharacterBuild } from '@/types/character';
 import { HARMONY_SETS as HS } from '@/data/echoes';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -51,15 +51,16 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'denia', name: 'ダーニャ', nameEn: 'Denia', element: '焦熱', weapon: '長刃',
     role: 'メインアタッカー',
+    roleTemplate: 'DPS',
     substats: {
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
+        { key: 'energyRegen' },
         { key: 'atkPercent' },
         { key: 'resonanceLibDmg' },
-        { key: 'energyRegen' },
       ],
-      preferred:   [{ key: 'atkFlat' }],
+      preferred:   [],
       acceptable:  [],
     },
     mainstat: {
@@ -73,15 +74,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'hiyuki', name: '緋雪', nameEn: 'Hiyuki', element: '凝縮', weapon: '迅刀',
     role: 'メイン/サブ火力',
+    roleTemplate: 'DPS',
     substats: {
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
-        { key: 'resonanceLibDmg' },
+        { key: 'energyRegen' },
         { key: 'atkPercent' },
+        { key: 'resonanceLibDmg' },
       ],
-      preferred:   [{ key: 'energyRegen' }],
-      acceptable: [{ key: 'atkFlat' }],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critDmg'],   acceptable: ['critRate', 'atkPercent'] },
@@ -94,15 +97,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'sigrid', name: 'シグリカ', nameEn: 'Sigrika', element: '気動', weapon: '手甲',
     role: 'メインアタッカー（牽引）',
+    roleTemplate: 'DPS',
     substats: {
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
         { key: 'energyRegen' },
         { key: 'atkPercent' },
+        { key: 'resonanceLibDmg' },
       ],
-      preferred:   [{ key: 'resonanceSkillDmg' }, { key: 'resonanceLibDmg' }],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
@@ -115,6 +120,7 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'ryuk', name: 'リューク・ヘルセン', nameEn: 'Luuk Herssen', element: '回折', weapon: '手甲',
     role: 'メインアタッカー（回折ダメージ重視）',
+    roleTemplate: 'DPS',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -123,8 +129,8 @@ export const CHARACTERS: CharacterBuild[] = [
         { key: 'atkPercent' },
         { key: 'basicAttackDmg' },
       ],
-      preferred:   [{ key: 'atkFlat' }],
-      acceptable: [{ key: 'resonanceSkillDmg' }, { key: 'resonanceLibDmg' }],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
@@ -137,15 +143,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'aimes', name: 'エイメス', nameEn: 'Aemeath', element: '焦熱', weapon: '迅刀',
     role: 'メインアタッカー（全ダメバフ）',
+    roleTemplate: 'DPS',
     substats: {
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
         { key: 'energyRegen' },
         { key: 'atkPercent' },
+        { key: 'resonanceLibDmg' },
       ],
-      preferred:   [{ key: 'basicAttackDmg' }],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
@@ -160,13 +168,14 @@ export const CHARACTERS: CharacterBuild[] = [
     role: '耐久・回復サポーター',
     substats: {
       recommended: [
-        { key: 'hpPercent' },
         { key: 'energyRegen' },
-        { key: 'critRate' },
+        { key: 'defPercent' },
+        { key: 'defFlat' },
+        { key: 'resonanceLibDmg' },
         { key: 'critDmg' },
       ],
-      preferred:   [{ key: 'atkPercent' }],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['healingBonus', 'defPercent'],    acceptable: [] },
@@ -179,16 +188,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'linne', name: 'リンネー', nameEn: 'Lynae', element: '回折', weapon: '拳銃',
     role: 'サポート（協奏効率・全ダメバフ）',
+    roleTemplate: 'SubDPS',
     substats: {
       recommended: [
-        { key: 'energyRegen' },
         { key: 'critRate' },
         { key: 'critDmg' },
+        { key: 'energyRegen' },
         { key: 'atkPercent' },
         { key: 'basicAttackDmg' },
       ],
-      preferred:   [{ key: 'atkFlat' }],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],               acceptable: ['atkPercent'] },
@@ -201,16 +211,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'chixia_sanhua', name: '千咲', nameEn: 'Chisa', element: '消滅', weapon: '長刃',
     role: '耐久・回復、防御力デバフ',
+    roleTemplate: 'SubDPS',
     substats: {
       recommended: [
-        { key: 'energyRegen' },
         { key: 'critRate' },
         { key: 'critDmg' },
+        { key: 'energyRegen' },
         { key: 'atkPercent' },
-        {key:'resonanceSkillDmg'},     
+        { key: 'resonanceLibDmg' },
       ],
-      preferred:   [{ key: 'defPercent' }],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],    acceptable: ['atkPercent'] },
@@ -223,16 +234,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'quyuan', name: '仇遠', nameEn: 'Qiuyuan', element: '気動', weapon: '迅刀',
     role: 'メインアタッカー（重撃・スキルダメ）',
+    roleTemplate: 'SubDPS',
     substats: {
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
         { key: 'energyRegen' },
+        { key: 'atkPercent' },
         { key: 'heavyAttackDmg' },
-        { key: 'atkPercent'},
       ],
-      preferred:   [{ key: 'atkFlat' }],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
@@ -245,16 +257,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'galbrena', name: 'ガルブレーナ', nameEn: 'Galbrena', element: '焦熱', weapon: '拳銃',
     role: 'メインアタッカー（重撃重視）',
+    roleTemplate: 'DPS',
     substats: {
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
         { key: 'energyRegen' },
-        { key: 'heavyAttackDmg' },
         { key: 'atkPercent' },
+        { key: 'heavyAttackDmg' },
       ],
-      preferred:   [{ key: 'atkFlat' }],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
@@ -267,15 +280,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'yuanwu', name: 'ユーノ', nameEn: 'Iuno', element: '気動', weapon: '手甲',
     role: '耐久・回復サポート（重撃バフ）',
+    roleTemplate: 'SubDPS',
     substats: {
       recommended: [
-        { key: 'hpPercent' },
-        { key: 'energyRegen' },
         { key: 'critRate' },
         { key: 'critDmg' },
+        { key: 'energyRegen' },
+        { key: 'atkPercent' },
+        { key: 'resonanceLibDmg' },
       ],
-      preferred:   [{ key: 'heavyAttackDmg' }],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent']  },
@@ -288,15 +303,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'augusta', name: 'オーガスタ', nameEn: 'Augusta', element: '電導', weapon: '長刃',
     role: 'メインアタッカー（全ダメバフ）',
+    roleTemplate: 'DPS',
     substats: {
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
         { key: 'energyRegen' },
         { key: 'atkPercent' },
+        { key: 'heavyAttackDmg' },
       ],
-      preferred:   [{ key: 'resonanceLibDmg' }, { key: 'resonanceSkillDmg' }],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],          acceptable: ['atkPercent'] },
@@ -309,18 +326,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'flova', name: 'フローヴァ', nameEn: 'Phrolova', element: '消滅', weapon: '増幅器',
     role: 'メインアタッカー（重撃重視）',
+    roleTemplate: 'DPS',
     substats: {
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
-        { key: 'resonanceSkillDmg' },
+        { key: 'energyRegen' },
         { key: 'atkPercent' },
+        { key: 'resonanceSkillDmg' },
       ],
-      preferred:   [
-        { key: 'resonanceLibDmg' },
-        { key: 'atkFlat' },
-      ],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
@@ -333,6 +349,7 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'lupa', name: 'ルパ', nameEn: 'Lupa', element: '焦熱', weapon: '長刃',
     role: 'サポート（協奏効率・通常攻撃バフ）',
+    roleTemplate: 'SubDPS',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -341,8 +358,8 @@ export const CHARACTERS: CharacterBuild[] = [
         { key: 'atkPercent' },
         { key: 'resonanceLibDmg' },
       ],
-      preferred:   [{ key: 'basicAttackDmg' }],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],               acceptable: ['atkPercent'] },
@@ -359,12 +376,12 @@ export const CHARACTERS: CharacterBuild[] = [
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
+        { key: 'energyRegen' },
         { key: 'hpPercent' },
         { key: 'basicAttackDmg' },
-        { key: 'energyRegen' },
       ],
-      preferred:   [],
-      acceptable: [],
+      preferred:   [{ key: 'atkPercent' }],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
@@ -377,17 +394,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'shaconne', name: 'シャコンヌ', nameEn: 'Ciaccona', element: '気動', weapon: '拳銃',
     role: '牽引・風蝕バフサポート',
+    roleTemplate: 'SubDPS',
     substats: {
       recommended: [
-        { key: 'energyRegen' },
         { key: 'critRate' },
         { key: 'critDmg' },
+        { key: 'energyRegen' },
         { key: 'atkPercent' },
         { key: 'resonanceLibDmg' },
-        { key: 'energyRegen' },
       ],
       preferred:   [],
-      acceptable: [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],               acceptable: ['atkPercent', 'hpPercent'] },
@@ -400,6 +417,7 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'zanni', name: 'ザンニー', nameEn: 'Zani', element: '回折', weapon: '手甲',
     role: 'メインアタッカー（回折ダメバフ）',
+    roleTemplate: 'DPS',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -408,8 +426,8 @@ export const CHARACTERS: CharacterBuild[] = [
         { key: 'atkPercent' },
         { key: 'heavyAttackDmg' },
       ],
-      preferred:   [{ key: 'resonanceLibDmg' }, { key: 'atkFlat' },],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
@@ -422,16 +440,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'cantarella', name: 'カンタレラ', nameEn: 'Cantarella', element: '消滅', weapon: '増幅器',
     role: '耐久・回復、消滅ダメバフ',
+    roleTemplate: 'DPS',
     substats: {
       recommended: [
-        { key: 'energyRegen' },
         { key: 'critRate' },
         { key: 'critDmg' },
+        { key: 'energyRegen' },
+        { key: 'atkPercent' },
         { key: 'basicAttackDmg' },
-        { key: 'atkPercent' }
       ],
-      preferred:   [{ key: 'atkFlat' }],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],    acceptable: ['atkPercent'] },
@@ -444,16 +463,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'brant', name: 'ブラント', nameEn: 'Brant', element: '焦熱', weapon: '迅刀',
     role: '耐久・回復、共鳴スキルバフ',
+    roleTemplate: 'SubDPS',
     substats: {
       recommended: [
-        { key: 'energyRegen' },
         { key: 'critRate' },
         { key: 'critDmg' },
+        { key: 'energyRegen' },
         { key: 'atkPercent' },
         { key: 'basicAttackDmg' },
       ],
       preferred:   [],
-      acceptable: [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],    acceptable: ['atkPercent'] },
@@ -466,18 +486,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'phoebe', name: 'フィービー', nameEn: 'Phoebe', element: '回折', weapon: '増幅器',
     role: 'メインアタッカー（協奏効率）',
+    roleTemplate: 'DPS',
     substats: {
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
         { key: 'energyRegen' },
         { key: 'atkPercent' },
-      ],
-      preferred:   [
         { key: 'resonanceLibDmg' },
-        { key: 'atkFlat' },
       ],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
@@ -490,16 +509,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'rococo', name: 'ロココ', nameEn: 'Roccia', element: '消滅', weapon: '手甲',
     role: 'サブアタッカー（通常攻撃バフ）',
+    roleTemplate: 'SubDPS',
     substats: {
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
         { key: 'energyRegen' },
-        { key: 'heavyAttackDmg' },
         { key: 'atkPercent' },
+        { key: 'heavyAttackDmg' },
       ],
-      preferred:   [{ key: 'atkFlat' }],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate'],   acceptable: ['atkPercent', 'critDmg'] },
@@ -511,18 +531,15 @@ export const CHARACTERS: CharacterBuild[] = [
 
   {
     id: 'carlotta', name: 'カルロッタ', nameEn: 'Carlotta', element: '凝縮', weapon: '拳銃',
-    role: 'メインアタッカー（共鳴解放重視）',
+    role: 'メインアタッカー（共鳴スキル重視）',
     roleTemplate: 'DPS',
     substats: {
-      // 基本4推奨 + 共鳴解放（主力ダメージ系）
-      // atkFlat: テンプレートから preferred (1.6x)
-      // basicAttackDmg / heavyAttackDmg / resonanceSkillDmg: テンプレートから acceptable (0.8x)
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
         { key: 'energyRegen' },
         { key: 'atkPercent' },
-        { key: 'resonanceLibDmg' },
+        { key: 'resonanceSkillDmg' },
       ],
       preferred:   [],
       acceptable:  [],
@@ -538,16 +555,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'camellya', name: 'ツバキ', nameEn: 'Camellya', element: '消滅', weapon: '迅刀',
     role: 'メインアタッカー（通常攻撃重視）',
+    roleTemplate: 'DPS',
     substats: {
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
         { key: 'energyRegen' },
-        { key: 'basicAttackDmg' },
         { key: 'atkPercent' },
+        { key: 'basicAttackDmg' },
       ],
-      preferred:   [{ key: 'resonanceLibDmg' } , { key: 'atkFlat' }],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
@@ -562,13 +580,13 @@ export const CHARACTERS: CharacterBuild[] = [
     role: '耐久・回復サポート',
     substats: {
       recommended: [
-        { key: 'hpPercent' },
         { key: 'energyRegen' },
-        { key: 'critRate' },
         { key: 'critDmg' },
+        { key: 'hpPercent' },
+        { key: 'resonanceLibDmg' },
       ],
       preferred:   [{ key: 'atkPercent' }],
-      acceptable: [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['healingBonus'],    acceptable: ['critDmg'] },
@@ -581,16 +599,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'xiangli_yao', name: '相里要', nameEn: 'Xiangli Yao', element: '電導', weapon: '手甲',
     role: 'メインアタッカー（共鳴解放重視）',
+    roleTemplate: 'DPS',
     substats: {
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
         { key: 'energyRegen' },
-        { key: 'resonanceLibDmg' },
         { key: 'atkPercent' },
+        { key: 'resonanceLibDmg' },
       ],
-      preferred:   [ { key: 'atkFlat' } ],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
@@ -603,18 +622,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'zhezhi', name: '折枝', nameEn: 'Zhezhi', element: '凝縮', weapon: '増幅器',
     role: 'サブアタッカー（共鳴スキルバフ）',
+    roleTemplate: 'SubDPS',
     substats: {
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
         { key: 'energyRegen' },
         { key: 'atkPercent' },
-      ],
-      preferred:   [
         { key: 'basicAttackDmg' },
-        { key: 'atkFlat' },
       ],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
@@ -626,17 +644,18 @@ export const CHARACTERS: CharacterBuild[] = [
 
   {
     id: 'changli', name: '長離', nameEn: 'Changli', element: '焦熱', weapon: '迅刀',
-    role: 'メインアタッカー（焦熱・共鳴解放）',
+    role: 'メインアタッカー（焦熱・共鳴スキル）',
+    roleTemplate: 'DPS',
     substats: {
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
         { key: 'energyRegen' },
-        { key: 'resonanceLibDmg' },
         { key: 'atkPercent' },
+        { key: 'resonanceSkillDmg' },
       ],
-      preferred:   [{ key: 'basicAttackDmg' }],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
@@ -649,19 +668,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'jinhsi', name: '今汐', nameEn: 'Jinhsi', element: '回折', weapon: '長刃',
     role: 'メインアタッカー（共鳴スキル重視）',
+    roleTemplate: 'DPS',
     substats: {
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
-        { key: 'resonanceSkillDmg' },
-        { key: 'atkPercent' },
         { key: 'energyRegen' },
+        { key: 'atkPercent' },
+        { key: 'resonanceSkillDmg' },
       ],
-      preferred: [
-        { key: 'basicAttackDmg' },
-        { key: 'resonanceLibDmg'}
-      ],
-      acceptable: [{ key: 'atkFlat' },],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
@@ -674,16 +691,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'yinlin', name: '吟霖', nameEn: 'Yinlin', element: '電導', weapon: '増幅器',
     role: 'サブアタッカー（共鳴解放バフ）',
+    roleTemplate: 'SubDPS',
     substats: {
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
         { key: 'energyRegen' },
-        { key: 'resonanceSkillDmg' },
         { key: 'atkPercent' },
+        { key: 'resonanceSkillDmg' },
       ],
-      preferred:   [{ key: 'atkFlat' },],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
@@ -696,16 +714,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'jiyan', name: '忌炎', nameEn: 'Jiyan', element: '気動', weapon: '長刃',
     role: 'メインアタッカー（重撃重視）',
+    roleTemplate: 'DPS',
     substats: {
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
         { key: 'energyRegen' },
-        { key: 'heavyAttackDmg' },
         { key: 'atkPercent' },
+        { key: 'heavyAttackDmg' },
       ],
-      preferred:   [{ key: 'atkFlat' }],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
@@ -718,16 +737,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'lingyang', name: '凌陽', nameEn: 'Lingyang', element: '凝縮', weapon: '手甲',
     role: 'メインアタッカー（凝縮ダメージ重視）',
+    roleTemplate: 'DPS',
     substats: {
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
         { key: 'energyRegen' },
         { key: 'atkPercent' },
-        { key:'basicAttackDmg' },
+        { key: 'resonanceLibDmg' },
       ],
-      preferred:   [{ key: 'resonanceLibDmg' }],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
@@ -740,16 +760,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'encore', name: 'アンコ', nameEn: 'Encore', element: '焦熱', weapon: '増幅器',
     role: 'メインアタッカー（通常攻撃重視）',
+    roleTemplate: 'DPS',
     substats: {
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
         { key: 'energyRegen' },
-        { key: 'basicAttackDmg' },
         { key: 'atkPercent' },
+        { key: 'basicAttackDmg' },
       ],
-      preferred:   [{ key: 'resonanceSkillDmg' }],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
@@ -762,16 +783,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'calcharo', name: 'カカロ', nameEn: 'Calcharo', element: '電導', weapon: '長刃',
     role: 'メインアタッカー（共鳴解放重視）',
+    roleTemplate: 'DPS',
     substats: {
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
         { key: 'energyRegen' },
-        { key: 'resonanceLibDmg' },
         { key: 'atkPercent' },
+        { key: 'resonanceLibDmg' },
       ],
-      preferred:   [{ key: 'resonanceSkillDmg' }],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
@@ -784,22 +806,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'jianxin', name: '鑑心', nameEn: 'Jianxin', element: '気動', weapon: '手甲',
     role: '耐久・回復、共鳴解放バフ',
+    roleTemplate: 'SubDPS',
     substats: {
       recommended: [
-        { key: 'energyRegen' },
-        { key: 'atkPercent' },
         { key: 'critRate' },
         { key: 'critDmg' },
-
-      ],
-      preferred:   [
-        { key: 'resonanceLibDmg' },
+        { key: 'energyRegen' },
+        { key: 'atkPercent' },
         { key: 'heavyAttackDmg' },
       ],
-      acceptable: [
-        { key: 'atkPercent' },
-        { key: 'resonanceLibDmg' }
-      ],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['atkPercent','critRate', 'critDmg'],    acceptable: [] },
@@ -817,8 +834,8 @@ export const CHARACTERS: CharacterBuild[] = [
         { key: 'energyRegen' },
         { key: 'atkPercent' },
       ],
-      preferred:   [{ key: 'atkPercent' }],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['healingBonus', ],    acceptable: ['hpPercent'] },
@@ -833,15 +850,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'rover_spectro', name: '漂泊者(回折)', nameEn: 'Rover (Spectro)', element: '回折', weapon: '迅刀',
     role: 'サポート・サブ火力',
+    roleTemplate: 'DPS',
     substats: {
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
         { key: 'energyRegen' },
         { key: 'atkPercent' },
+        { key: 'resonanceSkillDmg' },
       ],
-      preferred:   [{ key: 'atkFlat' },],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],               acceptable: ['atkPercent'] },
@@ -854,6 +873,7 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'rover_havoc', name: '漂泊者(消滅)', nameEn: 'Rover (Havoc)', element: '消滅', weapon: '迅刀',
     role: 'メインアタッカー',
+    roleTemplate: 'DPS',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -861,8 +881,8 @@ export const CHARACTERS: CharacterBuild[] = [
         { key: 'energyRegen' },
         { key: 'atkPercent' },
       ],
-      preferred:   [{ key: 'atkFlat' },{ key: 'resonanceSkillDmg' }],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
@@ -875,15 +895,17 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'rover_aero', name: '漂泊者(気動)', nameEn: 'Rover (Aero)', element: '気動', weapon: '迅刀',
     role: '耐久・回復サポート',
+    roleTemplate: 'SubDPS',
     substats: {
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
-        { key: 'atkPercent' } ,
+        { key: 'energyRegen' },
+        { key: 'atkPercent' },
         { key: 'resonanceSkillDmg' },
       ],
-      preferred:   [{ key: 'hpPercent' },],
-      acceptable: [],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended:  ['critRate', 'critDmg'],    acceptable: ['atkPercent'] },
@@ -1160,4 +1182,3 @@ export const CHARACTER_MAP: Record<string, CharacterBuild> = Object.fromEntries(
 export const CHARACTER_LIST = CHARACTERS.map(({ id, name, nameEn, element, role }) => ({
   id, name, nameEn, element, role,
 }));
-
