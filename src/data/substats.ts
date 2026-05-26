@@ -48,14 +48,14 @@ export const SUBSTAT_DATA: SubstatEntry[] = [
     unit: '',
     // 4 tiers: 30 → 60, step 10
     values: [30, 40, 50, 60],
-    weight: 10,
+    weight: 4,
   },
   {
     key: 'hpFlat',
     label: 'HP（固定値）',
     unit: '',
     values: [320, 360, 390, 430, 470, 510, 540, 580],
-    weight: 10,
+    weight: 4,
   },
   {
     key: 'defFlat',
@@ -63,7 +63,7 @@ export const SUBSTAT_DATA: SubstatEntry[] = [
     unit: '',
     // 4 tiers: 40 → 70, step 10
     values: [40, 50, 60, 70],
-    weight: 10,
+    weight: 4,
   },
   {
     key: 'energyRegen',

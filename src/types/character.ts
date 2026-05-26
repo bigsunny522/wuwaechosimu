@@ -1,4 +1,7 @@
 import type { SubstatKey } from '@/types/echo';
+import type { RoleTemplate } from '@/data/roleTemplates';
+
+export type { RoleTemplate };
 
 export interface SubstatBuild {
   key: SubstatKey;
@@ -16,6 +19,7 @@ export interface CharacterBuild {
   element: string;
   weapon: string;
   role: string;
+  roleTemplate?: RoleTemplate;
 
   substats: {
     recommended: SubstatBuild[];

@@ -69,6 +69,9 @@ export interface ScoreResult {
     points: number;
     category: SubstatCategory;
   }[];
+  // デバッグパネル用：スコアリング時に実際に使用した値
+  theoreticalMax: number;
+  idealMult: number;
   // キャラ別スコアのみ設定される補正値
   mainstatBonus?: number;
   setBonus?: number;
