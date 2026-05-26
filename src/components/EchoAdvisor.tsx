@@ -127,7 +127,7 @@ export default function EchoAdvisor({ result, compact = false }: Props) {
   /* ── フル版（PC / デスクトップ用） ──────────────────────────────────── */
   return (
     <div
-      className="w-full max-w-sm rounded-2xl p-4 flex flex-col gap-3"
+      className="w-full max-w-sm mx-auto rounded-2xl p-4 flex flex-col gap-3"
       style={{ background: rec.bg, border: `1px solid ${rec.border}` }}
     >
       {/* Header row */}
