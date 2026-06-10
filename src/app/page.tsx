@@ -23,6 +23,39 @@ import EchoIcon from '@/components/EchoIcon';
 
 const COST_OPTIONS: EchoCost[] = [4, 3, 1];
 const ACCENT          = '#0275fd';
+
+function getRecommendedEchoId(charId: string): string | null {
+  if (charId === 'generic') return null;
+  const char = CHARACTER_MAP[charId];
+  if (!char) return null;
+  // 推奨セットを優先、なければ可セットにフォールバック
+  for (const set of [...char.harmonySets.recommended, ...char.harmonySets.acceptable]) {
+    const echo = ECHOES.find(e => e.cost === 4 && e.sets.includes(set));
+    if (echo) return echo.id;
+  }
+  return null;
+}
+
+function getRecommendedHarmonySet(charId: string, cost: EchoCost): string | null {
+  if (charId === 'generic' || cost === 4) return null;
+  const char = CHARACTER_MAP[charId];
+  if (!char) return null;
+  const available = new Set(ECHOES.filter(e => e.cost === cost).flatMap(e => e.sets));
+  // 推奨セットを優先、なければ可セットにフォールバック
+  return char.harmonySets.recommended.find(s => available.has(s))
+    ?? char.harmonySets.acceptable.find(s => available.has(s))
+    ?? null;
+}
+
+function getRecommendedMainstatKey(cost: EchoCost, charId: string): string {
+  if (cost === 4) return 'critDmg';
+  if (cost === 1) return 'atkPercent';
+  if (charId === 'generic') return 'atkPercent';
+  const char = CHARACTER_MAP[charId];
+  if (!char) return 'atkPercent';
+  const dmgKey = char.mainstat.cost3.recommended.find(k => k.endsWith('Dmg'));
+  return dmgKey ?? 'atkPercent';
+}
 const BONUS_DURATION_MS = 5 * 60 * 1000;
 const MAX_REROLL      = 3;
 const SAVE_PER_AD     = 10;
@@ -107,18 +140,32 @@ export default function Home() {
   const handleGrantBonus = useCallback(() => {
     if (adPurpose === 'bonus') {
       setBonusEndTime(Date.now() + BONUS_DURATION_MS);
-      setLockedMainstatKey(MAINSTAT_POOLS[cost][0].key);
+      setLockedMainstatKey(getRecommendedMainstatKey(cost, selectedCharId));
       setRerollUsed(false);
       setRerollIndices(new Set());
     } else {
       setSaveSlots((prev) => prev + SAVE_PER_AD);
     }
-  }, [adPurpose, cost]);
+  }, [adPurpose, cost, selectedCharId]);
 
   const openAdModal = useCallback((purpose: AdPurpose) => {
     setAdPurpose(purpose);
     setAdModalOpen(true);
   }, []);
+
+  const handleCharacterChange = useCallback((charId: string) => {
+    setSelectedCharId(charId);
+    setScore(null);
+    clearBaselineCache();
+    if (cost === 4) {
+      const recId = getRecommendedEchoId(charId);
+      if (recId) setSelectedEchoId(recId);
+    } else {
+      const recSet = getRecommendedHarmonySet(charId, cost);
+      if (recSet) setSelectedHarmonySet(recSet);
+    }
+    setLockedMainstatKey(getRecommendedMainstatKey(cost, charId));
+  }, [cost]);
 
   const harmonySetOptions = useMemo(() => {
     if (cost === 4) return [];
@@ -128,16 +175,23 @@ export default function Home() {
 
   const handleCostChange = useCallback((c: EchoCost) => {
     setCost(c);
-    setSelectedEchoId(DEFAULT_ECHO_ID[c]);
-    if (c !== 4) {
-      const available = new Set(ECHOES.filter(e => e.cost === c).flatMap(e => e.sets));
-      const first = Object.values(HARMONY_SETS).find(s => available.has(s)) ?? '';
-      setSelectedHarmonySet(first);
+    if (c === 4) {
+      const recId = getRecommendedEchoId(selectedCharId);
+      setSelectedEchoId(recId ?? DEFAULT_ECHO_ID[c]);
+    } else {
+      const recSet = getRecommendedHarmonySet(selectedCharId, c);
+      if (recSet) {
+        setSelectedHarmonySet(recSet);
+      } else {
+        const available = new Set(ECHOES.filter(e => e.cost === c).flatMap(e => e.sets));
+        const first = Object.values(HARMONY_SETS).find(s => available.has(s)) ?? '';
+        setSelectedHarmonySet(first);
+      }
     }
-    setLockedMainstatKey(MAINSTAT_POOLS[c][0].key);
+    setLockedMainstatKey(getRecommendedMainstatKey(c, selectedCharId));
     setEcho(null);
     setScore(null);
-  }, []);
+  }, [selectedCharId]);
 
   const handleStart = useCallback(() => {
     scrollOnNext.current = true;
@@ -243,23 +297,50 @@ export default function Home() {
     })),
   ], [T.charGeneric, locale]);
 
-  const echoOptions = useMemo(() =>
-    echoList
-      .map((e) => ({
-        value: e.id,
-        label: locale === 'en' ? (e.nameEn ?? e.name) : e.name,
-      }))
-      .sort((a, b) =>
-        a.label.localeCompare(b.label, locale === 'en' ? 'en' : 'ja', { sensitivity: 'base' })
-      ),
-  [echoList, locale]);
+  const echoOptions = useMemo(() => {
+    const char = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
+    const recSets = char ? new Set(char.harmonySets.recommended) : new Set<string>();
+    const accSets = char ? new Set(char.harmonySets.acceptable) : new Set<string>();
+    const priority = (b?: 'recommended' | 'acceptable') =>
+      b === 'recommended' ? 0 : b === 'acceptable' ? 1 : 2;
 
-  const harmonyOptions = useMemo(() =>
-    harmonySetOptions.map((s) => ({
-      value: s,
-      label: locale === 'en' ? (HARMONY_SETS_EN[s] ?? s) : s,
-    })),
-  [harmonySetOptions, locale]);
+    return echoList
+      .map((e) => {
+        let badge: 'recommended' | 'acceptable' | undefined;
+        if (char) {
+          if (e.sets.some(s => recSets.has(s))) badge = 'recommended';
+          else if (e.sets.some(s => accSets.has(s))) badge = 'acceptable';
+        }
+        return { value: e.id, label: locale === 'en' ? (e.nameEn ?? e.name) : e.name, badge };
+      })
+      .sort((a, b) => {
+        const pd = priority(a.badge) - priority(b.badge);
+        if (pd !== 0) return pd;
+        return a.label.localeCompare(b.label, locale === 'en' ? 'en' : 'ja', { sensitivity: 'base' });
+      });
+  }, [echoList, locale, selectedCharId]);
+
+  const harmonyOptions = useMemo(() => {
+    const char = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
+    const recSets = char ? new Set(char.harmonySets.recommended) : new Set<string>();
+    const accSets = char ? new Set(char.harmonySets.acceptable) : new Set<string>();
+    const priority = (b?: 'recommended' | 'acceptable') =>
+      b === 'recommended' ? 0 : b === 'acceptable' ? 1 : 2;
+
+    const items = harmonySetOptions.map((s, i) => {
+      let badge: 'recommended' | 'acceptable' | undefined;
+      if (char) {
+        if (recSets.has(s)) badge = 'recommended';
+        else if (accSets.has(s)) badge = 'acceptable';
+      }
+      return { value: s, label: locale === 'en' ? (HARMONY_SETS_EN[s] ?? s) : s, badge, _i: i };
+    });
+    items.sort((a, b) => {
+      const pd = priority(a.badge) - priority(b.badge);
+      return pd !== 0 ? pd : a._i - b._i;
+    });
+    return items.map(({ _i: _, ...opt }) => opt);
+  }, [harmonySetOptions, locale, selectedCharId]);
 
   const mainstatOptions = useMemo(() =>
     MAINSTAT_POOLS[cost].map((m) => ({
@@ -364,7 +445,7 @@ export default function Home() {
           </div>
           <CustomSelect
             value={selectedCharId}
-            onChange={(v) => { setSelectedCharId(v); setScore(null); clearBaselineCache(); }}
+            onChange={handleCharacterChange}
             options={charOptions}
             accentColor="#0275fd"
             background="linear-gradient(135deg, #f0f7ff 0%, #fafbff 100%)"

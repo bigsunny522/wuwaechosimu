@@ -5,6 +5,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 export interface SelectOption {
   value: string;
   label: string;
+  badge?: 'recommended' | 'acceptable';
 }
 
 interface CustomSelectProps {
@@ -125,7 +126,7 @@ export default function CustomSelect({
                 onClick={() => handleSelect(opt.value)}
                 onMouseEnter={() => setHoveredValue(opt.value)}
                 onMouseLeave={() => setHoveredValue(null)}
-                className="w-full px-4 py-2.5 text-sm text-left flex items-center justify-between"
+                className="w-full px-4 py-2.5 text-sm text-left flex items-center justify-between gap-2"
                 style={{
                   background: isSelected
                     ? `${accentColor}12`
@@ -139,11 +140,29 @@ export default function CustomSelect({
                 }}
               >
                 <span className="truncate">{opt.label}</span>
-                {isSelected && (
-                  <span className="shrink-0 ml-2 text-xs" style={{ color: accentColor }}>
-                    ✓
-                  </span>
-                )}
+                <div className="flex items-center gap-1 shrink-0">
+                  {opt.badge === 'recommended' && (
+                    <span
+                      className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                      style={{ background: '#d1fae5', color: '#059669' }}
+                    >
+                      推奨
+                    </span>
+                  )}
+                  {opt.badge === 'acceptable' && (
+                    <span
+                      className="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
+                      style={{ background: '#f3f4f6', color: '#9ca3af' }}
+                    >
+                      可
+                    </span>
+                  )}
+                  {isSelected && (
+                    <span className="text-xs" style={{ color: accentColor }}>
+                      ✓
+                    </span>
+                  )}
+                </div>
               </button>
             );
           })}
