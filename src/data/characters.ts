@@ -35,6 +35,7 @@ const SET = {
   GLORY_CROWN: HS.GLORY_FORGE_CROWN,
   LOST_DREAM:  HS.LOST_DREAM,
   GOLDEN:      HS.GILDED_REVELATION,
+  NIGHTMARE_SMASHER: HS.NIGHTMARE_SMASHER,
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -47,6 +48,52 @@ const SET = {
 export const CHARACTERS: CharacterBuild[] = [
 
   // ── 5★ キャラクター（実装降順）────────────────────────────────────────
+
+  {
+    id: 'lucy', name: 'ルーシー', nameEn: 'Lucy', element: '回折', weapon: '長刃',
+    role: 'メインアタッカー',
+    roleTemplate: 'DPS',
+    substats: {
+      recommended: [
+        { key: 'critRate' },
+        { key: 'critDmg' },
+        { key: 'energyRegen' },
+        { key: 'atkPercent' },
+        { key: 'heavyAttackDmg' },
+      ],
+      preferred:   [],
+      acceptable:  [],
+    },
+    mainstat: {
+      cost4: { recommended: ['critRate', 'critDmg'],        acceptable: ['atkPercent'] },
+      cost3: { recommended: ['SpectroDmg', 'atkPercent'],   acceptable: [] },
+      cost1: { recommended: ['atkPercent'],                 acceptable: [] },
+    },
+    harmonySets: { recommended: [SET.NIGHTMARE_SMASHER], acceptable: [SET.CELESTIAL, SET.REFLECT, SET.LINGERING, SET.MONTAGE] },
+  },
+
+  {
+    id: 'rebecca', name: 'レベッカ', nameEn: 'Rebecca', element: '電導', weapon: '拳銃',
+    role: 'サブアタッカー',
+    roleTemplate: 'SubDPS',
+    substats: {
+      recommended: [
+        { key: 'critRate' },
+        { key: 'critDmg' },
+        { key: 'energyRegen' },
+        { key: 'basicAttackDmg' },
+        { key: 'atkFlat' },
+      ],
+      preferred:   [],
+      acceptable:  [],
+    },
+    mainstat: {
+      cost4: { recommended: ['critRate', 'critDmg'],          acceptable: ['atkPercent'] },
+      cost3: { recommended: ['ElectroDmg', 'atkPercent'],     acceptable: [] },
+      cost1: { recommended: ['atkPercent'],                   acceptable: [] },
+    },
+    harmonySets: { recommended: [SET.NIGHTMARE_SMASHER], acceptable: [SET.VOID, SET.MONTAGE, SET.LINGERING, SET.MOONLIT] },
+  },
 
   {
     id: 'denia', name: 'ダーニャ', nameEn: 'Denia', element: '焦熱', weapon: '長刃',

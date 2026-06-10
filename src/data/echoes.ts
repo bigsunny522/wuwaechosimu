@@ -63,6 +63,8 @@ export const HARMONY_SETS = {
   GLORY_FORGE_CROWN:    'グローリーフォージ・クラウン',
   LOST_DREAM:           'ロスト・ドリーム',
   GILDED_REVELATION:    'ゴールデン・ヴァリアント',
+  // ── 追加セット (Ver 4.x) ────────────────────────────────────────────────
+  NIGHTMARE_SMASHER:    '響き渡る共鳴・ナイトメア・スマッシャー',
 } as const;
 
 // ── 英語ハーモニーセット名（英語UI対応用） ──────────────────────────────────
@@ -97,6 +99,7 @@ export const HARMONY_SETS_EN: Record<string, string> = {
   'グローリーフォージ・クラウン': 'Crown of Valor',
   'ロスト・ドリーム':       'Dream of the Lost',
   'ゴールデン・ヴァリアント': 'Rite of Gilded Revelation',
+  '響き渡る共鳴・ナイトメア・スマッシャー': 'Resonating Chord: Nightmare Smasher',
 };
 
 // ── ハーモニーセット別バッジカラー（属性区分） ────────────────────────────
