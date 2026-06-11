@@ -64,7 +64,7 @@ export const HARMONY_SETS = {
   LOST_DREAM:           'ロスト・ドリーム',
   GILDED_REVELATION:    'ゴールデン・ヴァリアント',
   // ── 追加セット (Ver 4.x) ────────────────────────────────────────────────
-  NIGHTMARE_SMASHER:    '響き渡る共鳴・ナイトメア・スマッシャー',
+  NIGHTMARE_SPECTER:    'ナイトメア・スペクター',
 } as const;
 
 // ── 英語ハーモニーセット名（英語UI対応用） ──────────────────────────────────
@@ -99,7 +99,7 @@ export const HARMONY_SETS_EN: Record<string, string> = {
   'グローリーフォージ・クラウン': 'Crown of Valor',
   'ロスト・ドリーム':       'Dream of the Lost',
   'ゴールデン・ヴァリアント': 'Rite of Gilded Revelation',
-  '響き渡る共鳴・ナイトメア・スマッシャー': 'Resonating Chord: Nightmare Smasher',
+  'ナイトメア・スペクター':   'Nightmare Specter',
 };
 
 // ── ハーモニーセット別バッジカラー（属性区分） ────────────────────────────
@@ -193,6 +193,7 @@ export const ECHOES: EchoInfo[] = [
   { id: 'nm_inferno_rider',            name: 'ナイトメア・燎原の炎騎',       nameEn: 'Nightmare: Inferno Rider',           cost: 4, sets: [S.MOLTEN_RIFT]                                                    },
   { id: 'nm_kelpie',                   name: 'ナイトメア・ケルピー',         nameEn: 'Nightmare: Kelpie',                  cost: 4, sets: [S.GLORIOUS_WIND, S.GUSTS_OF_WELKIN]                               },
   { id: 'false_sovereign',             name: '偽りの神王',                   nameEn: 'The False Sovereign',                cost: 4, sets: [S.GLORY_FORGE_CROWN]                                              },
+  { id: 'nightmare_smasher',           name: '響き渡る共鳴・ナイトメア・スマッシャー', nameEn: 'Resonating Chord: Nightmare Smasher', cost: 4, sets: [S.NIGHTMARE_SPECTER]                                        },
 
   // ── COST 3 ──────────────────────────────────────────────────────────────
   { id: 'cyan_feathered_heron',        name: '青羽サギ',                     nameEn: 'Cyan-Feathered Heron',               cost: 3, sets: [S.SIERRA_GALE, S.CELESTIAL_LIGHT]                                },

@@ -35,7 +35,7 @@ const SET = {
   GLORY_CROWN: HS.GLORY_FORGE_CROWN,
   LOST_DREAM:  HS.LOST_DREAM,
   GOLDEN:      HS.GILDED_REVELATION,
-  NIGHTMARE_SMASHER: HS.NIGHTMARE_SMASHER,
+  NIGHTMARE_SPECTER: HS.NIGHTMARE_SPECTER,
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -69,7 +69,7 @@ export const CHARACTERS: CharacterBuild[] = [
       cost3: { recommended: ['SpectroDmg', 'atkPercent'],   acceptable: [] },
       cost1: { recommended: ['atkPercent'],                 acceptable: [] },
     },
-    harmonySets: { recommended: [SET.NIGHTMARE_SMASHER], acceptable: [SET.CELESTIAL, SET.REFLECT, SET.LINGERING, SET.MONTAGE] },
+    harmonySets: { recommended: [SET.NIGHTMARE_SPECTER], acceptable: [SET.CELESTIAL, SET.REFLECT, SET.LINGERING, SET.MONTAGE] },
   },
 
   {
@@ -92,7 +92,7 @@ export const CHARACTERS: CharacterBuild[] = [
       cost3: { recommended: ['ElectroDmg', 'atkPercent'],     acceptable: [] },
       cost1: { recommended: ['atkPercent'],                   acceptable: [] },
     },
-    harmonySets: { recommended: [SET.NIGHTMARE_SMASHER], acceptable: [SET.VOID, SET.MONTAGE, SET.LINGERING, SET.MOONLIT] },
+    harmonySets: { recommended: [SET.NIGHTMARE_SPECTER], acceptable: [SET.VOID, SET.MONTAGE, SET.LINGERING, SET.MOONLIT] },
   },
 
   {
