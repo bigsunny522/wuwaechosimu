@@ -15,6 +15,8 @@ import ResourceCounter from '@/components/ResourceCounter';
 import ScoreDebugPanel from '@/components/ScoreDebugPanel';
 import AdBonusModal from '@/components/AdBonusModal';
 import SavedResultsModal, { type SavedResult } from '@/components/SavedResultsModal';
+import UpdateModal from '@/components/UpdateModal';
+import { LATEST_UPDATE_ID } from '@/data/updates';
 import { generateResultCard, buildShareText } from '@/lib/imageGen';
 import { useLocale } from '@/lib/locale';
 import { TRANSLATIONS, MAINSTAT_LABEL_EN, interpolate } from '@/data/translations';
@@ -113,6 +115,15 @@ export default function Home() {
     return () => clearInterval(id);
   }, [bonusEndTime]);
 
+  /* ── Update notification ────────────────────────────────────── */
+  useEffect(() => {
+    const seen = localStorage.getItem('lastSeenUpdate');
+    if (seen !== LATEST_UPDATE_ID) {
+      setUpdateModalOpen(true);
+      setHasNewUpdate(true);
+    }
+  }, []);
+
   /* ── Auto-scroll to echo card on new draw ───────────────────── */
   useEffect(() => {
     if (!echo || !scrollOnNext.current) return;
@@ -127,6 +138,8 @@ export default function Home() {
   const [saveSlots, setSaveSlots]             = useState(0);
   const [savedResults, setSavedResults]       = useState<SavedResult[]>([]);
   const [historyOpen, setHistoryOpen]         = useState(false);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [hasNewUpdate, setHasNewUpdate]       = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
   const [advisorResult, setAdvisorResult]     = useState<AdvisorResult | null>(null);
 
@@ -377,6 +390,21 @@ export default function Home() {
             >
               <span>📖</span>
               <span className="hidden sm:inline">{locale === 'ja' ? '使い方' : 'Guide'}</span>
+            </Link>
+            {/* News link */}
+            <Link
+              href="/news"
+              className="relative flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
+              title={locale === 'ja' ? 'お知らせ' : "What's New"}
+            >
+              <span>🔔</span>
+              <span className="hidden sm:inline">{locale === 'ja' ? 'お知らせ' : "News"}</span>
+              {hasNewUpdate && (
+                <span
+                  className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full border-2 border-white"
+                  style={{ background: ACCENT }}
+                />
+              )}
             </Link>
             {/* Locale toggle */}
             <button
@@ -878,6 +906,16 @@ export default function Home() {
       <footer className="border-t border-[#f3f4f6] py-4">
         <p className="text-center text-xs text-[#9ca3af]">{T.footer}</p>
       </footer>
+
+      {updateModalOpen && (
+        <UpdateModal
+          onClose={() => {
+            localStorage.setItem('lastSeenUpdate', LATEST_UPDATE_ID);
+            setUpdateModalOpen(false);
+            setHasNewUpdate(false);
+          }}
+        />
+      )}
 
       {adModalOpen && (
         <AdBonusModal
