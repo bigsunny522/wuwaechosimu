@@ -50,6 +50,31 @@ export const CHARACTERS: CharacterBuild[] = [
   // ── 5★ キャラクター（実装降順）────────────────────────────────────────
 
   {
+    id: 'lucilare', name: 'ルシラー', nameEn: 'Lucilare', element: '凝縮', weapon: '迅刀',
+    role: 'サブアタッカー',
+    roleTemplate: 'SubDPS',
+    substats: {
+      recommended: [
+        { key: 'critRate' },
+        { key: 'critDmg' },
+      ],
+      preferred:   [
+        { key: 'atkPercent' },
+        { key: 'basicAttackDmg' },
+      ],
+      acceptable:  [
+        { key: 'atkFlat' },
+      ],
+    },
+    mainstat: {
+      cost4: { recommended: ['critRate', 'critDmg'],       acceptable: ['atkPercent'] },
+      cost3: { recommended: ['GlacioDmg', 'atkPercent'],  acceptable: [] },
+      cost1: { recommended: ['atkPercent'],                acceptable: [] },
+    },
+    harmonySets: { recommended: [SET.ETHER], acceptable: [SET.SNOWY, SET.MOONLIT, SET.MONTAGE, SET.LOST_DREAM] },
+  },
+
+  {
     id: 'lucy', name: 'ルーシー', nameEn: 'Lucy', element: '回折', weapon: '長刃',
     role: 'メインアタッカー',
     roleTemplate: 'DPS',
