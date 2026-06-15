@@ -71,7 +71,7 @@ export const CHARACTERS: CharacterBuild[] = [
       cost3: { recommended: ['GlacioDmg', 'atkPercent'],  acceptable: [] },
       cost1: { recommended: ['atkPercent'],                acceptable: [] },
     },
-    harmonySets: { recommended: [SET.ETHER], acceptable: [SET.SNOWY, SET.MOONLIT, SET.MONTAGE, SET.LOST_DREAM] },
+    harmonySets: { recommended: [SET.SNOWY, SET.MOONLIT, SET.MONTAGE, SET.LOST_DREAM], acceptable: [] },
   },
 
   {
