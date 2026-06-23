@@ -143,6 +143,13 @@ export default function ScoreDebugPanel({ echo, score }: Props) {
               <span className="tabular-nums text-[#0275fd]">{substatScore.toFixed(2)}</span>
             </div>
 
+            {score.comboBonus !== undefined && score.comboBonus > 0 && (
+              <div className="flex justify-between" style={{ color: '#10b981' }}>
+                <span>{T.debugComboBonus} (×{score.breakdown.filter(b => b.category === 'recommended').length})</span>
+                <span className="tabular-nums">+{score.comboBonus}</span>
+              </div>
+            )}
+
             {score.isCharacterScore && (
               <>
                 {score.mainstatBonus !== undefined && score.mainstatBonus !== 0 && (
