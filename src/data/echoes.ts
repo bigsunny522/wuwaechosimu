@@ -65,6 +65,10 @@ export const HARMONY_SETS = {
   GILDED_REVELATION:    'ゴールデン・ヴァリアント',
   // ── 追加セット (Ver 4.x) ────────────────────────────────────────────────
   NIGHTMARE_SMASHER:    '響き渡る共鳴・ナイトメア・スマッシャー',
+  // ── 追加セット (Ver 3.5) ────────────────────────────────────────────────
+  SONG_OF_FEATHERED_TRACE: '羽舞う塵世の歌',
+  HEART_OF_EVILS_PURGE:    '煞を祓う浄心',
+  LAMP_OF_NETHER_ROAD:     '冥夜を導く灯',
 } as const;
 
 // ── 英語ハーモニーセット名（英語UI対応用） ──────────────────────────────────
@@ -100,6 +104,9 @@ export const HARMONY_SETS_EN: Record<string, string> = {
   'ロスト・ドリーム':       'Dream of the Lost',
   'ゴールデン・ヴァリアント': 'Rite of Gilded Revelation',
   '響き渡る共鳴・ナイトメア・スマッシャー': 'Resonating Chord: Nightmare Smasher',
+  '羽舞う塵世の歌':         'Song of Feathered Trace',
+  '煞を祓う浄心':           "Heart of Evil's Purge",
+  '冥夜を導く灯':           'Lamp of Nether Road',
 };
 
 // ── ハーモニーセット別バッジカラー（属性区分） ────────────────────────────
@@ -144,6 +151,7 @@ export interface EchoInfo {
   id:     string;
   name:   string;
   nameEn: string;
+  nameCn?: string; // 中国語名（判明している場合のみ）
   cost:   EchoCost;
   sets:   string[];
 }
@@ -193,6 +201,8 @@ export const ECHOES: EchoInfo[] = [
   { id: 'nm_inferno_rider',            name: 'ナイトメア・燎原の炎騎',       nameEn: 'Nightmare: Inferno Rider',           cost: 4, sets: [S.MOLTEN_RIFT]                                                    },
   { id: 'nm_kelpie',                   name: 'ナイトメア・ケルピー',         nameEn: 'Nightmare: Kelpie',                  cost: 4, sets: [S.GLORIOUS_WIND, S.GUSTS_OF_WELKIN]                               },
   { id: 'false_sovereign',             name: '偽りの神王',                   nameEn: 'The False Sovereign',                cost: 4, sets: [S.GLORY_FORGE_CROWN]                                              },
+  { id: 'thousand_puppet_pavilion',    name: '千傀の重楼',                   nameEn: 'Thousand-Puppet Pavilion',           nameCn: '千傀重楼', cost: 4, sets: [S.SONG_OF_FEATHERED_TRACE]                                  },
+  { id: 'myriad_snare_rustfire_chassis', name: '万囿の檻・朽躯',             nameEn: 'Myriad Snare: Rustfire Chassis',     nameCn: '万囮牢·朽躯', cost: 4, sets: [S.HEART_OF_EVILS_PURGE, S.LAMP_OF_NETHER_ROAD]              },
 
   // ── COST 3 ──────────────────────────────────────────────────────────────
   { id: 'cyan_feathered_heron',        name: '青羽サギ',                     nameEn: 'Cyan-Feathered Heron',               cost: 3, sets: [S.SIERRA_GALE, S.CELESTIAL_LIGHT]                                },
@@ -246,6 +256,8 @@ export const ECHOES: EchoInfo[] = [
   { id: 'nm_viridblaze_saurian',       name: 'ナイトメア・熔解トカゲ',       nameEn: 'Nightmare: Viridblaze Saurian',      cost: 3, sets: [S.INFERNO_SHADOW]                                                },
   { id: 'nm_roseshroom',               name: 'ナイトメア・トゲバラタケ',     nameEn: 'Nightmare: Roseshroom',              cost: 3, sets: [S.THREAD_OF_FATE]                                                },
   { id: 'nm_tambourinist',             name: 'ナイトメア・金鈴の楽手',       nameEn: 'Nightmare: Tambourinist',            cost: 3, sets: [S.LOST_DREAM]                                                     },
+  { id: 'fog_lionarch',                name: '霜息の獣尊',                   nameEn: 'Fog Lionarch',                       nameCn: '霁息兽尊', cost: 3, sets: [S.SONG_OF_FEATHERED_TRACE, S.HEART_OF_EVILS_PURGE, S.LAMP_OF_NETHER_ROAD] },
+  { id: 'forbidden_bastion',           name: '封庭の械囲',                   nameEn: 'Forbidden Bastion',                  nameCn: '封庭械囿', cost: 3, sets: [S.SONG_OF_FEATHERED_TRACE, S.HEART_OF_EVILS_PURGE, S.LAMP_OF_NETHER_ROAD] },
 
   // ── COST 1 ──────────────────────────────────────────────────────────────
   { id: 'whiff_whaff',                 name: 'フシュシュ',                   nameEn: 'Whiff Whaff',                        cost: 1, sets: [S.SIERRA_GALE, S.MOONLIT_CLOUDS, S.REJUVENATING_GLOW]           },
@@ -320,6 +332,19 @@ export const ECHOES: EchoInfo[] = [
   { id: 'nm_glacio_predator',          name: 'ナイトメア・破霜の狩人',       nameEn: 'Nightmare: Glacio Predator',         cost: 1, sets: [S.FREEZING_FROST]                                               },
   { id: 'nm_aero_predator',            name: 'ナイトメア・徘徊の狩人',       nameEn: 'Nightmare: Aero Predator',           cost: 1, sets: [S.GLORY_FORGE_CROWN]                                            },
   { id: 'nm_havoc_warrior',            name: 'ナイトメア・審判の戦士',       nameEn: 'Nightmare: Havoc Warrior',           cost: 1, sets: [S.LOST_DREAM]                                                    },
+  { id: 'smiter',                      name: '融躯の戦士',                   nameEn: 'Smiter',                             nameCn: '融躯战士', cost: 1, sets: [S.SONG_OF_FEATHERED_TRACE]                                },
+  { id: 'kernel_puppet_joy',           name: '心傀・喜',                     nameEn: 'Kernel Puppet: Joy',                 nameCn: '心傀·喜', cost: 1, sets: [S.SONG_OF_FEATHERED_TRACE]                                 },
+  { id: 'fog_lionarch_body',           name: '霜息の獣尊・胴',               nameEn: 'Fog Lionarch: Body',                 nameCn: '霁息兽尊·身', cost: 1, sets: [S.SONG_OF_FEATHERED_TRACE]                              },
+  { id: 'fog_lionarch_head',           name: '霜息の獣尊・首',               nameEn: 'Fog Lionarch: Head',                 nameCn: '霁息兽尊·首', cost: 1, sets: [S.SONG_OF_FEATHERED_TRACE]                              },
+  { id: 'smolder',                     name: '熄えぬ狩人',                   nameEn: 'Smolder',                            nameCn: '不熄猎手', cost: 1, sets: [S.SONG_OF_FEATHERED_TRACE]                                },
+  { id: 'aureate_picket',              name: '金鉄の庭候',                   nameEn: 'Aureate Picket',                     nameCn: '金庭候', cost: 1, sets: [S.HEART_OF_EVILS_PURGE]                                    },
+  { id: 'kernel_puppet_anger',         name: '心傀・怒',                     nameEn: 'Kernel Puppet: Anger',               nameCn: '心傀·怒', cost: 1, sets: [S.HEART_OF_EVILS_PURGE]                                   },
+  { id: 'kernel_puppet_worry',         name: '心傀・憂',                     nameEn: 'Kernel Puppet: Worry',               nameCn: '心傀·忧', cost: 1, sets: [S.HEART_OF_EVILS_PURGE]                                   },
+  { id: 'kernel_puppet_reflection',    name: '心傀・思',                     nameEn: 'Kernel Puppet: Reflection',          nameCn: '心傀·思', cost: 1, sets: [S.HEART_OF_EVILS_PURGE]                                   },
+  { id: 'porcelain_picket',            name: '磁器の庭候',                   nameEn: 'Porcelain Picket',                   nameCn: '瓷庭候', cost: 1, sets: [S.LAMP_OF_NETHER_ROAD]                                     },
+  { id: 'stone_picket',                name: '石の庭候',                     nameEn: 'Stone Picket',                       nameCn: '石庭候', cost: 1, sets: [S.LAMP_OF_NETHER_ROAD]                                     },
+  { id: 'kernel_puppet_grief',         name: '心傀・悲',                     nameEn: 'Kernel Puppet: Grief',               nameCn: '心傀·悲', cost: 1, sets: [S.LAMP_OF_NETHER_ROAD]                                    },
+  { id: 'kernel_puppet_fright',        name: '心傀・恐',                     nameEn: 'Kernel Puppet: Fright',              nameCn: '心傀·恐', cost: 1, sets: [S.LAMP_OF_NETHER_ROAD]                                    },
 ];
 
 // ── ヘルパー ─────────────────────────────────────────────────────────────
