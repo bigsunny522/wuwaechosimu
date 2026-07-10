@@ -1,17 +1,10 @@
 import type { EchoCost, EchoState, Substat, MainstatInfo } from '@/types/echo';
-import { SUBSTAT_DATA } from '@/data/substats';
+import { SUBSTAT_DATA, TIER_WEIGHTS_BY_KEY } from '@/data/substats';
 import { MAINSTAT_POOLS, MAINSTAT_WEIGHTS, SUBSTAT_COUNT, UPGRADE_COST } from '@/data/mainstats';
 import { ECHOES_BY_COST, DEFAULT_ECHO_ID } from '@/data/echoes';
 
-// Tier出現重み: 2-5が高め、Tier7≈4%
-// インデックス = Tier番号、合計100
-const TIER_WEIGHTS: Record<number, number[]> = {
-  4: [15, 35, 35, 15],               // 固定値系（4段階）
-  8: [6, 9, 14, 22, 20, 16, 9, 4],   // 通常系（8段階）
-};
-
-function weightedTier(numTiers: number): number {
-  const weights = TIER_WEIGHTS[numTiers] ?? TIER_WEIGHTS[8];
+function weightedTier(key: keyof typeof TIER_WEIGHTS_BY_KEY): number {
+  const weights = TIER_WEIGHTS_BY_KEY[key];
   const total = weights.reduce((s, w) => s + w, 0);
   let rand = Math.random() * total;
   for (let i = 0; i < weights.length; i++) {
@@ -30,7 +23,7 @@ export function pickSubstat(excluded: Set<string>): Substat {
     rand -= s.weight;
     if (rand <= 0) { entry = s; break; }
   }
-  const tier = weightedTier(entry.values.length);
+  const tier = weightedTier(entry.key);
   return {
     key: entry.key,
     label: entry.label,
