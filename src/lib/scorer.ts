@@ -51,6 +51,17 @@ function calcTemplateIdealMult(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+//  推奨重複ボーナス：推奨サブステが3枚以上重なると加算される
+//  3→+3, 4→+7, 5→+12
+// ═══════════════════════════════════════════════════════════════════════════
+export const COMBO_BONUS: Record<number, number> = { 3: 3, 4: 7, 5: 12 };
+
+function calcComboBonus(breakdown: { category: SubstatCategory }[]): number {
+  const recCount = breakdown.filter((b) => b.category === 'recommended').length;
+  return COMBO_BONUS[recCount] ?? 0;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 //  汎用モード：サブステのデフォルトカテゴリ分類
 // ═══════════════════════════════════════════════════════════════════════════
 const GENERIC_RECOMMENDED = new Set<SubstatKey>(['critRate', 'critDmg']);
@@ -112,11 +123,12 @@ function scoreGeneric(echo: EchoState): ScoreResult {
 
   const theoreticalMax = calcTheoreticalMax(echo.cost);
   const raw = breakdown.reduce((s, b) => s + b.points, 0);
-  const rawScore = Math.round((raw / theoreticalMax) * 100);
+  const comboBonus = calcComboBonus(breakdown);
+  const rawScore = Math.round((raw / theoreticalMax) * 100) + comboBonus;
   const score: number = Math.min(100, rawScore);
   const rank: ScoreRank = rawScore >= 100 ? 'GOD' : toRank(score);
 
-  return { score, rank, breakdown, theoreticalMax, idealMult: IDEAL_MULT };
+  return { score, rank, breakdown, theoreticalMax, idealMult: IDEAL_MULT, comboBonus };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -163,7 +175,8 @@ function scoreWithBuild(echo: EchoState, build: CharacterBuild): ScoreResult {
     setBonus = build.harmonySets.acceptable.includes(activeSet) ? -5 : -10;
   }
 
-  const rawScore = Math.round(substatScore + mainstatBonus + setBonus);
+  const comboBonus = calcComboBonus(breakdown);
+  const rawScore = Math.round(substatScore + mainstatBonus + setBonus) + comboBonus;
   const score: number = Math.max(0, Math.min(100, rawScore));
   const rank: ScoreRank = rawScore >= 100 ? 'GOD' : toRank(score);
 
@@ -173,6 +186,7 @@ function scoreWithBuild(echo: EchoState, build: CharacterBuild): ScoreResult {
     breakdown,
     theoreticalMax,
     idealMult: usedIdealMult,
+    comboBonus,
     mainstatBonus,
     setBonus,
     isCharacterScore: true,

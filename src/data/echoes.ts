@@ -65,6 +65,7 @@ export const HARMONY_SETS = {
   GILDED_REVELATION:    'ゴールデン・ヴァリアント',
   // ── 追加セット (Ver 4.x) ────────────────────────────────────────────────
   NIGHTMARE_SMASHER:    '響き渡る共鳴・ナイトメア・スマッシャー',
+  NIGHTMARE_SPECTER:    'ナイトメア・スペクター',
   // ── 追加セット (Ver 3.5) ────────────────────────────────────────────────
   SONG_OF_FEATHERED_TRACE: '羽舞う塵世の歌',
   HEART_OF_EVILS_PURGE:    '煞を祓う浄心',
@@ -104,6 +105,7 @@ export const HARMONY_SETS_EN: Record<string, string> = {
   'ロスト・ドリーム':       'Dream of the Lost',
   'ゴールデン・ヴァリアント': 'Rite of Gilded Revelation',
   '響き渡る共鳴・ナイトメア・スマッシャー': 'Resonating Chord: Nightmare Smasher',
+  'ナイトメア・スペクター':   'Nightmare Specter',
   '羽舞う塵世の歌':         'Song of Feathered Trace',
   '煞を祓う浄心':           "Heart of Evil's Purge",
   '冥夜を導く灯':           'Lamp of Nether Road',
@@ -201,6 +203,7 @@ export const ECHOES: EchoInfo[] = [
   { id: 'nm_inferno_rider',            name: 'ナイトメア・燎原の炎騎',       nameEn: 'Nightmare: Inferno Rider',           cost: 4, sets: [S.MOLTEN_RIFT]                                                    },
   { id: 'nm_kelpie',                   name: 'ナイトメア・ケルピー',         nameEn: 'Nightmare: Kelpie',                  cost: 4, sets: [S.GLORIOUS_WIND, S.GUSTS_OF_WELKIN]                               },
   { id: 'false_sovereign',             name: '偽りの神王',                   nameEn: 'The False Sovereign',                cost: 4, sets: [S.GLORY_FORGE_CROWN]                                              },
+  { id: 'nightmare_smasher',           name: '響き渡る共鳴・ナイトメア・スマッシャー', nameEn: 'Resonating Chord: Nightmare Smasher', cost: 4, sets: [S.NIGHTMARE_SPECTER]                                        },
   { id: 'thousand_puppet_pavilion',    name: '千傀の重楼',                   nameEn: 'Thousand-Puppet Pavilion',           nameCn: '千傀重楼', cost: 4, sets: [S.SONG_OF_FEATHERED_TRACE]                                  },
   { id: 'myriad_snare_rustfire_chassis', name: '万囿の檻・朽躯',             nameEn: 'Myriad Snare: Rustfire Chassis',     nameCn: '万囮牢·朽躯', cost: 4, sets: [S.HEART_OF_EVILS_PURGE, S.LAMP_OF_NETHER_ROAD]              },
 

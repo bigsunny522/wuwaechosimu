@@ -35,7 +35,7 @@ const SET = {
   GLORY_CROWN: HS.GLORY_FORGE_CROWN,
   LOST_DREAM:  HS.LOST_DREAM,
   GOLDEN:      HS.GILDED_REVELATION,
-  NIGHTMARE_SMASHER: HS.NIGHTMARE_SMASHER,
+  NIGHTMARE_SPECTER: HS.NIGHTMARE_SPECTER,
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -48,6 +48,31 @@ const SET = {
 export const CHARACTERS: CharacterBuild[] = [
 
   // ── 5★ キャラクター（実装降順）────────────────────────────────────────
+
+  {
+    id: 'lucilare', name: 'ルシラー', nameEn: 'Lucilare', element: '凝縮', weapon: '迅刀',
+    role: 'サブアタッカー',
+    roleTemplate: 'SubDPS',
+    substats: {
+      recommended: [
+        { key: 'critRate' },
+        { key: 'critDmg' },
+      ],
+      preferred:   [
+        { key: 'atkPercent' },
+        { key: 'basicAttackDmg' },
+      ],
+      acceptable:  [
+        { key: 'atkFlat' },
+      ],
+    },
+    mainstat: {
+      cost4: { recommended: ['critRate', 'critDmg'],       acceptable: ['atkPercent'] },
+      cost3: { recommended: ['GlacioDmg', 'atkPercent'],  acceptable: [] },
+      cost1: { recommended: ['atkPercent'],                acceptable: [] },
+    },
+    harmonySets: { recommended: [SET.SNOWY, SET.MOONLIT, SET.MONTAGE, SET.LOST_DREAM], acceptable: [] },
+  },
 
   {
     id: 'lucy', name: 'ルーシー', nameEn: 'Lucy', element: '回折', weapon: '長刃',
@@ -69,7 +94,7 @@ export const CHARACTERS: CharacterBuild[] = [
       cost3: { recommended: ['SpectroDmg', 'atkPercent'],   acceptable: [] },
       cost1: { recommended: ['atkPercent'],                 acceptable: [] },
     },
-    harmonySets: { recommended: [SET.NIGHTMARE_SMASHER], acceptable: [SET.CELESTIAL, SET.REFLECT, SET.LINGERING, SET.MONTAGE] },
+    harmonySets: { recommended: [SET.NIGHTMARE_SPECTER], acceptable: [SET.CELESTIAL, SET.REFLECT, SET.LINGERING, SET.MONTAGE] },
   },
 
   {
@@ -92,7 +117,7 @@ export const CHARACTERS: CharacterBuild[] = [
       cost3: { recommended: ['ElectroDmg', 'atkPercent'],     acceptable: [] },
       cost1: { recommended: ['atkPercent'],                   acceptable: [] },
     },
-    harmonySets: { recommended: [SET.NIGHTMARE_SMASHER], acceptable: [SET.VOID, SET.MONTAGE, SET.LINGERING, SET.MOONLIT] },
+    harmonySets: { recommended: [SET.NIGHTMARE_SPECTER], acceptable: [SET.VOID, SET.MONTAGE, SET.LINGERING, SET.MOONLIT] },
   },
 
   {

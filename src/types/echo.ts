@@ -72,6 +72,8 @@ export interface ScoreResult {
   // デバッグパネル用：スコアリング時に実際に使用した値
   theoreticalMax: number;
   idealMult: number;
+  // 推奨サブステ重複ボーナス（3枚以上で加算）
+  comboBonus?: number;
   // キャラ別スコアのみ設定される補正値
   mainstatBonus?: number;
   setBonus?: number;
