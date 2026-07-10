@@ -36,6 +36,7 @@ const SET = {
   LOST_DREAM:  HS.LOST_DREAM,
   GOLDEN:      HS.GILDED_REVELATION,
   NIGHTMARE_SPECTER: HS.NIGHTMARE_SPECTER,
+  SONG:        HS.SONG_OF_FEATHERED_TRACE,
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -48,6 +49,31 @@ const SET = {
 export const CHARACTERS: CharacterBuild[] = [
 
   // ── 5★ キャラクター（実装降順）────────────────────────────────────────
+
+  {
+    id: 'yangyang_xuanling', name: '秧秧・玄翎', nameEn: 'Yangyang (Xuanling)', element: '消滅', weapon: '迅刀',
+    role: 'メインアタッカー（重撃重視）',
+    roleTemplate: 'DPS',
+    substats: {
+      recommended: [
+        { key: 'critRate' },
+        { key: 'critDmg' },
+      ],
+      preferred:   [
+        { key: 'atkPercent' },
+        { key: 'energyRegen' },
+      ],
+      acceptable:  [
+        { key: 'heavyAttackDmg' },
+      ],
+    },
+    mainstat: {
+      cost4: { recommended: ['critRate', 'critDmg'],                      acceptable: ['atkPercent'] },
+      cost3: { recommended: ['HavocDmg', 'atkPercent', 'Resonanceeff'],   acceptable: [] },
+      cost1: { recommended: ['atkPercent'],                               acceptable: [] },
+    },
+    harmonySets: { recommended: [SET.SONG, SET.HAVOC_OLD], acceptable: [] },
+  },
 
   {
     id: 'lucilare', name: 'ルシラー', nameEn: 'Lucilare', element: '凝縮', weapon: '迅刀',
