@@ -391,6 +391,15 @@ export default function Home() {
               <span>📖</span>
               <span className="hidden sm:inline">{locale === 'ja' ? '使い方' : 'Guide'}</span>
             </Link>
+            {/* Tracker link */}
+            <Link
+              href="/tracker"
+              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
+              title={locale === 'ja' ? '厳選トラッカー' : 'Selection Tracker'}
+            >
+              <span>📈</span>
+              <span className="hidden sm:inline">{locale === 'ja' ? 'トラッカー' : 'Tracker'}</span>
+            </Link>
             {/* News link */}
             <Link
               href="/news"
