@@ -355,12 +355,34 @@ export default function Home() {
     return items.map(({ _i: _, ...opt }) => opt);
   }, [harmonySetOptions, locale, selectedCharId]);
 
-  const mainstatOptions = useMemo(() =>
-    MAINSTAT_POOLS[cost].map((m) => ({
-      value: m.key,
-      label: `${locale === 'en' ? (MAINSTAT_LABEL_EN[m.key] ?? m.label) : m.label}（+25: ${m.value}${m.unit}）`,
-    })),
-  [cost, locale]);
+  const mainstatOptions = useMemo(() => {
+    const char = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
+    const costKey = `cost${cost}` as 'cost4' | 'cost3' | 'cost1';
+    const recKeys = char ? new Set(char.mainstat[costKey].recommended) : new Set<string>();
+    const accKeys = char ? new Set(char.mainstat[costKey].acceptable) : new Set<string>();
+    const priority = (b?: 'recommended' | 'acceptable') =>
+      b === 'recommended' ? 0 : b === 'acceptable' ? 1 : 2;
+
+    return MAINSTAT_POOLS[cost]
+      .map((m, i) => {
+        let badge: 'recommended' | 'acceptable' | undefined;
+        if (char) {
+          if (recKeys.has(m.key)) badge = 'recommended';
+          else if (accKeys.has(m.key)) badge = 'acceptable';
+        }
+        return {
+          value: m.key,
+          label: `${locale === 'en' ? (MAINSTAT_LABEL_EN[m.key] ?? m.label) : m.label}（+25: ${m.value}${m.unit}）`,
+          badge,
+          _i: i,
+        };
+      })
+      .sort((a, b) => {
+        const pd = priority(a.badge) - priority(b.badge);
+        return pd !== 0 ? pd : a._i - b._i;
+      })
+      .map(({ _i: _, ...opt }) => opt);
+  }, [cost, locale, selectedCharId]);
   const showRerollPanel   = bonusActive && echo?.level === 25 && !rerollUsed;
   const showMainstatLock  = bonusActive;
   const formatTime  = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;

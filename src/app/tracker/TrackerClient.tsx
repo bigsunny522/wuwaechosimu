@@ -7,7 +7,7 @@ import { SUBSTAT_DATA, SUBSTAT_MAP } from '@/data/substats';
 import { MAINSTAT_POOLS } from '@/data/mainstats';
 import { ECHOES, ECHOES_BY_COST, DEFAULT_ECHO_ID, HARMONY_SETS, HARMONY_SETS_EN } from '@/data/echoes';
 import { CHARACTER_LIST, CHARACTER_MAP } from '@/data/characters';
-import { scoreEcho } from '@/lib/scorer';
+import { scoreEcho, getSubstatCategory } from '@/lib/scorer';
 import { RANK_COLORS } from '@/lib/scorer';
 import { simulateCompletion } from '@/lib/monteCarlo';
 import {
@@ -30,6 +30,29 @@ const MAX_SUBSTATS = 5;
 function getRepresentativeEchoId(cost: EchoCost, harmonySet: string): string {
   const found = ECHOES.find((e) => e.cost === cost && e.sets.includes(harmonySet));
   return found?.id ?? DEFAULT_ECHO_ID[cost];
+}
+
+// COST4: キャラの推奨/可セットに属する音骸を探す（推奨優先）
+function getRecommendedEchoId(charId: string): string | null {
+  if (charId === 'generic') return null;
+  const char = CHARACTER_MAP[charId];
+  if (!char) return null;
+  for (const set of [...char.harmonySets.recommended, ...char.harmonySets.acceptable]) {
+    const echo = ECHOES.find((e) => e.cost === 4 && e.sets.includes(set));
+    if (echo) return echo.id;
+  }
+  return null;
+}
+
+// COST3/1: キャラの推奨/可セットのうち、そのコストに実在するものを探す（推奨優先）
+function getRecommendedHarmonySet(charId: string, cost: EchoCost): string | null {
+  if (charId === 'generic' || cost === 4) return null;
+  const char = CHARACTER_MAP[charId];
+  if (!char) return null;
+  const available = new Set(ECHOES.filter((e) => e.cost === cost).flatMap((e) => e.sets));
+  return char.harmonySets.recommended.find((s) => available.has(s))
+    ?? char.harmonySets.acceptable.find((s) => available.has(s))
+    ?? null;
 }
 
 export default function TrackerClient() {
@@ -56,10 +79,11 @@ export default function TrackerClient() {
 
   useEffect(() => {
     if (cost === 4) {
-      setSelectedEchoId(DEFAULT_ECHO_ID[4]);
+      const recId = getRecommendedEchoId(selectedCharId);
+      setSelectedEchoId(recId ?? DEFAULT_ECHO_ID[4]);
     } else {
-      const first = harmonySetOptions[0] ?? '';
-      setSelectedHarmonySet(first);
+      const recSet = getRecommendedHarmonySet(selectedCharId, cost);
+      setSelectedHarmonySet(recSet ?? (harmonySetOptions[0] ?? ''));
     }
     setDraftSubs([]);
     setPendingKey('');
@@ -67,14 +91,64 @@ export default function TrackerClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cost]);
 
-  const echoOptions = useMemo(() =>
-    ECHOES_BY_COST[cost].map((e) => ({ value: e.id, label: ja ? e.name : (e.nameEn ?? e.name) }))
-      .sort((a, b) => a.label.localeCompare(b.label, ja ? 'ja' : 'en')),
-  [cost, ja]);
+  const handleCharacterChange = useCallback((charId: string) => {
+    setSelectedCharId(charId);
+    if (cost === 4) {
+      const recId = getRecommendedEchoId(charId);
+      if (recId) setSelectedEchoId(recId);
+    } else {
+      const recSet = getRecommendedHarmonySet(charId, cost);
+      if (recSet) setSelectedHarmonySet(recSet);
+    }
+    setDraftSubs([]);
+    setPendingKey('');
+    setPendingTier(0);
+  }, [cost]);
 
-  const harmonyOptions = useMemo(() =>
-    harmonySetOptions.map((s) => ({ value: s, label: ja ? s : (HARMONY_SETS_EN[s] ?? s) })),
-  [harmonySetOptions, ja]);
+  const echoOptions = useMemo(() => {
+    const char = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
+    const recSets = char ? new Set(char.harmonySets.recommended) : new Set<string>();
+    const accSets = char ? new Set(char.harmonySets.acceptable) : new Set<string>();
+    const priority = (b?: 'recommended' | 'acceptable') =>
+      b === 'recommended' ? 0 : b === 'acceptable' ? 1 : 2;
+
+    return ECHOES_BY_COST[cost]
+      .map((e) => {
+        let badge: 'recommended' | 'acceptable' | undefined;
+        if (char) {
+          if (e.sets.some((s) => recSets.has(s))) badge = 'recommended';
+          else if (e.sets.some((s) => accSets.has(s))) badge = 'acceptable';
+        }
+        return { value: e.id, label: ja ? e.name : (e.nameEn ?? e.name), badge };
+      })
+      .sort((a, b) => {
+        const pd = priority(a.badge) - priority(b.badge);
+        if (pd !== 0) return pd;
+        return a.label.localeCompare(b.label, ja ? 'ja' : 'en');
+      });
+  }, [cost, ja, selectedCharId]);
+
+  const harmonyOptions = useMemo(() => {
+    const char = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
+    const recSets = char ? new Set(char.harmonySets.recommended) : new Set<string>();
+    const accSets = char ? new Set(char.harmonySets.acceptable) : new Set<string>();
+    const priority = (b?: 'recommended' | 'acceptable') =>
+      b === 'recommended' ? 0 : b === 'acceptable' ? 1 : 2;
+
+    const items = harmonySetOptions.map((s, i) => {
+      let badge: 'recommended' | 'acceptable' | undefined;
+      if (char) {
+        if (recSets.has(s)) badge = 'recommended';
+        else if (accSets.has(s)) badge = 'acceptable';
+      }
+      return { value: s, label: ja ? s : (HARMONY_SETS_EN[s] ?? s), badge, _i: i };
+    });
+    items.sort((a, b) => {
+      const pd = priority(a.badge) - priority(b.badge);
+      return pd !== 0 ? pd : a._i - b._i;
+    });
+    return items.map(({ _i: _, ...opt }) => opt);
+  }, [harmonySetOptions, ja, selectedCharId]);
 
   const charOptions = useMemo(() => [
     { value: 'generic', label: ja ? '（キャラなし・汎用評価）' : '(No character — generic score)' },
@@ -119,12 +193,33 @@ export default function TrackerClient() {
   const [draftMainstatKey, setDraftMainstatKey] = useState(MAINSTAT_POOLS[4][0].key);
   useEffect(() => { setDraftMainstatKey(MAINSTAT_POOLS[cost][0].key); }, [cost]);
 
-  const mainstatOptions = useMemo(() =>
-    MAINSTAT_POOLS[cost].map((m) => ({
-      value: m.key,
-      label: `${ja ? m.label : (MAINSTAT_LABEL_EN[m.key] ?? m.label)}（+25: ${m.value}${m.unit}）`,
-    })),
-  [cost, ja]);
+  const mainstatOptions = useMemo(() => {
+    const costKey = `cost${cost}` as 'cost4' | 'cost3' | 'cost1';
+    const recKeys = build ? new Set(build.mainstat[costKey].recommended) : new Set<string>();
+    const accKeys = build ? new Set(build.mainstat[costKey].acceptable) : new Set<string>();
+    const priority = (b?: 'recommended' | 'acceptable') =>
+      b === 'recommended' ? 0 : b === 'acceptable' ? 1 : 2;
+
+    return MAINSTAT_POOLS[cost]
+      .map((m, i) => {
+        let badge: 'recommended' | 'acceptable' | undefined;
+        if (build) {
+          if (recKeys.has(m.key)) badge = 'recommended';
+          else if (accKeys.has(m.key)) badge = 'acceptable';
+        }
+        return {
+          value: m.key,
+          label: `${ja ? m.label : (MAINSTAT_LABEL_EN[m.key] ?? m.label)}（+25: ${m.value}${m.unit}）`,
+          badge,
+          _i: i,
+        };
+      })
+      .sort((a, b) => {
+        const pd = priority(a.badge) - priority(b.badge);
+        return pd !== 0 ? pd : a._i - b._i;
+      })
+      .map(({ _i: _, ...opt }) => opt);
+  }, [cost, ja, build]);
 
   // 現在のフォーム選択（メインステ・セット）から音骸のメタ情報を組み立てる
   const draftMeta = useMemo(() => {
@@ -154,8 +249,24 @@ export default function TrackerClient() {
 
   const availableSubstatOptions = useMemo(() => {
     const used = new Set(draftSubs.map((s) => s.key));
-    return SUBSTAT_DATA.filter((s) => !used.has(s.key));
-  }, [draftSubs]);
+    const priority = (b?: 'recommended' | 'acceptable') =>
+      b === 'recommended' ? 0 : b === 'acceptable' ? 1 : 2;
+
+    return SUBSTAT_DATA
+      .filter((s) => !used.has(s.key))
+      .map((s, i) => {
+        const cat = getSubstatCategory(s.key, build);
+        const badge: 'recommended' | 'acceptable' | undefined =
+          cat === 'recommended' || cat === 'preferred' ? 'recommended'
+          : cat === 'acceptable' ? 'acceptable'
+          : undefined;
+        return { ...s, badge, _i: i };
+      })
+      .sort((a, b) => {
+        const pd = priority(a.badge) - priority(b.badge);
+        return pd !== 0 ? pd : a._i - b._i;
+      });
+  }, [draftSubs, build]);
 
   const pendingEntry = pendingKey ? SUBSTAT_MAP[pendingKey as SubstatKey] : null;
   const pendingTierOptions = pendingEntry
@@ -312,7 +423,7 @@ export default function TrackerClient() {
           <div className="text-xs font-medium uppercase tracking-wider text-[#9ca3af]" style={{ fontFamily: '"IBM Plex Mono", monospace' }}>
             {ja ? '① 対象ビルド' : '① Target build'}
           </div>
-          <CustomSelect value={selectedCharId} onChange={setSelectedCharId} options={charOptions} />
+          <CustomSelect value={selectedCharId} onChange={handleCharacterChange} options={charOptions} />
           <div className="flex gap-2 justify-center">
             {COST_OPTIONS.map((c) => (
               <button
@@ -425,7 +536,7 @@ export default function TrackerClient() {
                   onChange={(v) => { setPendingKey(v); setPendingTier(0); }}
                   options={[
                     { value: '', label: ja ? `（${draftSubs.length + 1}個目のステータス）` : `(Substat #${draftSubs.length + 1})` },
-                    ...availableSubstatOptions.map((s) => ({ value: s.key, label: ja ? s.label : (SUBSTAT_LABEL_EN[s.key] ?? s.label) })),
+                    ...availableSubstatOptions.map((s) => ({ value: s.key, label: ja ? s.label : (SUBSTAT_LABEL_EN[s.key] ?? s.label), badge: s.badge })),
                   ]}
                 />
               </div>

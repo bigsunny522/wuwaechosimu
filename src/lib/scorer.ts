@@ -69,6 +69,23 @@ const GENERIC_PREFERRED   = new Set<SubstatKey>(['atkPercent', 'resonanceSkillDm
 const GENERIC_ACCEPTABLE  = new Set<SubstatKey>(['energyRegen', 'hpPercent', 'defPercent']);
 
 // ═══════════════════════════════════════════════════════════════════════════
+//  単一サブステのカテゴリ判定（UI側での「推奨を上に表示」等のソート・バッジ表示用）
+//  scoreEcho の内部ロジックと同じ優先順位（explicit list → roleTemplate/汎用 → unnecessary）
+// ═══════════════════════════════════════════════════════════════════════════
+export function getSubstatCategory(key: SubstatKey, build?: CharacterBuild): SubstatCategory {
+  if (!build) {
+    if (GENERIC_RECOMMENDED.has(key)) return 'recommended';
+    if (GENERIC_PREFERRED.has(key))   return 'preferred';
+    if (GENERIC_ACCEPTABLE.has(key))  return 'acceptable';
+    return 'unnecessary';
+  }
+  const recKeys  = new Set(build.substats.recommended.map((s) => s.key));
+  const prefKeys = new Set(build.substats.preferred.map((s) => s.key));
+  const accKeys  = new Set((build.substats.acceptable ?? []).map((s) => s.key));
+  return resolveCategory(key, recKeys, prefKeys, accKeys, build.roleTemplate);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 //  正規化：(Tier + 5) / 12
 //  Tier0 → 0.417、Tier7（最高） → 1.000
 // ═══════════════════════════════════════════════════════════════════════════

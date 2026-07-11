@@ -58,14 +58,12 @@ export const CHARACTERS: CharacterBuild[] = [
       recommended: [
         { key: 'critRate' },
         { key: 'critDmg' },
-      ],
-      preferred:   [
-        { key: 'atkPercent' },
         { key: 'energyRegen' },
-      ],
-      acceptable:  [
+        { key: 'atkPercent' },
         { key: 'heavyAttackDmg' },
       ],
+      preferred:   [],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['critRate', 'critDmg'],                      acceptable: ['atkPercent'] },
