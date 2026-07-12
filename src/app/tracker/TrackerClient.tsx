@@ -550,8 +550,8 @@ export default function TrackerClient() {
 
           {/* 次の1個を追加するミニフォーム（+5強化のたびに1個ずつ判明する流れを再現） */}
           {draftSubs.length < MAX_SUBSTATS && (
-            <div className="flex gap-2 items-center">
-              <div className="flex-1 min-w-0">
+            <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+              <div className="min-w-0 sm:flex-1">
                 <CustomSelect
                   value={pendingKey}
                   onChange={(v) => { setPendingKey(v); setPendingTier(0); }}
@@ -561,21 +561,23 @@ export default function TrackerClient() {
                   ]}
                 />
               </div>
-              <div className="w-36 shrink-0">
-                <CustomSelect
-                  value={pendingKey ? String(pendingTier) : ''}
-                  onChange={(v) => setPendingTier(Number(v))}
-                  options={pendingTierOptions.length ? pendingTierOptions : [{ value: '', label: '—' }]}
-                />
+              <div className="flex gap-2 items-center">
+                <div className="flex-1 min-w-0 sm:w-36 sm:flex-none">
+                  <CustomSelect
+                    value={pendingKey ? String(pendingTier) : ''}
+                    onChange={(v) => setPendingTier(Number(v))}
+                    options={pendingTierOptions.length ? pendingTierOptions : [{ value: '', label: '—' }]}
+                  />
+                </div>
+                <button
+                  onClick={addSubstat}
+                  disabled={!pendingKey}
+                  className="shrink-0 px-3 py-2.5 rounded-lg text-sm font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed text-[#f7f7f7]"
+                  style={{ background: pendingKey ? ACCENT : '#9ca3af' }}
+                >
+                  {ja ? '＋追加' : '+ Add'}
+                </button>
               </div>
-              <button
-                onClick={addSubstat}
-                disabled={!pendingKey}
-                className="shrink-0 px-3 py-2.5 rounded-lg text-sm font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed text-[#f7f7f7]"
-                style={{ background: pendingKey ? ACCENT : '#9ca3af' }}
-              >
-                {ja ? '＋追加' : '+ Add'}
-              </button>
             </div>
           )}
 
