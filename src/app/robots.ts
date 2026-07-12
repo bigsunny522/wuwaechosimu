@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-const SITE_URL = 'https://wuwaechosimu.xyzack271.com'; // ★ 実際のURLに変更
+const SITE_URL = 'https://wuwaechotools.com';
 
 export default function robots(): MetadataRoute.Robots {
   return {

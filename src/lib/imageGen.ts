@@ -2,7 +2,7 @@ import type { EchoState, ScoreResult } from '@/types/echo';
 import { SUBSTAT_LABEL_EN } from '@/data/translations';
 import { renderCardToCanvas } from './cardCanvas';
 
-const SITE_URL = 'https://wuwaechosimu.xyzack271.com';
+const SITE_URL = 'https://wuwaechotools.com';
 
 export async function generateResultCard(
   echo: EchoState,

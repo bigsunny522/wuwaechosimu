@@ -350,7 +350,7 @@ export function renderCardToCanvas(
   ctx.fillStyle = '#d1d5db';
   ctx.textAlign = 'right';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText('wuwaechosimu.xyzack271.com', OX + CARD_W - PAD, y + 11);
+  ctx.fillText('wuwaechotools.com', OX + CARD_W - PAD, y + 11);
   ctx.textAlign = 'left';
 
   ctx.restore(); // end card clip

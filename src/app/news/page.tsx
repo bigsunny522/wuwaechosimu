@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import NewsClient from './NewsClient';
 
-const SITE_URL = 'https://wuwaechosimu.xyzack271.com';
+const SITE_URL = 'https://wuwaechotools.com';
 
 export const metadata: Metadata = {
   title: 'お知らせ | 音骸シミュレーター',

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import TrackerClient from './TrackerClient';
 
-const SITE_URL = 'https://wuwaechosimu.xyzack271.com';
+const SITE_URL = 'https://wuwaechotools.com';
 
 export const metadata: Metadata = {
   title: '厳選トラッカー | 音骸シミュレーター',

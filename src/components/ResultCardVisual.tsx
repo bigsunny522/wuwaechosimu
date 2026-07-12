@@ -181,7 +181,7 @@ export default function ResultCardVisual({ echo, score, cardRef, maxedAt }: Prop
             </span>
           ) : <span />}
           <span style={{ fontSize: '10px', color: '#d1d5db', fontFamily: mono }}>
-            wuwaechosimu.xyzack271.com
+            wuwaechotools.com
           </span>
         </div>
       </div>

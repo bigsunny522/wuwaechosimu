@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-const SITE_URL = 'https://wuwaechosimu.xyzack271.com'; // ★ 実際のURLに変更
+const SITE_URL = 'https://wuwaechotools.com';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
@@ -25,6 +25,30 @@ export default function sitemap(): MetadataRoute.Sitemap {
         languages: {
           ja: `${SITE_URL}/guide`,
           en: `${SITE_URL}/guide?lang=en`,
+        },
+      },
+    },
+    {
+      url: `${SITE_URL}/privacy`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.3,
+      alternates: {
+        languages: {
+          ja: `${SITE_URL}/privacy`,
+          en: `${SITE_URL}/privacy?lang=en`,
+        },
+      },
+    },
+    {
+      url: `${SITE_URL}/contact`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.3,
+      alternates: {
+        languages: {
+          ja: `${SITE_URL}/contact`,
+          en: `${SITE_URL}/contact?lang=en`,
         },
       },
     },

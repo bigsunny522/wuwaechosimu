@@ -2,8 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { LocaleProvider } from '@/lib/locale';
 import './globals.css';
 
-// ★ 公開URLを実際のドメインに変更してください
-const SITE_URL = 'https://wuwaechosimu.xyzack271.com';
+const SITE_URL = 'https://wuwaechotools.com';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

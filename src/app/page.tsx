@@ -934,7 +934,16 @@ export default function Home() {
         </div>
       </div>
 
-      <footer className="border-t border-[#f3f4f6] py-4">
+      <footer className="border-t border-[#f3f4f6] py-4 flex flex-col items-center gap-2">
+        <div className="flex items-center gap-3 text-xs text-[#9ca3af]">
+          <Link href="/privacy" className="hover:text-[#707070] transition-colors">
+            {locale === 'ja' ? 'プライバシーポリシー' : 'Privacy Policy'}
+          </Link>
+          <span>·</span>
+          <Link href="/contact" className="hover:text-[#707070] transition-colors">
+            {locale === 'ja' ? 'お問い合わせ' : 'Contact'}
+          </Link>
+        </div>
         <p className="text-center text-xs text-[#9ca3af]">{T.footer}</p>
       </footer>
 

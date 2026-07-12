@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import GuideClient from './GuideClient';
 
-const SITE_URL = 'https://wuwaechosimu.xyzack271.com';
+const SITE_URL = 'https://wuwaechotools.com';
 
 export const metadata: Metadata = {
   title: '使い方ガイド | 音骸シミュレーター',
