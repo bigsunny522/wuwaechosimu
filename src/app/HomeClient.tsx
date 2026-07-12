@@ -852,15 +852,15 @@ export default function HomeClient() {
 
         {/* Empty state */}
         {!echo && (
-          <div className="flex flex-col items-center gap-6 py-8 text-center">
-            <div>
+          <div className="flex flex-col items-center gap-4 py-2 text-center">
+            <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl" style={{ background: '#eef9ff', border: `1px solid ${ACCENT}33` }}>
               <div
-                className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                style={{ background: '#eef9ff', border: `1px solid ${ACCENT}33` }}
+                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                style={{ background: '#ffffff' }}
               >
-                <EchoIcon size={48} color={ACCENT} bgColor="#eef9ff" />
+                <EchoIcon size={18} color={ACCENT} bgColor="#ffffff" />
               </div>
-              <p className="text-[#707070] text-sm max-w-xs leading-relaxed mx-auto" style={{ lineHeight: 1.7 }}>
+              <p className="text-[#707070] text-xs leading-snug text-left">
                 {T.emptyText}
               </p>
             </div>
