@@ -400,7 +400,10 @@ export const CHARACTERS: CharacterBuild[] = [
         },
         erRequirement: 1.15,
         damageProfile: {
-          typeShares: { basic: 1, heavy: 0, skill: 0, lib: 0 },
+          // 音骸参照ダメージ(Prydwen Echo区分)を解放ダメージとして再分類
+          // (通常79,389 / 解放扱いEcho 1,563,992、キット仕様上ゲージスキルが
+          // 解放ダメージ判定であることをユーザーが確認済み)
+          typeShares: { basic: 0.0483, heavy: 0, skill: 0, lib: 0.9517 },
           selfAtkBuffPercent: 0.15,
           baselineCritRate: 0.70,
           baselineCritDmg: 2.30,
@@ -707,6 +710,9 @@ export const CHARACTERS: CharacterBuild[] = [
         },
         erRequirement: 1.15,
         damageProfile: {
+          // 音骸参照ダメージ(Prydwen Echo区分)を重撃ダメージとして再分類
+          // (通常/スキル/解放が元々0のため、Echo分を重撃に含めても比率は不変。
+          // キット仕様上ゲージスキルが重撃ダメージ判定であることをユーザーが確認済み)
           typeShares: { basic: 0, heavy: 1, skill: 0, lib: 0 },
           selfAtkBuffPercent: 0.15,
           baselineCritRate: 0.70,
