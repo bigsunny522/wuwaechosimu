@@ -16,7 +16,14 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const saved = localStorage.getItem('wuwa-locale') as Locale | null;
-    if (saved === 'ja' || saved === 'en') setLocale(saved);
+    if (saved === 'ja' || saved === 'en') {
+      setLocale(saved);
+      return;
+    }
+    // 保存済みの選択がない場合はブラウザの言語設定から自動判定
+    const browserLangs = navigator.languages ?? [navigator.language];
+    const isJapanese = browserLangs.some((l) => l.toLowerCase().startsWith('ja'));
+    setLocale(isJapanese ? 'ja' : 'en');
   }, []);
 
   const toggleLocale = () => {

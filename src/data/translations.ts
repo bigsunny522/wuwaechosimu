@@ -144,6 +144,7 @@ const JA = {
   // Result modal
   resultModalTitle: '🎉 +25 達成！',
   resultShowBtn:    '📊 結果を表示',
+  resultTrackerCTA: '📈 実際の厳選は「厳選サポーター」で管理',
   // SavedResultsModal
   savedTitle:       '📋 保存済み結果',
   savedEmpty:       '保存された結果がありません',
@@ -253,6 +254,7 @@ const EN: typeof JA = {
   catUnnecessary:   'Skip',
   resultModalTitle: '🎉 Max Level!',
   resultShowBtn:    '📊 Show Results',
+  resultTrackerCTA: '📈 Track your real pulls with Selection Supporter',
   savedTitle:       '📋 Saved Results',
   savedEmpty:       'No saved results',
   savedCount:       '{0} results',

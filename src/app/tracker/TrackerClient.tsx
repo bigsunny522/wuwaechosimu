@@ -384,17 +384,31 @@ export default function TrackerClient() {
           <div className="flex items-center gap-2 shrink-0">
             <EchoIcon size={28} color={ACCENT} />
             <span className="font-semibold text-[#222222] text-sm tracking-tight">
-              {ja ? '厳選トラッカー' : 'Selection Tracker'}
+              {ja ? '厳選サポーター' : 'Selection Supporter'}
             </span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            <Link
-              href="/"
-              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
+            {/* Mode switcher: シミュレーター / 厳選サポーター */}
+            <div
+              className="flex items-center rounded-lg p-0.5 shrink-0"
+              style={{ background: '#f3f4f6' }}
             >
-              <span>←</span>
-              <span className="hidden sm:inline">{ja ? 'シミュレーターへ' : 'Back'}</span>
-            </Link>
+              <Link
+                href="/"
+                className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-[#707070] hover:text-[#222222] transition-colors"
+                title={ja ? 'ゲーム感覚で理論値を試す' : 'Try theoretical odds, game-style'}
+              >
+                <span>✦</span>
+                <span className="hidden sm:inline">{ja ? '運試し' : 'Play'}</span>
+              </Link>
+              <span
+                className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold"
+                style={{ background: '#ffffff', color: ACCENT, boxShadow: '0 1px 2px rgba(0,0,0,0.06)' }}
+              >
+                <span>📈</span>
+                <span className="hidden sm:inline">{ja ? '厳選管理' : 'Manage'}</span>
+              </span>
+            </div>
             <button
               onClick={toggleLocale}
               className="px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
@@ -409,7 +423,7 @@ export default function TrackerClient() {
         {/* Intro */}
         <div className="text-center flex flex-col gap-1.5">
           <h1 className="text-lg font-semibold text-[#222222]">
-            {ja ? '厳選進捗トラッカー' : 'Selection Progress Tracker'}
+            {ja ? '厳選サポーター' : 'Selection Supporter'}
           </h1>
           <p className="text-xs text-[#707070] leading-relaxed" style={{ lineHeight: 1.7 }}>
             {ja
@@ -481,6 +495,13 @@ export default function TrackerClient() {
               ? `平均スコア ${baseline ? baseline.avgScore.toFixed(1) : '—'} / 100（メインステ・セットもランダムな1周分の期待値）`
               : `Average score ${baseline ? baseline.avgScore.toFixed(1) : '—'} / 100 (one random full farm run, incl. random main stat / set)`}
           </p>
+          <Link
+            href="/"
+            className="text-[10px] text-center underline underline-offset-2 hover:no-underline"
+            style={{ color: `${ACCENT}cc` }}
+          >
+            {ja ? 'この理論値は「運試し」と同じ計算エンジンです →' : 'Same engine as the "Play" simulator →'}
+          </Link>
         </section>
 
         {/* ── 記録フォーム ── */}

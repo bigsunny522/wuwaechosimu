@@ -138,6 +138,7 @@ export default function Home() {
   const [saveSlots, setSaveSlots]             = useState(0);
   const [savedResults, setSavedResults]       = useState<SavedResult[]>([]);
   const [historyOpen, setHistoryOpen]         = useState(false);
+  const [menuOpen, setMenuOpen]               = useState(false);
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [hasNewUpdate, setHasNewUpdate]       = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
@@ -404,46 +405,28 @@ export default function Home() {
 
           {/* Nav buttons */}
           <div className="flex items-center gap-1.5 shrink-0">
-            {/* Guide link */}
-            <Link
-              href="/guide"
-              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
-              title={locale === 'ja' ? '使い方ガイド' : 'How to Use'}
+            {/* Mode switcher: 運試し（シミュレーター） / 厳選管理（サポーター） */}
+            <div
+              className="flex items-center rounded-lg p-0.5 shrink-0"
+              style={{ background: '#f3f4f6' }}
+              title={locale === 'ja' ? 'ゲーム感覚で理論値を試す' : 'Try theoretical odds, game-style'}
             >
-              <span>📖</span>
-              <span className="hidden sm:inline">{locale === 'ja' ? '使い方' : 'Guide'}</span>
-            </Link>
-            {/* Tracker link */}
-            <Link
-              href="/tracker"
-              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
-              title={locale === 'ja' ? '厳選トラッカー' : 'Selection Tracker'}
-            >
-              <span>📈</span>
-              <span className="hidden sm:inline">{locale === 'ja' ? 'トラッカー' : 'Tracker'}</span>
-            </Link>
-            {/* News link */}
-            <Link
-              href="/news"
-              className="relative flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
-              title={locale === 'ja' ? 'お知らせ' : "What's New"}
-            >
-              <span>🔔</span>
-              <span className="hidden sm:inline">{locale === 'ja' ? 'お知らせ' : "News"}</span>
-              {hasNewUpdate && (
-                <span
-                  className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full border-2 border-white"
-                  style={{ background: ACCENT }}
-                />
-              )}
-            </Link>
-            {/* Locale toggle */}
-            <button
-              onClick={toggleLocale}
-              className="px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
-            >
-              {locale === 'ja' ? 'EN' : 'JA'}
-            </button>
+              <span
+                className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold"
+                style={{ background: '#ffffff', color: ACCENT, boxShadow: '0 1px 2px rgba(0,0,0,0.06)' }}
+              >
+                <span>✦</span>
+                <span className="hidden sm:inline">{locale === 'ja' ? '運試し' : 'Play'}</span>
+              </span>
+              <Link
+                href="/tracker"
+                className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-[#707070] hover:text-[#222222] transition-colors"
+                title={locale === 'ja' ? '実際の厳選を記録・管理する' : 'Log and manage your real pulls'}
+              >
+                <span>📈</span>
+                <span className="hidden sm:inline">{locale === 'ja' ? '厳選管理' : 'Manage'}</span>
+              </Link>
+            </div>
 
             {/* Bonus */}
             {bonusActive ? (
@@ -485,6 +468,62 @@ export default function Home() {
               )}
             </button>
 
+            {/* Overflow menu: Guide / News / Locale */}
+            <div className="relative shrink-0">
+              <button
+                onClick={() => setMenuOpen((v) => !v)}
+                className="relative flex items-center justify-center w-8 h-8 rounded-lg text-sm transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
+                aria-label={locale === 'ja' ? 'メニュー' : 'Menu'}
+              >
+                ☰
+                {hasNewUpdate && (
+                  <span
+                    className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-white"
+                    style={{ background: ACCENT }}
+                  />
+                )}
+              </button>
+              {menuOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+                  <div
+                    className="absolute right-0 top-full mt-2 z-50 w-44 rounded-xl bg-white overflow-hidden"
+                    style={{ border: '1px solid #e5e7eb', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}
+                  >
+                    <Link
+                      href="/guide"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors"
+                    >
+                      <span>📖</span>
+                      <span>{locale === 'ja' ? '使い方ガイド' : 'How to Use'}</span>
+                    </Link>
+                    <Link
+                      href="/news"
+                      onClick={() => setMenuOpen(false)}
+                      className="relative flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors"
+                    >
+                      <span>🔔</span>
+                      <span>{locale === 'ja' ? 'お知らせ' : "What's New"}</span>
+                      {hasNewUpdate && (
+                        <span
+                          className="ml-auto w-2 h-2 rounded-full"
+                          style={{ background: ACCENT }}
+                        />
+                      )}
+                    </Link>
+                    <button
+                      onClick={() => { toggleLocale(); setMenuOpen(false); }}
+                      className="flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors w-full text-left"
+                      style={{ borderTop: '1px solid #f3f4f6' }}
+                    >
+                      <span>🌐</span>
+                      <span>{locale === 'ja' ? 'English に切替' : '日本語に切替'}</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -683,6 +722,13 @@ export default function Home() {
                       {interpolate(T.saveCTABtn, [SAVE_PER_AD])}
                     </button>
                   )}
+                  <Link
+                    href="/tracker"
+                    className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-[500px] text-sm font-medium transition-colors"
+                    style={{ background: '#eef9ff', color: ACCENT, border: '1px solid #0275fd33' }}
+                  >
+                    {T.resultTrackerCTA}
+                  </Link>
                 </div>
 
                 {/* ── スマホ: モーダルを再表示するボタン ── */}
@@ -1049,6 +1095,16 @@ export default function Home() {
                   {interpolate(T.saveCTABtn, [SAVE_PER_AD])}
                 </button>
               )}
+
+              {/* Tracker CTA — bridge from casual simulation to real farming */}
+              <Link
+                href="/tracker"
+                onClick={() => setShowResultModal(false)}
+                className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-[500px] text-sm font-medium transition-colors"
+                style={{ background: '#eef9ff', color: ACCENT, border: '1px solid #0275fd33' }}
+              >
+                {T.resultTrackerCTA}
+              </Link>
 
               {/* Close */}
               <button
