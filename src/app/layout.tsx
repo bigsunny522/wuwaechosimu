@@ -18,8 +18,8 @@ export const metadata: Metadata = {
     'echo farming', 'echo score', 'WuWa', 'サブステ', '再抽選',
   ],
   icons: {
-    icon: '/echo.svg',
-    apple: '/echo.svg',
+    icon: '/icon.svg',
+    apple: '/apple-icon.png',
   },
   authors: [{ name: '音骸シミュレーター' }],
   creator: '音骸シミュレーター',

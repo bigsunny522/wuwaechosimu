@@ -399,13 +399,13 @@ export default function TrackerClient() {
                 title={ja ? 'ゲーム感覚で理論値を試す' : 'Try theoretical odds, game-style'}
               >
                 <span>✦</span>
-                <span className="hidden sm:inline">{ja ? '運試し' : 'Play'}</span>
+                <span className="hidden sm:inline">{ja ? 'ガチャ' : 'Gacha'}</span>
               </Link>
               <span
                 className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold"
                 style={{ background: '#ffffff', color: ACCENT, boxShadow: '0 1px 2px rgba(0,0,0,0.06)' }}
               >
-                <span>📈</span>
+                <span>📊</span>
                 <span className="hidden sm:inline">{ja ? '厳選管理' : 'Manage'}</span>
               </span>
             </div>
@@ -500,7 +500,7 @@ export default function TrackerClient() {
             className="text-[10px] text-center underline underline-offset-2 hover:no-underline"
             style={{ color: `${ACCENT}cc` }}
           >
-            {ja ? 'この理論値は「運試し」と同じ計算エンジンです →' : 'Same engine as the "Play" simulator →'}
+            {ja ? 'この理論値は「ガチャ」と同じ計算エンジンです →' : 'Same engine as the "Gacha" simulator →'}
           </Link>
         </section>
 

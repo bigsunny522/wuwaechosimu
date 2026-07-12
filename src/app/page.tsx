@@ -405,7 +405,7 @@ export default function Home() {
 
           {/* Nav buttons */}
           <div className="flex items-center gap-1.5 shrink-0">
-            {/* Mode switcher: 運試し（シミュレーター） / 厳選管理（サポーター） */}
+            {/* Mode switcher: ガチャ（シミュレーター） / 厳選管理（サポーター） */}
             <div
               className="flex items-center rounded-lg p-0.5 shrink-0"
               style={{ background: '#f3f4f6' }}
@@ -416,14 +416,14 @@ export default function Home() {
                 style={{ background: '#ffffff', color: ACCENT, boxShadow: '0 1px 2px rgba(0,0,0,0.06)' }}
               >
                 <span>✦</span>
-                <span className="hidden sm:inline">{locale === 'ja' ? '運試し' : 'Play'}</span>
+                <span className="hidden sm:inline">{locale === 'ja' ? 'ガチャ' : 'Gacha'}</span>
               </span>
               <Link
                 href="/tracker"
                 className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-[#707070] hover:text-[#222222] transition-colors"
                 title={locale === 'ja' ? '実際の厳選を記録・管理する' : 'Log and manage your real pulls'}
               >
-                <span>📈</span>
+                <span>📊</span>
                 <span className="hidden sm:inline">{locale === 'ja' ? '厳選管理' : 'Manage'}</span>
               </Link>
             </div>
