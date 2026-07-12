@@ -41,6 +41,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       },
     },
     {
+      url: `${SITE_URL}/news`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.5,
+      alternates: {
+        languages: {
+          ja: `${SITE_URL}/news`,
+          en: `${SITE_URL}/news?lang=en`,
+        },
+      },
+    },
+    {
       url: `${SITE_URL}/privacy`,
       lastModified: new Date(),
       changeFrequency: 'yearly',

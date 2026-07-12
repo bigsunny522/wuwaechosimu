@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { useLocale } from '@/lib/locale';
+import { useLocale, withLang } from '@/lib/locale';
 import EchoIcon from '@/components/EchoIcon';
 
 const ACCENT = '#0275fd';
@@ -285,7 +285,7 @@ export default function GuideClient() {
       <header className="sticky top-0 z-30 bg-white" style={{ borderBottom: '1px solid #e5e7eb' }}>
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
           <Link
-            href="/"
+            href={withLang('/', locale)}
             className="flex items-center gap-1.5 text-xs font-medium text-[#707070] hover:text-[#222222] transition-colors"
           >
             {G.backBtn}
@@ -521,7 +521,7 @@ export default function GuideClient() {
               <h2 className="text-lg font-semibold text-[#222222] mb-1">{G.cta.title}</h2>
               <p className="text-xs text-[#9ca3af] mb-5">{G.cta.sub}</p>
               <Link
-                href="/"
+                href={withLang('/', locale)}
                 className="inline-block px-8 py-3 rounded-[500px] text-sm font-semibold text-[#f7f7f7] hover:opacity-80 transition-opacity"
                 style={{ background: '#222222' }}
               >

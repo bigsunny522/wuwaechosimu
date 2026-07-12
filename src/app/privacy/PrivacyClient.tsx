@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useLocale } from '@/lib/locale';
+import { useLocale, withLang } from '@/lib/locale';
 import EchoIcon from '@/components/EchoIcon';
 
 const ACCENT = '#0275fd';
@@ -100,7 +100,7 @@ export default function PrivacyClient() {
       <header className="sticky top-0 z-30 bg-white" style={{ borderBottom: '1px solid #e5e7eb' }}>
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
           <Link
-            href="/"
+            href={withLang('/', locale)}
             className="flex items-center gap-1.5 text-xs font-medium text-[#707070] hover:text-[#222222] transition-colors"
           >
             {C.backBtn}
@@ -136,7 +136,7 @@ export default function PrivacyClient() {
               </p>
               {'link' in s && s.link && (
                 <Link
-                  href="/contact"
+                  href={withLang('/contact', locale)}
                   className="inline-block mt-2 text-sm font-medium"
                   style={{ color: ACCENT }}
                 >

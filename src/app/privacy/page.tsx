@@ -1,27 +1,41 @@
 import type { Metadata } from 'next';
 import PrivacyClient from './PrivacyClient';
+import { LocaleProvider } from '@/lib/locale';
+import { resolveLocale, resolveExplicitLocale } from '@/lib/locale-utils';
+import { buildMetadata, buildBreadcrumbJsonLd } from '@/lib/seo';
 
-const SITE_URL = 'https://wuwaechotools.com';
+type Props = { searchParams: Promise<{ lang?: string }> };
 
-export const metadata: Metadata = {
-  title: 'プライバシーポリシー | 音骸シミュレーター',
-  description:
-    '音骸シミュレーターのプライバシーポリシー。広告配信・アクセス解析・Cookieの利用について説明します。',
-  alternates: {
-    canonical: `${SITE_URL}/privacy`,
-    languages: {
-      ja: `${SITE_URL}/privacy`,
-      en: `${SITE_URL}/privacy?lang=en`,
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const locale = resolveLocale(await searchParams);
+  return buildMetadata({
+    path: '/privacy',
+    locale,
+    ja: {
+      title: 'プライバシーポリシー | 音骸シミュレーター',
+      description:
+        '音骸シミュレーターのプライバシーポリシー。広告配信・アクセス解析・Cookieの利用について説明します。',
+      ogDescription: '音骸シミュレーターのプライバシーポリシー。',
     },
-  },
-  openGraph: {
-    title: 'プライバシーポリシー | 音骸シミュレーター',
-    description: '音骸シミュレーターのプライバシーポリシー。',
-    url: `${SITE_URL}/privacy`,
-  },
-  robots: { index: true, follow: true },
-};
+    en: {
+      title: 'Privacy Policy | Echo Simulator',
+      description:
+        'Privacy policy for the Echo Simulator, covering ad serving, analytics, and cookie usage.',
+    },
+  });
+}
 
-export default function PrivacyPage() {
-  return <PrivacyClient />;
+export default async function PrivacyPage({ searchParams }: Props) {
+  const sp = await searchParams;
+  const locale = resolveLocale(sp);
+  const initialLocale = resolveExplicitLocale(sp);
+  const breadcrumb = buildBreadcrumbJsonLd('/privacy', locale, locale === 'en' ? 'Privacy Policy' : 'プライバシーポリシー');
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <LocaleProvider initialLocale={initialLocale}>
+        <PrivacyClient />
+      </LocaleProvider>
+    </>
+  );
 }

@@ -15,7 +15,7 @@ import {
   loadEntries, saveEntries, computeBaseline, predict, probAtLeastOneWithin,
   RANK_ORDER,
 } from '@/lib/tracker';
-import { useLocale } from '@/lib/locale';
+import { useLocale, withLang } from '@/lib/locale';
 import { SUBSTAT_LABEL_EN, MAINSTAT_LABEL_EN } from '@/data/translations';
 import CustomSelect from '@/components/CustomSelect';
 import EchoIcon from '@/components/EchoIcon';
@@ -394,7 +394,7 @@ export default function SupporterClient() {
               style={{ background: '#f3f4f6' }}
             >
               <Link
-                href="/"
+                href={withLang('/', locale)}
                 className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-[#707070] hover:text-[#222222] transition-colors"
                 title={ja ? 'ゲーム感覚で理論値を試す' : 'Try theoretical odds, game-style'}
               >
@@ -496,7 +496,7 @@ export default function SupporterClient() {
               : `Average score ${baseline ? baseline.avgScore.toFixed(1) : '—'} / 100 (one random full farm run, incl. random main stat / set)`}
           </p>
           <Link
-            href="/"
+            href={withLang('/', locale)}
             className="text-[10px] text-center underline underline-offset-2 hover:no-underline"
             style={{ color: `${ACCENT}cc` }}
           >

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useLocale } from '@/lib/locale';
+import { useLocale, withLang } from '@/lib/locale';
 import EchoIcon from '@/components/EchoIcon';
 import { UPDATES } from '@/data/updates';
 
@@ -23,7 +23,7 @@ export default function NewsClient() {
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             <Link
-              href="/"
+              href={withLang('/', locale)}
               className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
             >
               <span>←</span>

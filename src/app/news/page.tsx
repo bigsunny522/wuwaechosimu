@@ -1,25 +1,39 @@
 import type { Metadata } from 'next';
 import NewsClient from './NewsClient';
+import { LocaleProvider } from '@/lib/locale';
+import { resolveLocale, resolveExplicitLocale } from '@/lib/locale-utils';
+import { buildMetadata, buildBreadcrumbJsonLd } from '@/lib/seo';
 
-const SITE_URL = 'https://wuwaechotools.com';
+type Props = { searchParams: Promise<{ lang?: string }> };
 
-export const metadata: Metadata = {
-  title: 'お知らせ | 音骸シミュレーター',
-  description: '鳴潮（Wuthering Waves）音骸シミュレーターの更新情報・キャラクター追加履歴。',
-  alternates: {
-    canonical: `${SITE_URL}/news`,
-    languages: {
-      ja: `${SITE_URL}/news`,
-      en: `${SITE_URL}/news?lang=en`,
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const locale = resolveLocale(await searchParams);
+  return buildMetadata({
+    path: '/news',
+    locale,
+    ja: {
+      title: 'お知らせ | 音骸シミュレーター',
+      description: '鳴潮（Wuthering Waves）音骸シミュレーターの更新情報・キャラクター追加履歴。',
+      ogDescription: '鳴潮の音骸厳選シミュレーターの更新情報ページ。',
     },
-  },
-  openGraph: {
-    title: 'お知らせ | 音骸シミュレーター',
-    description: '鳴潮の音骸厳選シミュレーターの更新情報ページ。',
-    url: `${SITE_URL}/news`,
-  },
-};
+    en: {
+      title: "What's New | Echo Simulator",
+      description: 'Update log and character addition history for the Wuthering Waves Echo Simulator.',
+    },
+  });
+}
 
-export default function NewsPage() {
-  return <NewsClient />;
+export default async function NewsPage({ searchParams }: Props) {
+  const sp = await searchParams;
+  const locale = resolveLocale(sp);
+  const initialLocale = resolveExplicitLocale(sp);
+  const breadcrumb = buildBreadcrumbJsonLd('/news', locale, locale === 'en' ? "What's New" : 'お知らせ');
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <LocaleProvider initialLocale={initialLocale}>
+        <NewsClient />
+      </LocaleProvider>
+    </>
+  );
 }

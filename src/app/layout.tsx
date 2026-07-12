@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next';
-import { LocaleProvider } from '@/lib/locale';
 import './globals.css';
 
 const SITE_URL = 'https://wuwaechotools.com';
@@ -28,6 +27,7 @@ export const metadata: Metadata = {
     languages: {
       'ja': SITE_URL,
       'en': `${SITE_URL}?lang=en`,
+      'x-default': SITE_URL,
     },
   },
   openGraph: {
@@ -113,7 +113,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-full flex flex-col bg-white text-[#222222]">
-        <LocaleProvider>{children}</LocaleProvider>
+        {children}
       </body>
     </html>
   );
