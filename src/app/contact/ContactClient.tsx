@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useLocale } from '@/lib/locale';
 import EchoIcon from '@/components/EchoIcon';
+import CustomSelect from '@/components/CustomSelect';
 
 const ACCENT = '#0275fd';
 
@@ -94,6 +95,11 @@ export default function ContactClient() {
   const { locale, toggleLocale } = useLocale();
   const C = CONTENT[locale];
   const [state, setState] = useState<SubmitState>('idle');
+  const [category, setCategory] = useState(C.form.categoryOptions[0]);
+
+  useEffect(() => {
+    setCategory(CONTENT[locale].form.categoryOptions[0]);
+  }, [locale]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -103,6 +109,7 @@ export default function ContactClient() {
     }
     setState('submitting');
     const formData = new FormData(e.currentTarget);
+    formData.set('category', category);
     formData.append('access_key', WEB3FORMS_ACCESS_KEY);
     formData.append('subject', locale === 'ja' ? '【音骸シミュレーター】お問い合わせ' : '[Echo Simulator] Inquiry');
 
@@ -115,6 +122,7 @@ export default function ContactClient() {
       if (json.success) {
         setState('success');
         e.currentTarget.reset();
+        setCategory(C.form.categoryOptions[0]);
       } else {
         setState('error');
       }
@@ -194,18 +202,14 @@ export default function ContactClient() {
               </div>
 
               <div>
-                <label htmlFor="category" className="block text-xs font-medium text-[#707070] mb-1.5">
+                <label className="block text-xs font-medium text-[#707070] mb-1.5">
                   {C.form.category}
                 </label>
-                <select
-                  id="category"
-                  name="category"
-                  className="w-full px-3 py-2.5 rounded-lg text-sm text-[#222222] bg-white border border-[#e5e7eb] focus:outline-none focus:border-[#0275fd] transition-colors"
-                >
-                  {C.form.categoryOptions.map((opt) => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
-                </select>
+                <CustomSelect
+                  value={category}
+                  onChange={setCategory}
+                  options={C.form.categoryOptions.map((opt) => ({ value: opt, label: opt }))}
+                />
               </div>
 
               <div>
