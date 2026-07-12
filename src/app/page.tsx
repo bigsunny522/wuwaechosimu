@@ -520,6 +520,23 @@ export default function Home() {
                       <span>🌐</span>
                       <span>{locale === 'ja' ? 'English に切替' : '日本語に切替'}</span>
                     </button>
+                    <Link
+                      href="/privacy"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors"
+                      style={{ borderTop: '1px solid #f3f4f6' }}
+                    >
+                      <span>📄</span>
+                      <span>{locale === 'ja' ? 'プライバシーポリシー' : 'Privacy Policy'}</span>
+                    </Link>
+                    <Link
+                      href="/contact"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors"
+                    >
+                      <span>✉️</span>
+                      <span>{locale === 'ja' ? 'お問い合わせ' : 'Contact'}</span>
+                    </Link>
                   </div>
                 </>
               )}
@@ -980,16 +997,7 @@ export default function Home() {
         </div>
       </div>
 
-      <footer className="border-t border-[#f3f4f6] py-4 flex flex-col items-center gap-2">
-        <div className="flex items-center gap-3 text-xs text-[#9ca3af]">
-          <Link href="/privacy" className="hover:text-[#707070] transition-colors">
-            {locale === 'ja' ? 'プライバシーポリシー' : 'Privacy Policy'}
-          </Link>
-          <span>·</span>
-          <Link href="/contact" className="hover:text-[#707070] transition-colors">
-            {locale === 'ja' ? 'お問い合わせ' : 'Contact'}
-          </Link>
-        </div>
+      <footer className="border-t border-[#f3f4f6] py-4">
         <p className="text-center text-xs text-[#9ca3af]">{T.footer}</p>
       </footer>
 
