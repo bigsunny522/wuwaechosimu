@@ -95,7 +95,7 @@ export default function ContactClient() {
   const { locale, toggleLocale } = useLocale();
   const C = CONTENT[locale];
   const [state, setState] = useState<SubmitState>('idle');
-  const [category, setCategory] = useState(C.form.categoryOptions[0]);
+  const [category, setCategory] = useState<string>(C.form.categoryOptions[0]);
 
   useEffect(() => {
     setCategory(CONTENT[locale].form.categoryOptions[0]);

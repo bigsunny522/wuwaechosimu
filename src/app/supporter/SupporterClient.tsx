@@ -55,7 +55,7 @@ function getRecommendedHarmonySet(charId: string, cost: EchoCost): string | null
     ?? null;
 }
 
-export default function TrackerClient() {
+export default function SupporterClient() {
   const { locale, toggleLocale } = useLocale();
   const ja = locale === 'ja';
 

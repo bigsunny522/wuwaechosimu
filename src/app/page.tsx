@@ -419,7 +419,7 @@ export default function Home() {
                 <span className="hidden sm:inline">{locale === 'ja' ? 'ガチャ' : 'Gacha'}</span>
               </span>
               <Link
-                href="/tracker"
+                href="/supporter"
                 className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-[#707070] hover:text-[#222222] transition-colors"
                 title={locale === 'ja' ? '実際の厳選を記録・管理する' : 'Log and manage your real pulls'}
               >
@@ -740,7 +740,7 @@ export default function Home() {
                     </button>
                   )}
                   <Link
-                    href="/tracker"
+                    href="/supporter"
                     className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-[500px] text-sm font-medium transition-colors"
                     style={{ background: '#eef9ff', color: ACCENT, border: '1px solid #0275fd33' }}
                   >
@@ -1106,7 +1106,7 @@ export default function Home() {
 
               {/* Tracker CTA — bridge from casual simulation to real farming */}
               <Link
-                href="/tracker"
+                href="/supporter"
                 onClick={() => setShowResultModal(false)}
                 className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-[500px] text-sm font-medium transition-colors"
                 style={{ background: '#eef9ff', color: ACCENT, border: '1px solid #0275fd33' }}

@@ -29,6 +29,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       },
     },
     {
+      url: `${SITE_URL}/supporter`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+      alternates: {
+        languages: {
+          ja: `${SITE_URL}/supporter`,
+          en: `${SITE_URL}/supporter?lang=en`,
+        },
+      },
+    },
+    {
       url: `${SITE_URL}/privacy`,
       lastModified: new Date(),
       changeFrequency: 'yearly',
