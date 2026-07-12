@@ -1,7 +1,7 @@
 import type { EchoState, ScoreRank } from '@/types/echo';
 import type { CharacterBuild } from '@/types/character';
 import { pickSubstat } from '@/lib/simulator';
-import { scoreEcho } from '@/lib/scorer';
+import { scoreEcho, pickVariant } from '@/lib/scorer';
 
 const ITERATIONS = 50_000;
 
@@ -82,7 +82,10 @@ export function simulateCompletion(
   const current = runSimulation(echo.substats, remaining, echo, build, iterations);
 
   // ── ベースライン（まっさらな音骸） ────────────────────────────────────────
-  const cacheKey = `${echo.cost}-${build?.id ?? 'generic'}`;
+  // v2運用バリアント方式ではセット→運用の推定でスコアが変わるため、
+  // 解決後のバリアントIDまでキーに含める（旧方式キャラは 'legacy' 固定）
+  const variantId = build ? (pickVariant(echo, build)?.id ?? 'legacy') : 'legacy';
+  const cacheKey = `${echo.cost}-${build?.id ?? 'generic'}-${variantId}`;
   let baseline = baselineCache.get(cacheKey);
   if (!baseline) {
     const b = runSimulation([], maxSubs, echo, build, iterations);

@@ -44,6 +44,33 @@ const SET = {
 //  mainstat は全キャラ個別定義
 //  ・cost3 推奨: 属性判明キャラは属性ダメキー、不明キャラはスルー（atkPercent/Resonanceeff）
 //  ・Resonanceeff = COST3 メインステの共鳴効率キー（substats の energyRegen とは別）
+//
+//  ── v2: 運用バリアント方式（連続重み採点）を有効化する場合 ─────────────────
+//  下記4フィールドを追加すると、そのキャラは自動的にダメージ式ベースの
+//  連続重み採点（scorer.ts の scoreWithVariant）に切り替わる。未設定のキャラは
+//  従来どおり substats.recommended/preferred/acceptable のカテゴリ採点を使う。
+//
+//    weaponClass:   '迅刀' | '長刃' | '拳銃' | '手甲' | '増幅器'（既存 weapon と同じ値）
+//    scalingStat:   'atk' | 'hp' | 'def'（ダメージ/回復のスケール元ステータス）
+//    baseStats90:   { atk?, hp?, def? }（Lv90 素ステータス。scalingStat の値は必須）
+//    motifWeaponId: src/data/weapons.ts の MOTIF_WEAPONS のキー（通常 id と同じ）
+//    variants:      RoleVariant[]（メイン/サブ/サポート等の運用ごとに
+//                   harmonySets・mainstat・damageProfile を定義。1個でも可）
+//
+//  damageProfile.typeShares は「このキャラのダメージが基本/重撃/スキル/解放に
+//  何割配分されるか」の概算（合計≈1.0）。baselineCritRate/critDmg はその運用で
+//  実際に目指すクリ率・クリダメ目標値（重み導出の基準点になる）。
+//
+//  ── ハーモニーセット→運用ロールのマッピング規約（データ入力ルール） ───────
+//  scorer.ts の pickVariant は、音骸の装着セットを各バリアントの
+//  harmonySets.recommended → acceptable の順で照合し、最初に一致した
+//  バリアントの運用として採点する（どれにも一致しなければ variants[0]）。
+//  したがって variants を定義するときは必ず:
+//    1. そのキャラが実際に使う全セットを、対応する運用の recommended に置く
+//       （例: 属性セット→メイン運用、軽雲出月/ER系セット→サブ運用）
+//    2. 同一キャラ内で recommended セットがバリアント間で重複しないようにする
+//       （重複すると先に定義したバリアントが常に勝つ）
+//    3. 最も代表的な運用を variants[0] に置く（未知セット時のデフォルトになる）
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const CHARACTERS: CharacterBuild[] = [
@@ -54,6 +81,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'yangyang_xuanling', name: '秧秧・玄翎', nameEn: 'Yangyang (Xuanling)', element: '消滅', weapon: '迅刀',
     role: 'メインアタッカー（重撃重視）',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 425, hp: 11025, def: 1148 },
+    motifWeaponId: 'yangyang_xuanling',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -77,6 +107,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'lucilare', name: 'ルシラー', nameEn: 'Lucilare', element: '凝縮', weapon: '迅刀',
     role: 'サブアタッカー',
     roleTemplate: 'SubDPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 375, hp: 12237, def: 1197 },
+    motifWeaponId: 'lucilare',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -102,6 +135,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'lucy', name: 'ルーシー', nameEn: 'Lucy', element: '回折', weapon: '長刃',
     role: 'メインアタッカー',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 425, hp: 11025, def: 1148 },
+    motifWeaponId: 'lucy',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -125,6 +161,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'rebecca', name: 'レベッカ', nameEn: 'Rebecca', element: '電導', weapon: '拳銃',
     role: 'サブアタッカー',
     roleTemplate: 'SubDPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 400, hp: 11600, def: 1173 },
+    motifWeaponId: 'rebecca',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -148,6 +187,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'denia', name: 'ダーニャ', nameEn: 'Denia', element: '焦熱', weapon: '長刃',
     role: 'メインアタッカー',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 425, hp: 11025, def: 1148 },
+    motifWeaponId: 'denia',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -171,6 +213,48 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'hiyuki', name: '緋雪', nameEn: 'Hiyuki', element: '凝縮', weapon: '迅刀',
     role: 'メイン/サブ火力',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 462, hp: 10300, def: 1112 },
+    motifWeaponId: 'hiyuki',
+    // v2パイロット: メイン/サブ両運用でセットが変わる代表例（既存role記述どおり）
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.SNOWY], acceptable: [SET.FROST, SET.FROSTY] },
+        mainstat: {
+          cost4: { recommended: ['critDmg'],               acceptable: ['critRate', 'atkPercent'] },
+          cost3: { recommended: ['GlacioDmg', 'atkPercent'], acceptable: [] },
+          cost1: { recommended: ['atkPercent'],             acceptable: [] },
+        },
+        erRequirement: 1.20,
+        damageProfile: {
+          typeShares: { basic: 0.30, heavy: 0.15, skill: 0.15, lib: 0.40 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+      {
+        id: 'sub',
+        role: 'sub',
+        label: 'サブアタッカー（凸待ち撃ち）運用',
+        harmonySets: { recommended: [SET.FROST, SET.FROSTY], acceptable: [SET.SNOWY] },
+        mainstat: {
+          cost4: { recommended: ['critDmg'],               acceptable: ['critRate', 'atkPercent'] },
+          cost3: { recommended: ['GlacioDmg', 'atkPercent'], acceptable: [] },
+          cost1: { recommended: ['atkPercent'],             acceptable: [] },
+        },
+        erRequirement: 1.40,
+        damageProfile: {
+          typeShares: { basic: 0.10, heavy: 0.10, skill: 0.10, lib: 0.70 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -194,6 +278,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'sigrid', name: 'シグリカ', nameEn: 'Sigrika', element: '気動', weapon: '手甲',
     role: 'メインアタッカー（牽引）',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 437, hp: 10775, def: 1136 },
+    motifWeaponId: 'sigrid',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -217,6 +304,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'ryuk', name: 'リューク・ヘルセン', nameEn: 'Luuk Herssen', element: '回折', weapon: '手甲',
     role: 'メインアタッカー（回折ダメージ重視）',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 462, hp: 10300, def: 1112 },
+    motifWeaponId: 'ryuk',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -240,6 +330,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'aimes', name: 'エイメス', nameEn: 'Aemeath', element: '焦熱', weapon: '迅刀',
     role: 'メインアタッカー（全ダメバフ）',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 425, hp: 11025, def: 1148 },
+    motifWeaponId: 'aimes',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -262,6 +355,9 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'mortefi', name: 'モーニエ', nameEn: 'Mornye', element: '焦熱', weapon: '長刃',
     role: '耐久・回復サポーター',
+    scalingStat: 'def',
+    baseStats90: { atk: 287, hp: 15375, def: 1356 },
+    motifWeaponId: 'mortefi',
     substats: {
       recommended: [
         { key: 'energyRegen' },
@@ -285,6 +381,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'linne', name: 'リンネー', nameEn: 'Lynae', element: '回折', weapon: '拳銃',
     role: 'サポート（協奏効率・全ダメバフ）',
     roleTemplate: 'SubDPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 375, hp: 12237, def: 1197 },
+    motifWeaponId: 'linne',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -308,6 +407,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'chixia_sanhua', name: '千咲', nameEn: 'Chisa', element: '消滅', weapon: '長刃',
     role: '耐久・回復、防御力デバフ',
     roleTemplate: 'SubDPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 437, hp: 10775, def: 1136 },
+    motifWeaponId: 'chixia_sanhua',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -331,6 +433,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'quyuan', name: '仇遠', nameEn: 'Qiuyuan', element: '気動', weapon: '迅刀',
     role: 'メインアタッカー（重撃・スキルダメ）',
     roleTemplate: 'SubDPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 375, hp: 12237, def: 1197 },
+    motifWeaponId: 'quyuan',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -354,6 +459,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'galbrena', name: 'ガルブレーナ', nameEn: 'Galbrena', element: '焦熱', weapon: '拳銃',
     role: 'メインアタッカー（重撃重視）',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 462, hp: 10300, def: 1112 },
+    motifWeaponId: 'galbrena',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -377,6 +485,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'yuanwu', name: 'ユーノ', nameEn: 'Iuno', element: '気動', weapon: '手甲',
     role: '耐久・回復サポート（重撃バフ）',
     roleTemplate: 'SubDPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 450, hp: 10525, def: 1124 },
+    motifWeaponId: 'yuanwu',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -400,6 +511,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'augusta', name: 'オーガスタ', nameEn: 'Augusta', element: '電導', weapon: '長刃',
     role: 'メインアタッカー（全ダメバフ）',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 462, hp: 10300, def: 1112 },
+    motifWeaponId: 'augusta',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -423,6 +537,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'flova', name: 'フローヴァ', nameEn: 'Phrolova', element: '消滅', weapon: '増幅器',
     role: 'メインアタッカー（重撃重視）',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 437, hp: 10775, def: 1136 },
+    motifWeaponId: 'flova',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -446,6 +563,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'lupa', name: 'ルパ', nameEn: 'Lupa', element: '焦熱', weapon: '長刃',
     role: 'サポート（協奏効率・通常攻撃バフ）',
     roleTemplate: 'SubDPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 387, hp: 11912, def: 1185 },
+    motifWeaponId: 'lupa',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -468,6 +588,9 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'cartethia', name: 'カルテジア', nameEn: 'Cartethyia', element: '気動', weapon: '迅刀',
     role: 'メインアタッカー（風蝕効果）',
+    scalingStat: 'hp',
+    baseStats90: { atk: 312, hp: 14800, def: 611 },
+    motifWeaponId: 'cartethia',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -491,6 +614,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'shaconne', name: 'シャコンヌ', nameEn: 'Ciaccona', element: '気動', weapon: '拳銃',
     role: '牽引・風蝕バフサポート',
     roleTemplate: 'SubDPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 375, hp: 12237, def: 1197 },
+    motifWeaponId: 'shaconne',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -514,6 +640,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'zanni', name: 'ザンニー', nameEn: 'Zani', element: '回折', weapon: '手甲',
     role: 'メインアタッカー（回折ダメバフ）',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 437, hp: 10775, def: 1136 },
+    motifWeaponId: 'zanni',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -537,6 +666,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'cantarella', name: 'カンタレラ', nameEn: 'Cantarella', element: '消滅', weapon: '増幅器',
     role: '耐久・回復、消滅ダメバフ',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 400, hp: 11600, def: 1099 },
+    motifWeaponId: 'cantarella',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -560,6 +692,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'brant', name: 'ブラント', nameEn: 'Brant', element: '焦熱', weapon: '迅刀',
     role: '耐久・回復、共鳴スキルバフ',
     roleTemplate: 'SubDPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 375, hp: 11675, def: 1307 },
+    motifWeaponId: 'brant',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -583,6 +718,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'phoebe', name: 'フィービー', nameEn: 'Phoebe', element: '回折', weapon: '増幅器',
     role: 'メインアタッカー（協奏効率）',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 412, hp: 10825, def: 1258 },
+    motifWeaponId: 'phoebe',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -606,6 +744,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'rococo', name: 'ロココ', nameEn: 'Roccia', element: '消滅', weapon: '手甲',
     role: 'サブアタッカー（通常攻撃バフ）',
     roleTemplate: 'SubDPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 375, hp: 12250, def: 1197 },
+    motifWeaponId: 'rococo',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -629,6 +770,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'carlotta', name: 'カルロッタ', nameEn: 'Carlotta', element: '凝縮', weapon: '拳銃',
     role: 'メインアタッカー（共鳴スキル重視）',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 462, hp: 12450, def: 1197 },
+    motifWeaponId: 'carlotta',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -652,6 +796,30 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'camellya', name: 'ツバキ', nameEn: 'Camellya', element: '消滅', weapon: '迅刀',
     role: 'メインアタッカー（通常攻撃重視）',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 450, hp: 10325, def: 1161 },
+    motifWeaponId: 'camellya',
+    // v2パイロット: 通常攻撃重視のメイン単一運用
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.MIDNIGHT, SET.HAVOC_OLD], acceptable: [] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
+          cost3: { recommended: ['HavocDmg', 'atkPercent'], acceptable: [] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0.65, heavy: 0.05, skill: 0.10, lib: 0.20 },
+          selfAtkBuffPercent: 0.20,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -674,6 +842,9 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'shorekeeper', name: 'ショアキーパー', nameEn: 'Shorekeeper', element: '回折', weapon: '増幅器',
     role: '耐久・回復サポート',
+    scalingStat: 'hp',
+    baseStats90: { atk: 287, hp: 16712, def: 1099 },
+    motifWeaponId: 'shorekeeper',
     substats: {
       recommended: [
         { key: 'energyRegen' },
@@ -696,6 +867,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'xiangli_yao', name: '相里要', nameEn: 'Xiangli Yao', element: '電導', weapon: '手甲',
     role: 'メインアタッカー（共鳴解放重視）',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 425, hp: 10625, def: 1222 },
+    motifWeaponId: 'xiangli_yao',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -719,6 +893,30 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'zhezhi', name: '折枝', nameEn: 'Zhezhi', element: '凝縮', weapon: '増幅器',
     role: 'サブアタッカー（共鳴スキルバフ）',
     roleTemplate: 'SubDPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 375, hp: 12250, def: 1197 },
+    motifWeaponId: 'zhezhi',
+    // v2パイロット: オフフィールドバフ主体のサブ単一運用
+    variants: [
+      {
+        id: 'sub',
+        role: 'sub',
+        label: 'サブアタッカー（オフフィールドバフ）運用',
+        harmonySets: { recommended: [SET.EMPYREAN], acceptable: [SET.FROST, SET.FROSTY] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
+          cost3: { recommended: ['atkPercent', 'GlacioDmg'], acceptable: [] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.40,
+        damageProfile: {
+          typeShares: { basic: 0.55, heavy: 0.05, skill: 0.20, lib: 0.20 },
+          selfAtkBuffPercent: 0.10,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -742,6 +940,30 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'changli', name: '長離', nameEn: 'Changli', element: '焦熱', weapon: '迅刀',
     role: 'メインアタッカー（焦熱・共鳴スキル）',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 462, hp: 10387, def: 1099 },
+    motifWeaponId: 'changli',
+    // v2パイロット: 共鳴スキル重視のメイン単一運用
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.MOLTEN], acceptable: [SET.FLAMING] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
+          cost3: { recommended: ['FusionDmg', 'atkPercent'], acceptable: ['Resonanceeff'] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0.10, heavy: 0.05, skill: 0.50, lib: 0.35 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -765,6 +987,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'jinhsi', name: '今汐', nameEn: 'Jinhsi', element: '回折', weapon: '長刃',
     role: 'メインアタッカー（共鳴スキル重視）',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 412, hp: 10825, def: 1258 },
+    motifWeaponId: 'jinhsi',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -788,6 +1013,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'yinlin', name: '吟霖', nameEn: 'Yinlin', element: '電導', weapon: '増幅器',
     role: 'サブアタッカー（共鳴解放バフ）',
     roleTemplate: 'SubDPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 400, hp: 11000, def: 1283 },
+    motifWeaponId: 'yinlin',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -811,6 +1039,9 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'jiyan', name: '忌炎', nameEn: 'Jiyan', element: '気動', weapon: '長刃',
     role: 'メインアタッカー（重撃重視）',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 437, hp: 10487, def: 1185 },
+    motifWeaponId: 'jiyan',
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -834,6 +1065,8 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'lingyang', name: '凌陽', nameEn: 'Lingyang', element: '凝縮', weapon: '手甲',
     role: 'メインアタッカー（凝縮ダメージ重視）',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 437, hp: 10387, def: 1209 },
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -857,6 +1090,8 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'encore', name: 'アンコ', nameEn: 'Encore', element: '焦熱', weapon: '増幅器',
     role: 'メインアタッカー（通常攻撃重視）',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 425, hp: 10512, def: 1246 },
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -880,6 +1115,8 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'calcharo', name: 'カカロ', nameEn: 'Calcharo', element: '電導', weapon: '長刃',
     role: 'メインアタッカー（共鳴解放重視）',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 437, hp: 10500, def: 1185 },
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -903,6 +1140,8 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'jianxin', name: '鑑心', nameEn: 'Jianxin', element: '気動', weapon: '手甲',
     role: '耐久・回復、共鳴解放バフ',
     roleTemplate: 'SubDPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 337, hp: 14112, def: 1124 },
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -925,6 +1164,8 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'verina', name: 'ヴェリーナ', nameEn: 'Verina', element: '回折', weapon: '増幅器',
     role: '継続回復サポート',
+    scalingStat: 'atk',
+    baseStats90: { atk: 337, hp: 14237, def: 1099 },
     substats: {
       recommended: [
         { key: 'energyRegen' },

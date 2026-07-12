@@ -57,6 +57,15 @@ export default function ScoreDebugPanel({ echo, score }: Props) {
             fontFamily: '"IBM Plex Mono", monospace',
           }}
         >
+          {score.isVariantScore && score.variantLabel && (
+            <div
+              className="px-3 py-1.5 text-[10px]"
+              style={{ background: '#eef2ff', color: '#4338ca', borderBottom: '1px solid #e5e7eb' }}
+            >
+              運用バリアント: {score.variantLabel}
+            </div>
+          )}
+
           {/* サブステ内訳ヘッダー */}
           <div
             className="grid gap-x-2 px-3 py-1.5 text-[10px] uppercase tracking-wider"
@@ -76,8 +85,10 @@ export default function ScoreDebugPanel({ echo, score }: Props) {
           {score.breakdown.map((b) => {
             const sub  = echo.substats.find((s) => s.key === b.key);
             if (!sub) return null;
-            const nt   = normalizedTier(sub.tier);
-            const mult = MULT[b.category];
+            // v2運用バリアント方式は実値ベース正規化＋連続重みのため、
+            // 旧Tier正規化とカテゴリ固定倍率ではなく実際の計算値を逆算して表示する
+            const nt   = score.isVariantScore ? sub.value / sub.maxValue : normalizedTier(sub.tier);
+            const mult = score.isVariantScore ? (nt > 0 ? b.points / nt : 0) : MULT[b.category];
             const color = CATEGORY_COLORS[b.category];
             const subLabel = locale === 'en' ? (SUBSTAT_LABEL_EN[b.key] ?? b.label) : b.label;
             return (
@@ -121,7 +132,9 @@ export default function ScoreDebugPanel({ echo, score }: Props) {
               <span>
                 {T.debugMax}
                 <span className="ml-1 text-[10px]">
-                  ({SUBSTAT_COUNT[echo.cost]}× {normalizedTier(REFERENCE_TIER).toFixed(3)} × {idealMult.toFixed(3)})
+                  {score.isVariantScore
+                    ? `(Σ 基準ロール×重み top${SUBSTAT_COUNT[echo.cost]})`
+                    : `(${SUBSTAT_COUNT[echo.cost]}× ${normalizedTier(REFERENCE_TIER).toFixed(3)} × ${idealMult.toFixed(3)})`}
                 </span>
               </span>
               <span className="tabular-nums text-[#707070]">{theoreticalMax.toFixed(4)}</span>

@@ -1,9 +1,11 @@
 import type { EchoState, EchoCost, ScoreResult, ScoreRank, SubstatKey, SubstatCategory } from '@/types/echo';
-import type { CharacterBuild } from '@/types/character';
+import type { CharacterBuild, RoleVariant } from '@/types/character';
 import { SUBSTAT_COUNT } from '@/data/mainstats';
-import { SUBSTAT_DATA } from '@/data/substats';
+import { SUBSTAT_DATA, SUBSTAT_MAP } from '@/data/substats';
 import { ROLE_TEMPLATE_CATEGORIES } from '@/data/roleTemplates';
 import type { RoleTemplate } from '@/data/roleTemplates';
+import { getMotifWeapon } from '@/data/weapons';
+import { deriveSubstatWeights } from '@/lib/weaponScoring';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  カテゴリ固定倍率
@@ -211,11 +213,121 @@ function scoreWithBuild(echo: EchoState, build: CharacterBuild): ScoreResult {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+//  v2: 運用バリアント方式（連続重み）
+//  build.variants が定義済みのキャラのみ使用。武器/基礎ステータス等
+//  必要データが揃っていない場合は null を返し、呼び出し側で
+//  従来のカテゴリベース採点（scoreWithBuild）へフォールバックする。
+// ═══════════════════════════════════════════════════════════════════════════
+
+// 装着中のハーモニーセットから運用バリアントを推定。一致しなければ先頭を既定とする
+export function pickVariant(echo: EchoState, build: CharacterBuild): RoleVariant | undefined {
+  const variants = build.variants;
+  if (!variants || variants.length === 0) return undefined;
+  if (variants.length === 1) return variants[0];
+  const activeSet = echo.activeHarmonySet;
+  const matched = variants.find((v) => v.harmonySets.recommended.includes(activeSet))
+    ?? variants.find((v) => v.harmonySets.acceptable.includes(activeSet));
+  return matched ?? variants[0];
+}
+
+// 重み導出時に使った基準ロール位置（旧 REFERENCE_TIER=5/7段階 と同じ基準点）
+// 8段階ステは values[5]（旧実装と同一インデックス）、4段階ステ(atkFlat/defFlat)は
+// 同じ「全体の 5/7 地点」に相当するインデックスへ換算する
+const REFERENCE_ROLL_FRACTION = 5 / 7;
+
+function referenceRatio(key: SubstatKey): number {
+  const entry = SUBSTAT_MAP[key];
+  const idx = Math.round(REFERENCE_ROLL_FRACTION * (entry.values.length - 1));
+  return entry.values[idx] / entry.values[entry.values.length - 1];
+}
+
+function weightToCategory(weight: number, maxWeight: number): SubstatCategory {
+  if (maxWeight <= 0) return 'unnecessary';
+  const rel = weight / maxWeight;
+  if (rel >= 0.85) return 'recommended';
+  if (rel >= 0.5)  return 'preferred';
+  if (rel >= 0.15) return 'acceptable';
+  return 'unnecessary';
+}
+
+function scoreWithVariant(echo: EchoState, build: CharacterBuild, variant: RoleVariant): ScoreResult | null {
+  const weapon = build.motifWeaponId ? getMotifWeapon(build.motifWeaponId) : undefined;
+  const { weights, totalMainStat } = deriveSubstatWeights(build, variant, weapon);
+  if (totalMainStat == null) return null; // データ不足 → フォールバック
+
+  const maxWeight = Math.max(...Object.values(weights));
+
+  // ── サブステ貢献（実値ベース正規化 × 連続重み） ──────────────────────────
+  const breakdown = echo.substats.map((sub) => {
+    const weight = weights[sub.key] ?? 0;
+    const valueRatio = sub.value / sub.maxValue;
+    const points = valueRatio * weight;
+    const category = weightToCategory(weight, maxWeight);
+    return { key: sub.key, label: sub.label, points, category };
+  });
+
+  // ── 理論最大値：重み上位 substatCount 個を基準ロールで埋めた場合 ──────────
+  const substatCount = SUBSTAT_COUNT[echo.cost];
+  const sortedKeys = (Object.keys(weights) as SubstatKey[]).sort((a, b) => weights[b] - weights[a]);
+  const topKeys = sortedKeys.slice(0, substatCount);
+  const theoreticalMax = topKeys.reduce((sum, k) => sum + referenceRatio(k) * weights[k], 0);
+  const idealMult = topKeys.reduce((sum, k) => sum + weights[k], 0) / substatCount;
+
+  const raw = breakdown.reduce((s, b) => s + b.points, 0);
+  const substatScore = theoreticalMax > 0 ? (raw / theoreticalMax) * 100 : 0;
+
+  // ── メインステ補正 ─────────────────────────────────────────────────────
+  const costKey = `cost${echo.cost}` as 'cost4' | 'cost3' | 'cost1';
+  const ms = variant.mainstat[costKey];
+  const mk = echo.mainstat.key;
+  let mainstatBonus = 0;
+  if (!ms.recommended.includes(mk)) {
+    mainstatBonus = ms.acceptable.includes(mk) ? -10 : -25;
+  }
+
+  // ── ハーモニーセット補正 ──────────────────────────────────────────────
+  const activeSet = echo.activeHarmonySet;
+  let setBonus = 0;
+  if (activeSet && !variant.harmonySets.recommended.includes(activeSet)) {
+    setBonus = variant.harmonySets.acceptable.includes(activeSet) ? -5 : -10;
+  }
+
+  const comboBonus = calcComboBonus(breakdown);
+  const rawScore = Math.round(substatScore + mainstatBonus + setBonus) + comboBonus;
+  const score: number = Math.max(0, Math.min(100, rawScore));
+  const rank: ScoreRank = rawScore >= 100 ? 'GOD' : toRank(score);
+
+  return {
+    score,
+    rank,
+    breakdown,
+    theoreticalMax,
+    idealMult,
+    comboBonus,
+    mainstatBonus,
+    setBonus,
+    isCharacterScore: true,
+    variantId: variant.id,
+    variantLabel: variant.label,
+    isVariantScore: true,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 //  公開インターフェース
 // ═══════════════════════════════════════════════════════════════════════════
 export function scoreEcho(echo: EchoState, build?: CharacterBuild): ScoreResult {
-  if (build) return scoreWithBuild(echo, build);
-  return scoreGeneric(echo);
+  if (!build) return scoreGeneric(echo);
+
+  if (build.variants && build.variants.length > 0) {
+    const variant = pickVariant(echo, build);
+    if (variant) {
+      const variantResult = scoreWithVariant(echo, build, variant);
+      if (variantResult) return variantResult;
+    }
+  }
+
+  return scoreWithBuild(echo, build);
 }
 
 // ── ランク別カラー / グロー ────────────────────────────────────────────────

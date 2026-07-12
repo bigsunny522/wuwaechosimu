@@ -78,6 +78,10 @@ export interface ScoreResult {
   mainstatBonus?: number;
   setBonus?: number;
   isCharacterScore?: boolean;
+  // v2: 運用バリアント方式（連続重み）で採点された場合のみ設定される
+  variantId?: string;
+  variantLabel?: string;
+  isVariantScore?: boolean;
 }
 
 export type Theme = 'default' | 'azure' | 'crimson' | 'emerald' | 'void';
