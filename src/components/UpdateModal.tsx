@@ -1,7 +1,7 @@
 'use client';
 
-import { useLocale } from '@/lib/locale';
-import { UPDATES, LATEST_UPDATE_ID } from '@/data/updates';
+import { useLocale, withLang } from '@/lib/locale';
+import { UPDATES } from '@/data/updates';
 import Link from 'next/link';
 
 const ACCENT = '#0275fd';
@@ -78,11 +78,11 @@ export default function UpdateModal({ onClose }: Props) {
           {/* Actions */}
           <div className="flex gap-2">
             <Link
-              href="/news"
+              href={withLang(latest.link?.href ?? '/news', locale)}
               onClick={onClose}
               className="flex-1 py-2.5 rounded-[500px] text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors text-center"
             >
-              {locale === 'ja' ? '更新履歴を見る' : 'View All Updates'}
+              {latest.link ? latest.link.label[locale] : (locale === 'ja' ? '更新履歴を見る' : 'View All Updates')}
             </Link>
             <button
               onClick={onClose}
