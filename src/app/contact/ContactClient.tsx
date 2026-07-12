@@ -108,7 +108,8 @@ export default function ContactClient() {
       return;
     }
     setState('submitting');
-    const formData = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
     formData.set('category', category);
     formData.append('access_key', WEB3FORMS_ACCESS_KEY);
     formData.append('subject', locale === 'ja' ? '【音骸シミュレーター】お問い合わせ' : '[Echo Simulator] Inquiry');
@@ -121,12 +122,14 @@ export default function ContactClient() {
       const json = await res.json();
       if (json.success) {
         setState('success');
-        e.currentTarget.reset();
+        form.reset();
         setCategory(C.form.categoryOptions[0]);
       } else {
+        console.error('Web3Forms submission rejected:', json);
         setState('error');
       }
-    } catch {
+    } catch (err) {
+      console.error('Web3Forms submission failed:', err);
       setState('error');
     }
   };
