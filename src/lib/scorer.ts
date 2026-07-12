@@ -6,6 +6,8 @@ import { ROLE_TEMPLATE_CATEGORIES } from '@/data/roleTemplates';
 import type { RoleTemplate } from '@/data/roleTemplates';
 import { getMotifWeapon } from '@/data/weapons';
 import { deriveSubstatWeights } from '@/lib/weaponScoring';
+import { getRankThresholds } from '@/data/rankThresholds';
+import type { RankThresholds } from '@/data/rankThresholds';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  カテゴリ固定倍率
@@ -122,6 +124,29 @@ function toRank(score: number): ScoreRank {
   if (score >= 58) return 'A';
   if (score >= 42) return 'B';
   if (score >= 25) return 'C';
+  return 'D';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  ランク変換 v2: ドロップ分布パーセンタイル基準
+//
+//  サブステ抽選（13種から等確率5枠）は「推奨5種を高Tierで引く」確率が
+//  極めて低い（推奨5種すべてを引くだけで約0.08%）。ダメージ性能の絶対値を
+//  そのままランクに変換すると、実際には十分に良いドロップ（例: 推奨3種+死に
+//  2種で上位14%）が中位ランクに沈んでしまい、「厳選の当たり外れ」の直感と
+//  ずれる。そのため運用バリアント方式では、キャラ・運用ごとに事前計算した
+//  ドロップスコア分布のパーセンタイル（src/data/rankThresholds.ts、
+//  npm run gen:thresholds で再生成）を閾値として使う。
+//
+//  閾値データが無い（未対応キャラ or 生成前）場合は従来の toRank にフォールバック。
+// ═══════════════════════════════════════════════════════════════════════════
+function toRankFromThresholds(score: number, th: RankThresholds): ScoreRank {
+  if (score >= th.god)   return 'GOD';
+  if (score >= th.sPlus) return 'S+';
+  if (score >= th.s)     return 'S';
+  if (score >= th.a)     return 'A';
+  if (score >= th.b)     return 'B';
+  if (score >= th.c)     return 'C';
   return 'D';
 }
 
@@ -295,7 +320,11 @@ function scoreWithVariant(echo: EchoState, build: CharacterBuild, variant: RoleV
   const comboBonus = calcComboBonus(breakdown);
   const rawScore = Math.round(substatScore + mainstatBonus + setBonus) + comboBonus;
   const score: number = Math.max(0, Math.min(100, rawScore));
-  const rank: ScoreRank = rawScore >= 100 ? 'GOD' : toRank(score);
+
+  const thresholds = getRankThresholds(build.id, variant.id);
+  const rank: ScoreRank = thresholds
+    ? toRankFromThresholds(score, thresholds)
+    : (rawScore >= 100 ? 'GOD' : toRank(score));
 
   return {
     score,

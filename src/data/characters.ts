@@ -84,6 +84,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 425, hp: 11025, def: 1148 },
     motifWeaponId: 'yangyang_xuanling',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.SONG, SET.HAVOC_OLD], acceptable: [] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],                      acceptable: ['atkPercent'] },
+          cost3: { recommended: ['HavocDmg', 'atkPercent', 'Resonanceeff'],   acceptable: [] },
+          cost1: { recommended: ['atkPercent'],                               acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0.0453, heavy: 0.9547, skill: 0, lib: 0 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -110,6 +131,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 375, hp: 12237, def: 1197 },
     motifWeaponId: 'lucilare',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'sub',
+        role: 'sub',
+        label: 'サブアタッカー運用',
+        harmonySets: { recommended: [SET.SNOWY, SET.MOONLIT, SET.MONTAGE, SET.LOST_DREAM], acceptable: [] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],       acceptable: ['atkPercent'] },
+          cost3: { recommended: ['GlacioDmg', 'atkPercent'],  acceptable: [] },
+          cost1: { recommended: ['atkPercent'],                acceptable: [] },
+        },
+        erRequirement: 1.40,
+        damageProfile: {
+          typeShares: { basic: 0.802, heavy: 0, skill: 0.198, lib: 0 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -138,6 +180,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 425, hp: 11025, def: 1148 },
     motifWeaponId: 'lucy',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.NIGHTMARE_SPECTER], acceptable: [SET.CELESTIAL, SET.REFLECT, SET.LINGERING, SET.MONTAGE] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],        acceptable: ['atkPercent'] },
+          cost3: { recommended: ['SpectroDmg', 'atkPercent'],   acceptable: [] },
+          cost1: { recommended: ['atkPercent'],                 acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0.0466, heavy: 0.9264, skill: 0.027, lib: 0 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -164,6 +227,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 400, hp: 11600, def: 1173 },
     motifWeaponId: 'rebecca',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'sub',
+        role: 'sub',
+        label: 'サブアタッカー運用',
+        harmonySets: { recommended: [SET.NIGHTMARE_SPECTER], acceptable: [SET.VOID, SET.MONTAGE, SET.LINGERING, SET.MOONLIT] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],          acceptable: ['atkPercent'] },
+          cost3: { recommended: ['ElectroDmg', 'atkPercent'],     acceptable: [] },
+          cost1: { recommended: ['atkPercent'],                   acceptable: [] },
+        },
+        erRequirement: 1.40,
+        damageProfile: {
+          typeShares: { basic: 0.9356, heavy: 0, skill: 0.0644, lib: 0 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -190,6 +274,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 425, hp: 11025, def: 1148 },
     motifWeaponId: 'denia',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.PATINA, SET.MONTAGE, SET.REFLECT, SET.MOONLIT], acceptable: [] },
+        mainstat: {
+          cost4: { recommended: ['critDmg', 'critRate'],      acceptable: ['atkPercent'] },
+          cost3: { recommended: ['FusionDmg', 'atkPercent'],  acceptable: [] },
+          cost1: { recommended: ['atkPercent'],               acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0.0331, heavy: 0, skill: 0.027, lib: 0.9399 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -230,7 +335,7 @@ export const CHARACTERS: CharacterBuild[] = [
         },
         erRequirement: 1.20,
         damageProfile: {
-          typeShares: { basic: 0.30, heavy: 0.15, skill: 0.15, lib: 0.40 },
+          typeShares: { basic: 0, heavy: 0, skill: 0.0911, lib: 0.9089 },
           selfAtkBuffPercent: 0.15,
           baselineCritRate: 0.70,
           baselineCritDmg: 2.30,
@@ -248,7 +353,7 @@ export const CHARACTERS: CharacterBuild[] = [
         },
         erRequirement: 1.40,
         damageProfile: {
-          typeShares: { basic: 0.10, heavy: 0.10, skill: 0.10, lib: 0.70 },
+          typeShares: { basic: 0, heavy: 0, skill: 0.0911, lib: 0.9089 },
           selfAtkBuffPercent: 0.15,
           baselineCritRate: 0.70,
           baselineCritDmg: 2.30,
@@ -281,6 +386,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 437, hp: 10775, def: 1136 },
     motifWeaponId: 'sigrid',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.GALE, SET.SEMANTIC], acceptable: [SET.GLORY_WIND] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
+          cost3: { recommended: ['atkPercent'],               acceptable: ['AeroDmg', 'Resonanceeff'] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 1, heavy: 0, skill: 0, lib: 0 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -307,6 +433,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 462, hp: 10300, def: 1112 },
     motifWeaponId: 'ryuk',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [], acceptable: [SET.CELESTIAL, SET.ETERNAL] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
+          cost3: { recommended: ['atkPercent','SpectroDmg'],            acceptable: [] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 1, heavy: 0, skill: 0, lib: 0 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -333,6 +480,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 425, hp: 11025, def: 1148 },
     motifWeaponId: 'aimes',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.ASTRO], acceptable: [] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
+          cost3: { recommended: ['SpectroDmg' , 'atkPercent'],   acceptable: [] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0.0969, heavy: 0, skill: 0, lib: 0.9032 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -384,6 +552,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 375, hp: 12237, def: 1197 },
     motifWeaponId: 'linne',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'sub',
+        role: 'sub',
+        label: 'サブアタッカー運用',
+        harmonySets: { recommended: [SET.GOLDEN], acceptable: [SET.CELESTIAL, SET.ETERNAL] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],               acceptable: ['atkPercent'] },
+          cost3: { recommended: ['SpectroDmg', 'atkPercent'],        acceptable: [] },
+          cost1: { recommended: ['atkPercent'],           acceptable: [] },
+        },
+        erRequirement: 1.40,
+        damageProfile: {
+          typeShares: { basic: 0.6744, heavy: 0, skill: 0.0787, lib: 0.247 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -410,6 +599,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 437, hp: 10775, def: 1136 },
     motifWeaponId: 'chixia_sanhua',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'sub',
+        role: 'sub',
+        label: 'サブアタッカー運用',
+        harmonySets: { recommended: [SET.THREAD_FATE], acceptable: [] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],    acceptable: ['atkPercent'] },
+          cost3: { recommended: ['HavocDmg', 'atkPercent'],    acceptable: [] },
+          cost1: { recommended: ['atkPercent'],                    acceptable: [] },
+        },
+        erRequirement: 1.40,
+        damageProfile: {
+          typeShares: { basic: 0.0283, heavy: 0.0449, skill: 0.0425, lib: 0.8843 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -436,6 +646,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 375, hp: 12237, def: 1197 },
     motifWeaponId: 'quyuan',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'sub',
+        role: 'sub',
+        label: 'サブアタッカー運用',
+        harmonySets: { recommended: [SET.SEMANTIC], acceptable: [SET.GALE, SET.GLORY_WIND] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
+          cost3: { recommended: ['AeroDmg', 'atkPercent'],               acceptable: ['Resonanceeff'] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.40,
+        damageProfile: {
+          typeShares: { basic: 0, heavy: 1, skill: 0, lib: 0 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -462,6 +693,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 462, hp: 10300, def: 1112 },
     motifWeaponId: 'galbrena',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [ SET.FLAMING,SET.INFERNO], acceptable: [SET.MOLTEN,SET.LINGERING] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
+          cost3: { recommended: ['FusionDmg', 'atkPercent'],             acceptable: [] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0, heavy: 1, skill: 0, lib: 0 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -488,6 +740,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 450, hp: 10525, def: 1124 },
     motifWeaponId: 'yuanwu',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'sub',
+        role: 'sub',
+        label: 'サブアタッカー運用',
+        harmonySets: { recommended: [SET.GLORY_CROWN], acceptable: [SET.BOUNDLESS, SET.GLORY_WIND] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent']  },
+          cost3: { recommended: ['AeroDmg', 'atkPercent'],    acceptable: [] },
+          cost1: { recommended: ['atkPercent'],                    acceptable: [] },
+        },
+        erRequirement: 1.40,
+        damageProfile: {
+          typeShares: { basic: 0, heavy: 0, skill: 0.0591, lib: 0.9409 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -514,6 +787,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 462, hp: 10300, def: 1112 },
     motifWeaponId: 'augusta',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.GLORY_CROWN], acceptable: [] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],          acceptable: ['atkPercent'] },
+          cost3: { recommended: ['ElectroDmg'],   acceptable: [] },
+          cost1: { recommended: ['atkPercent'],   acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0, heavy: 0.8172, skill: 0.1828, lib: 0 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -540,6 +834,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 437, hp: 10775, def: 1136 },
     motifWeaponId: 'flova',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.LOST_DREAM], acceptable: [SET.MIDNIGHT, SET.HAVOC_OLD] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
+          cost3: { recommended: ['HavocDmg', 'atkPercent'],              acceptable: [] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0.1227, heavy: 0, skill: 0.8773, lib: 0 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -566,6 +881,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 387, hp: 11912, def: 1185 },
     motifWeaponId: 'lupa',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'sub',
+        role: 'sub',
+        label: 'サブアタッカー運用',
+        harmonySets: { recommended: [SET.FLAMING], acceptable: [SET.MOLTEN] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],               acceptable: ['atkPercent'] },
+          cost3: { recommended: ['FusionDmg', 'atkPercent'],         acceptable: [] },
+          cost1: { recommended: ['atkPercent'],           acceptable: [] },
+        },
+        erRequirement: 1.40,
+        damageProfile: {
+          typeShares: { basic: 0.0534, heavy: 0.0687, skill: 0.1204, lib: 0.7576 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -591,6 +927,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'hp',
     baseStats90: { atk: 312, hp: 14800, def: 611 },
     motifWeaponId: 'cartethia',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [ SET.GLORY_WIND], acceptable: [SET.GALE] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
+          cost3: { recommended: ['AeroDmg', 'atkPercent'],               acceptable: [] },
+          cost1: { recommended: ['hpPercent'],            acceptable: ['atkPercent'] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0.5887, heavy: 0, skill: 0.1425, lib: 0.2688 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -617,6 +974,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 375, hp: 12237, def: 1197 },
     motifWeaponId: 'shaconne',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'sub',
+        role: 'sub',
+        label: 'サブアタッカー運用',
+        harmonySets: { recommended: [SET.GALE, SET.GLORY_WIND], acceptable: [SET.LINGERING] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],               acceptable: ['atkPercent', 'hpPercent'] },
+          cost3: { recommended: ['Resonanceeff', 'AeroDmg', 'atkPercent'],           acceptable: ['hpPercent'] },
+          cost1: { recommended: ['atkPercent', 'hpPercent'],           acceptable: [] },
+        },
+        erRequirement: 1.40,
+        damageProfile: {
+          typeShares: { basic: 0.2701, heavy: 0.2531, skill: 0.0579, lib: 0.4188 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -643,6 +1021,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 437, hp: 10775, def: 1136 },
     motifWeaponId: 'zanni',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.CELESTIAL, SET.ETERNAL], acceptable: [] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
+          cost3: { recommended: ['SpectroDmg', 'atkPercent'],            acceptable: [] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0.0234, heavy: 0.632, skill: 0.0646, lib: 0.2802 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -669,6 +1068,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 400, hp: 11600, def: 1099 },
     motifWeaponId: 'cantarella',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.EMPYREAN], acceptable: [SET.MIDNIGHT, SET.HAVOC_OLD] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],    acceptable: ['atkPercent'] },
+          cost3: { recommended: ['HavocDmg', 'atkPercent'],    acceptable: [] },
+          cost1: { recommended: ['atkPercent'],                    acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0.8791, heavy: 0.0297, skill: 0.0911, lib: 0 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -695,6 +1115,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 375, hp: 11675, def: 1307 },
     motifWeaponId: 'brant',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'sub',
+        role: 'sub',
+        label: 'サブアタッカー運用',
+        harmonySets: { recommended: [SET.TIDEBREAK], acceptable: [SET.MOLTEN, SET.FLAMING] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],    acceptable: ['atkPercent'] },
+          cost3: { recommended: ['FusionDmg', 'Resonanceeff', 'atkPercent'],    acceptable: [] },
+          cost1: { recommended: ['atkPercent'],                    acceptable: [] },
+        },
+        erRequirement: 1.40,
+        damageProfile: {
+          typeShares: { basic: 0.7932, heavy: 0, skill: 0, lib: 0.2068 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -721,6 +1162,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 412, hp: 10825, def: 1258 },
     motifWeaponId: 'phoebe',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.ETERNAL], acceptable: [SET.CELESTIAL,SET.LINGERING] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
+          cost3: { recommended: ['SpectroDmg', 'atkPercent'],            acceptable: [] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0.1864, heavy: 0.5726, skill: 0.0162, lib: 0.2247 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -747,6 +1209,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 375, hp: 12250, def: 1197 },
     motifWeaponId: 'rococo',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'sub',
+        role: 'sub',
+        label: 'サブアタッカー運用',
+        harmonySets: { recommended: [SET.MIDNIGHT, SET.INFERNO], acceptable: [SET.HAVOC_OLD,SET.MOONLIT] },
+        mainstat: {
+          cost4: { recommended: ['critRate'],   acceptable: ['atkPercent', 'critDmg'] },
+          cost3: { recommended: ['HavocDmg', 'atkPercent'],              acceptable: ['Resonanceeff'] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.40,
+        damageProfile: {
+          typeShares: { basic: 0.0647, heavy: 0.9157, skill: 0.0196, lib: 0 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -773,6 +1256,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 462, hp: 12450, def: 1197 },
     motifWeaponId: 'carlotta',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.FROSTY], acceptable: [SET.FROST] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
+          cost3: { recommended: ['GlacioDmg', 'atkPercent'],            acceptable: ['Resonanceeff'] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0.0136, heavy: 0, skill: 0.9864, lib: 0 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -813,7 +1317,7 @@ export const CHARACTERS: CharacterBuild[] = [
         },
         erRequirement: 1.15,
         damageProfile: {
-          typeShares: { basic: 0.65, heavy: 0.05, skill: 0.10, lib: 0.20 },
+          typeShares: { basic: 0.8027, heavy: 0, skill: 0, lib: 0.1973 },
           selfAtkBuffPercent: 0.20,
           baselineCritRate: 0.70,
           baselineCritDmg: 2.30,
@@ -870,6 +1374,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 425, hp: 10625, def: 1222 },
     motifWeaponId: 'xiangli_yao',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.VOID], acceptable: [SET.LINGERING] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
+          cost3: { recommended: ['ElectroDmg', 'atkPercent'],            acceptable: [] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0.0894, heavy: 0, skill: 0.1407, lib: 0.7698 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -910,7 +1435,7 @@ export const CHARACTERS: CharacterBuild[] = [
         },
         erRequirement: 1.40,
         damageProfile: {
-          typeShares: { basic: 0.55, heavy: 0.05, skill: 0.20, lib: 0.20 },
+          typeShares: { basic: 0.8664, heavy: 0.0611, skill: 0.0725, lib: 0 },
           selfAtkBuffPercent: 0.10,
           baselineCritRate: 0.70,
           baselineCritDmg: 2.30,
@@ -957,7 +1482,7 @@ export const CHARACTERS: CharacterBuild[] = [
         },
         erRequirement: 1.15,
         damageProfile: {
-          typeShares: { basic: 0.10, heavy: 0.05, skill: 0.50, lib: 0.35 },
+          typeShares: { basic: 0.0481, heavy: 0.0213, skill: 0.6704, lib: 0.2602 },
           selfAtkBuffPercent: 0.15,
           baselineCritRate: 0.70,
           baselineCritDmg: 2.30,
@@ -990,6 +1515,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 412, hp: 10825, def: 1258 },
     motifWeaponId: 'jinhsi',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.CELESTIAL], acceptable: [SET.ETERNAL] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
+          cost3: { recommended: ['SpectroDmg' ,'atkPercent'],  acceptable: [] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0, heavy: 0, skill: 0.8818, lib: 0.1182 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -1016,6 +1562,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 400, hp: 11000, def: 1283 },
     motifWeaponId: 'yinlin',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'sub',
+        role: 'sub',
+        label: 'サブアタッカー運用',
+        harmonySets: { recommended: [SET.EMPYREAN,SET.VOID], acceptable: [SET.MOONLIT] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
+          cost3: { recommended: ['ElectroDmg','atkPercent'],            acceptable: ['Resonanceeff'] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.40,
+        damageProfile: {
+          typeShares: { basic: 0.02, heavy: 0.0746, skill: 0.7484, lib: 0.157 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -1042,6 +1609,27 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'atk',
     baseStats90: { atk: 437, hp: 10487, def: 1185 },
     motifWeaponId: 'jiyan',
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.GALE, SET.GLORY_WIND], acceptable: [SET.BOUNDLESS] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
+          cost3: { recommended: ['AeroDmg', 'atkPercent'],               acceptable: ['Resonanceeff'] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0, heavy: 0.9016, skill: 0.0984, lib: 0 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -1067,6 +1655,27 @@ export const CHARACTERS: CharacterBuild[] = [
     roleTemplate: 'DPS',
     scalingStat: 'atk',
     baseStats90: { atk: 437, hp: 10387, def: 1209 },
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.FROST, SET.FROSTY], acceptable: [] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
+          cost3: { recommended: ['GlacioDmg', 'atkPercent'],             acceptable: [] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0.4449, heavy: 0.0419, skill: 0.4165, lib: 0.0966 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -1092,6 +1701,27 @@ export const CHARACTERS: CharacterBuild[] = [
     roleTemplate: 'DPS',
     scalingStat: 'atk',
     baseStats90: { atk: 425, hp: 10512, def: 1246 },
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.MOLTEN], acceptable: [SET.FLAMING] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
+          cost3: { recommended: ['FusionDmg', 'atkPercent'],             acceptable: ['Resonanceeff'] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0.6139, heavy: 0, skill: 0.1958, lib: 0.1903 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -1117,6 +1747,27 @@ export const CHARACTERS: CharacterBuild[] = [
     roleTemplate: 'DPS',
     scalingStat: 'atk',
     baseStats90: { atk: 437, hp: 10500, def: 1185 },
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.VOID], acceptable: [] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
+          cost3: { recommended: ['ElectroDmg', 'atkPercent'],            acceptable: [] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0.3072, heavy: 0, skill: 0.0282, lib: 0.6647 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -1142,6 +1793,27 @@ export const CHARACTERS: CharacterBuild[] = [
     roleTemplate: 'SubDPS',
     scalingStat: 'atk',
     baseStats90: { atk: 337, hp: 14112, def: 1124 },
+    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    variants: [
+      {
+        id: 'sub',
+        role: 'sub',
+        label: 'サブアタッカー運用',
+        harmonySets: { recommended: [SET.HEALER], acceptable: [SET.GALE, SET.GLORY_WIND] },
+        mainstat: {
+          cost4: { recommended: ['atkPercent','critRate', 'critDmg'],    acceptable: [] },
+          cost3: { recommended: ['AeroDmg', 'atkPercent', 'Resonanceeff'],    acceptable: [] },
+          cost1: { recommended: ['atkPercent'],                    acceptable: [] },
+        },
+        erRequirement: 1.40,
+        damageProfile: {
+          typeShares: { basic: 0.3549, heavy: 0.1388, skill: 0.0909, lib: 0.4153 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
