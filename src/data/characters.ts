@@ -530,9 +530,10 @@ export const CHARACTERS: CharacterBuild[] = [
     baseStats90: { atk: 287, hp: 15375, def: 1356 },
     motifWeaponId: 'mortefi',
     // v2: 防御力参照の回復/シールドキャラ。ダメージ要素は無し（damageProfileなし）。
-    // erRequirement は「ER260%到達で全体バフ・Lib中のクリボーナスが解放される」という
-    // ビルドガイドの言及を根拠にした値。assumedExistingScalingPercent は「回復量は
-    // 頭打ちする指標」という考え方からDPSの0.45より高めの0.9を暫定設定（要検証）。
+    // ER100%超過分、1%につき全体クリダメ+0.2%（260%で頭打ち、+32%）という
+    // ビルドガイドに明記された変換式をerConversionsにそのまま反映。
+    // assumedExistingScalingPercent は「回復量は頭打ちする指標」という
+    // 考え方からDPSの0.45より高めの0.9を暫定設定（要検証）。
     variants: [
       {
         id: 'main',
@@ -547,6 +548,9 @@ export const CHARACTERS: CharacterBuild[] = [
         erRequirement: 2.60,
         healProfile: {
           assumedExistingScalingPercent: 0.9,
+          erConversions: [
+            { ratePerErPercent: 0.2, baselineErPercent: 100, capErPercent: 260 }, // 全体クリダメ
+          ],
         },
       },
     ],
@@ -1381,8 +1385,8 @@ export const CHARACTERS: CharacterBuild[] = [
     // damageContributionShare)は使わない——イントロスキルはクリの影響を受ける
     // 「本物のダメージ」であり、通常のDPSキャラと同じ計算式をそのまま適用する。
     // typeSharesはtypeShares上「イントロスキル」の分類が無いため便宜上skill扱い。
-    // 目標ER250%はLibの味方クリバフ強度にも直結するため、erWeightMultiplierで
-    // 通常より重み付けを高くしている（要検証：倍率1.3は暫定値）。
+    // ERはビルドガイドに明記された変換式（1%につき全体クリ率+0.05%・
+    // クリダメ+0.1%、250%で頭打ち）をerConversionsにそのまま反映。
     variants: [
       {
         id: 'main',
@@ -1395,9 +1399,12 @@ export const CHARACTERS: CharacterBuild[] = [
           cost1: { recommended: ['hpPercent'],  acceptable: ['atkPercent'] },
         },
         erRequirement: 2.50,
-        erWeightMultiplier: 1.3,
         healProfile: {
           assumedExistingScalingPercent: 0.9,
+          erConversions: [
+            { ratePerErPercent: 0.05, baselineErPercent: 0, capErPercent: 250 }, // 全体クリ率
+            { ratePerErPercent: 0.10, baselineErPercent: 0, capErPercent: 250 }, // 全体クリダメ
+          ],
         },
         damageProfile: {
           typeShares: { basic: 0, heavy: 0, skill: 1.0, lib: 0 },

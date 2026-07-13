@@ -58,12 +58,35 @@ export interface DamageProfile {
 //  damageProfile を healProfile と併記すれば、crit・攻撃タイプ別ダメージ%の
 //  重みは通常のダメージ式からそのまま独立して加算される（イントロスキルの
 //  実ダメージはクリの影響を受ける「本物のダメージ」であり、割引く理由がないため）。
+//
+//  ER自体がチーム全体バフに直接変換されるキャラ（モーニエ・ショアキーパー等）は
+//  erConversions を設定する。ゲーム内で明言されている変換式をそのまま
+//  偏微分的な重みに変換する（例: モーニエ「ER100%超過分、1%につきクリダメ+0.2%」、
+//  ショアキーパー「ER1%につきクリ率+0.05%・クリダメ+0.1%」）。これは推測の
+//  倍率（旧erWeightMultiplier）ではなく、ビルドガイドに明記された実際の
+//  変換式に基づく値。
 // ═══════════════════════════════════════════════════════════════════════════
+
+// ERがチーム全体バフに直接変換されるキャラ用の変換式。
+// buffGain%(ER%) = ratePerErPercent × max(0, ER% − baselineErPercent)
+// capErPercent到達で頭打ちになるが、重み計算自体は基準点(erRequirement)での
+// 単純な傾きとして扱う（DPSのcrit重み等と同じ「1点での偏微分」という簡略化）。
+export interface ErConversion {
+  // 超過ER%1につき増加するバフ%
+  ratePerErPercent: number;
+  // 変換の起点となるER%（0=ER実値そのものから変換、100=基礎100%からの超過分のみ）
+  baselineErPercent: number;
+  // 変換が頭打ちになるER%（ドキュメント用途）
+  capErPercent: number;
+}
+
 export interface HealProfile {
   // 評価対象のscalingStat%以外に、既にビルドで積まれていると仮定する
   // 同スケーリングステ%量の合計。回復の頭打ち特性を反映し、DPSの
   // ASSUMED_EXISTING_SCALING_PCT(0.45)よりも高めの値を設定するのが通例。
   assumedExistingScalingPercent: number;
+  // ERがチーム全体バフに直接変換されるキャラのみ設定する（複数バフがあれば複数指定）
+  erConversions?: ErConversion[];
 }
 
 export interface RoleVariant {
@@ -79,14 +102,10 @@ export interface RoleVariant {
   };
 
   // 目標共鳴効率（例 1.2 = 120%）。共鳴効率は閾値型のため重み導出では
-  // 連続値でなく erRequirement からの静的重みテーブルを介して評価する。
+  // 連続値でなく erRequirement からの静的重みテーブルを介して評価する
+  // （ERがチーム全体バフに直接変換されるキャラは healProfile.erConversions
+  // で追加の重みが加算される）。
   erRequirement: number;
-
-  // ERが通常の資源循環に加えて別の役割（味方へのクリバフ強度など）も
-  // 持つキャラ用の追加重み倍率。既定は1.0（=通常の閾値テーブルそのまま）。
-  // 例: ショアキーパーはLib中の味方クリ率/クリダメバフがER値に直結するため
-  // 1.0より大きい値を設定する。
-  erWeightMultiplier?: number;
 
   // ダメージ系運用（DPS/SubDPS、通常アタッカーおよびハイブリッドキャラの
   // 実ダメージ成分）はこちらを設定する。crit・攻撃タイプ別ダメージ%の

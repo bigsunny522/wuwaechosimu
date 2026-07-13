@@ -1,5 +1,5 @@
 import type { SubstatKey } from '@/types/echo';
-import type { CharacterBuild, RoleVariant, DamageProfile } from '@/types/character';
+import type { CharacterBuild, RoleVariant, DamageProfile, HealProfile } from '@/types/character';
 import type { WeaponData } from '@/types/weapon';
 import { SUBSTAT_MAP } from '@/data/substats';
 
@@ -30,16 +30,29 @@ const FLOOR_WEIGHT_RATIO = 0.06;
 // のため、ダメージ式からの線形近似ができない。目標ERからの静的重みで代替する。
 // 数値のスケールは他の重み（crit/atk 系が概ね 0.02〜0.10 に収まる）に揃えてある。
 //
-// 回復系キャラは250〜260%ものERを要求されることがあり（DPSの多くは160%以下）、
-// 従来は最上位バケット(0.11)に張り付いて頭打ちしていたため、より高いER要求に
-// 対応するバケットを追加した。
+// 回復系キャラは250〜260%ものERを要求されることがあるが（DPSの多くは160%以下）、
+// その超過分の価値はerConversionWeight()（実際のゲーム内変換式に基づく加算）で
+// 別途表現するため、この閾値テーブル自体はDPS/資源循環という本来の役割のまま
+// 据え置く（曖昧な高ER用バケットを追加しない）。
 function erWeight(erRequirement: number): number {
   if (erRequirement <= 1.05) return 0.02;
   if (erRequirement <= 1.30) return 0.05;
   if (erRequirement <= 1.60) return 0.08;
-  if (erRequirement <= 2.00) return 0.11;
-  if (erRequirement <= 2.40) return 0.14;
-  return 0.17;
+  return 0.11;
+}
+
+// ERがチーム全体バフに直接変換されるキャラ用の重み加算。
+// buffGain%(ER%) = ratePerErPercent × max(0, ER% − baselineErPercent) という
+// 実際のゲーム内変換式を、DPSのcrit重みと同じ「基準点での傾き」として扱う。
+// erRequirementが変換の起点(baselineErPercent)にまだ届いていない場合は0。
+function erConversionWeight(conversions: HealProfile['erConversions'], erRequirement: number): number {
+  if (!conversions || conversions.length === 0) return 0;
+  const erPercent = erRequirement * 100;
+  const totalRate = conversions.reduce((sum, c) => {
+    if (erPercent <= c.baselineErPercent) return sum;
+    return sum + c.ratePerErPercent;
+  }, 0);
+  return totalRate * maxRollFraction('energyRegen');
 }
 
 // サブステの最大ロール値を比率化（%系は /100、固定値系はそのまま実数）
@@ -168,7 +181,7 @@ export function deriveSubstatWeights(
     weights.resonanceLibDmg   += dw.resonanceLibDmg;
   }
 
-  weights.energyRegen = erWeight(variant.erRequirement) * (variant.erWeightMultiplier ?? 1);
+  weights.energyRegen = erWeight(variant.erRequirement) + erConversionWeight(hp?.erConversions, variant.erRequirement);
 
   // 無関係サブステ（重み0）にも小さな床値を与える。v1のMULT.unnecessary(0.1)が
   // MULT.recommended(2.0)の5%だったのと同じ発想で、完全な死に枠を無くし、
