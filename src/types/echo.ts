@@ -86,6 +86,8 @@ export interface ScoreResult {
   topPercentile?: number;
   distributionCurve?: [pct: number, score: number][];
   rankThresholds?: { god: number; sPlus: number; s: number; a: number; b: number; c: number };
+  /** スコア0〜100を幅2のビンに区切った出現確率（分布図のヒストグラム用） */
+  distributionHistogram?: number[];
 }
 
 export type Theme = 'default' | 'azure' | 'crimson' | 'emerald' | 'void';

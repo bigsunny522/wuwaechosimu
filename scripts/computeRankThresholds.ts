@@ -28,12 +28,16 @@ const PERCENTILES: [keyof RankThresholdsShape, number][] = [
   ['c', 65],
 ];
 
-// 分布曲線（UI上の「上位X%表示」「分布図」用）のサンプル点。
+// 分布曲線（UIの「上位X%表示」・任意スコア→パーセンタイル逆引き用）のサンプル点。
 // 累積確率(上位%)が小さいほど珍しい＝スコアが高い側。
 const CURVE_PERCENTILES = [
   0.01, 0.05, 0.1, 0.25, 0.5, 1, 2, 3, 5, 7, 10,
   15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100,
 ];
+
+// ヒストグラム（分布図の描画用）のビン幅。スコアは0〜100の整数なのでビン数は51個。
+const HIST_BIN_WIDTH = 2;
+const HIST_BIN_COUNT = Math.floor(100 / HIST_BIN_WIDTH) + 1;
 
 interface RankThresholdsShape {
   god: number;
@@ -47,6 +51,8 @@ interface RankThresholdsShape {
 interface SimResult {
   thresholds: RankThresholdsShape;
   curve: [pct: number, score: number][];
+  /** ビン幅 HIST_BIN_WIDTH 点ごとの出現確率（合計 ≈ 1）。分布図のヒストグラム描画に使う */
+  histogram: number[];
 }
 
 function simulateVariant(build: CharacterBuild, variant: RoleVariant): SimResult {
@@ -84,7 +90,14 @@ function simulateVariant(build: CharacterBuild, variant: RoleVariant): SimResult
 
   const curve: [number, number][] = CURVE_PERCENTILES.map((pct) => [pct, scoreAtPct(pct)]);
 
-  return { thresholds, curve };
+  const histCounts = new Array(HIST_BIN_COUNT).fill(0);
+  for (let i = 0; i < N; i++) {
+    const bin = Math.min(HIST_BIN_COUNT - 1, Math.max(0, Math.floor(scores[i] / HIST_BIN_WIDTH)));
+    histCounts[bin]++;
+  }
+  const histogram = histCounts.map((c) => Math.round((c / N) * 100000) / 100000);
+
+  return { thresholds, curve, histogram };
 }
 
 const output: Record<string, SimResult> = {};
@@ -99,9 +112,10 @@ for (const build of CHARACTERS) {
 }
 
 const entries = Object.entries(output)
-  .map(([key, { thresholds: th, curve }]) => {
+  .map(([key, { thresholds: th, curve, histogram }]) => {
     const curveStr = curve.map(([pct, score]) => `[${pct}, ${score}]`).join(', ');
-    return `  ${JSON.stringify(key)}: { "god": ${th.god}, "sPlus": ${th.sPlus}, "s": ${th.s}, "a": ${th.a}, "b": ${th.b}, "c": ${th.c}, "curve": [${curveStr}] },`;
+    const histStr = histogram.join(', ');
+    return `  ${JSON.stringify(key)}: { "god": ${th.god}, "sPlus": ${th.sPlus}, "s": ${th.s}, "a": ${th.a}, "b": ${th.b}, "c": ${th.c}, "curve": [${curveStr}], "histogram": [${histStr}] },`;
   })
   .join('\n');
 
@@ -125,8 +139,10 @@ const fileContent = `// ══════════════════�
 //    （それ未満は D）
 //
 //  curve: [上位%, その%に対応するスコア] のサンプル列（降順スコア想定）。
-//  UIの「上位X%」表示・分布図描画・任意スコア→パーセンタイル逆引きに使う
-//  （getPercentileForScore を参照）。
+//  UIの「上位X%」表示・任意スコア→パーセンタイル逆引きに使う（getPercentileForScore を参照）。
+//
+//  histogram: スコア0〜100を幅2のビンに区切った出現確率（合計≈1、51要素）。
+//  分布図（ヒストグラム）の描画に使う。
 //
 //  「推奨ステの排出確率自体が低い」ことを踏まえ、性能の絶対値ではなく
 //  ドロップの中での相対位置でランクを決める。詳細な設計意図は
@@ -142,6 +158,8 @@ export interface RankThresholds {
   c: number;
   /** [上位%, スコア] のサンプル列。上位%昇順・スコア降順。 */
   curve: [number, number][];
+  /** スコア0〜100を幅2のビンに区切った出現確率（合計≈1、51要素、ビンi = スコア[2i, 2i+2)）。 */
+  histogram: number[];
 }
 
 // キー形式: \`\${characterId}:\${variantId}\`

@@ -342,6 +342,7 @@ function scoreWithVariant(echo: EchoState, build: CharacterBuild, variant: RoleV
     isVariantScore: true,
     topPercentile,
     distributionCurve: thresholds?.curve,
+    distributionHistogram: thresholds?.histogram,
     rankThresholds: thresholds
       ? { god: thresholds.god, sPlus: thresholds.sPlus, s: thresholds.s, a: thresholds.a, b: thresholds.b, c: thresholds.c }
       : undefined,

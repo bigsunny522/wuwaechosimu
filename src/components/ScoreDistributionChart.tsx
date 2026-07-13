@@ -10,23 +10,20 @@ interface Props {
   result: ScoreResult;
 }
 
-const PCT_MIN = 0.01;
-const PCT_MAX = 100;
+// data/rankThresholds.ts の HIST_BIN_WIDTH / HIST_BIN_COUNT と一致させること
+const BIN_WIDTH = 2;
 
 const W = 320;
 const H = 168;
-const PAD = { top: 10, right: 10, bottom: 22, left: 30 };
+const PAD = { top: 10, right: 8, bottom: 22, left: 30 };
 const PLOT_W = W - PAD.left - PAD.right;
 const PLOT_H = H - PAD.top - PAD.bottom;
 
+const BAR_COLOR = '#93c5fd';
+const BAR_COLOR_ACTIVE = '#0275fd';
+
 function xForScore(score: number): number {
   return PAD.left + (Math.max(0, Math.min(100, score)) / 100) * PLOT_W;
-}
-
-function yForPct(pct: number): number {
-  const clamped = Math.max(PCT_MIN, Math.min(PCT_MAX, pct));
-  const frac = (Math.log10(clamped) - Math.log10(PCT_MIN)) / (Math.log10(PCT_MAX) - Math.log10(PCT_MIN));
-  return PAD.top + frac * PLOT_H;
 }
 
 // result.distributionCurve から任意スコアの上位%を対数補間で求める（getPercentileForScore と同じロジック）
@@ -58,54 +55,49 @@ export default function ScoreDistributionChart({ result }: Props) {
   const { locale } = useLocale();
   const T = TRANSLATIONS[locale];
   const svgRef = useRef<SVGSVGElement>(null);
-  const [hoverScore, setHoverScore] = useState<number | null>(null);
+  const [hoverBin, setHoverBin] = useState<number | null>(null);
 
   const curve = result.distributionCurve;
+  const histogram = result.distributionHistogram;
   const thresholds = result.rankThresholds;
 
-  const linePath = useMemo(() => {
-    if (!curve || curve.length === 0) return '';
-    const sorted = [...curve].sort((a, b) => a[1] - b[1]); // スコア昇順
-    return sorted
-      .map(([pct, score], i) => `${i === 0 ? 'M' : 'L'} ${xForScore(score).toFixed(1)} ${yForPct(pct).toFixed(1)}`)
-      .join(' ');
-  }, [curve]);
+  const maxFreq = useMemo(() => (histogram ? Math.max(...histogram, 0.0001) : 0.0001), [histogram]);
 
-  const areaPath = useMemo(() => {
-    if (!curve || curve.length === 0) return '';
-    const sorted = [...curve].sort((a, b) => a[1] - b[1]);
-    const top = sorted.map(([pct, score]) => `${xForScore(score).toFixed(1)} ${yForPct(pct).toFixed(1)}`).join(' L ');
-    const baseY = PAD.top + PLOT_H;
-    return `M ${xForScore(sorted[0][1]).toFixed(1)} ${baseY} L ${top} L ${xForScore(sorted[sorted.length - 1][1]).toFixed(1)} ${baseY} Z`;
-  }, [curve]);
+  const yForFreq = (freq: number) => PAD.top + PLOT_H - (freq / (maxFreq * 1.15)) * PLOT_H;
 
-  if (!curve || curve.length === 0 || !thresholds) return null;
-
-  // スコア昇順の帯境界（D→C→B→A→S→S+→GOD）
-  const bands: { rank: ScoreRank; from: number; to: number }[] = [
-    { rank: 'D',   from: 0,               to: thresholds.c },
-    { rank: 'C',   from: thresholds.c,    to: thresholds.b },
-    { rank: 'B',   from: thresholds.b,    to: thresholds.a },
-    { rank: 'A',   from: thresholds.a,    to: thresholds.s },
-    { rank: 'S',   from: thresholds.s,    to: thresholds.sPlus },
-    { rank: 'S+',  from: thresholds.sPlus, to: thresholds.god },
-    { rank: 'GOD', from: thresholds.god,  to: 100 },
-  ];
-
-  const gridPcts = [0.01, 0.1, 1, 5, 15, 35, 65, 100];
+  const activeBin = useMemo(() => {
+    if (hoverBin !== null) return hoverBin;
+    return Math.min((histogram?.length ?? 1) - 1, Math.floor(result.score / BIN_WIDTH));
+  }, [hoverBin, histogram, result.score]);
 
   const handleMove = (e: React.MouseEvent<SVGSVGElement>) => {
     const svg = svgRef.current;
-    if (!svg) return;
+    if (!svg || !histogram) return;
     const rect = svg.getBoundingClientRect();
     const xRatio = (e.clientX - rect.left) / rect.width;
     const svgX = xRatio * W;
     const score = Math.max(0, Math.min(100, ((svgX - PAD.left) / PLOT_W) * 100));
-    setHoverScore(score);
+    setHoverBin(Math.min(histogram.length - 1, Math.max(0, Math.floor(score / BIN_WIDTH))));
   };
 
-  const activeScore = hoverScore ?? result.score;
-  const activePct = hoverScore !== null ? pctAtScore(curve, hoverScore) : (result.topPercentile ?? pctAtScore(curve, result.score));
+  if (!curve || curve.length === 0 || !histogram || histogram.length === 0 || !thresholds) return null;
+
+  // スコア昇順の帯境界（D→C→B→A→S→S+→GOD）
+  const bands: { rank: ScoreRank; from: number; to: number }[] = [
+    { rank: 'D',   from: 0,                to: thresholds.c },
+    { rank: 'C',   from: thresholds.c,     to: thresholds.b },
+    { rank: 'B',   from: thresholds.b,     to: thresholds.a },
+    { rank: 'A',   from: thresholds.a,     to: thresholds.s },
+    { rank: 'S',   from: thresholds.s,     to: thresholds.sPlus },
+    { rank: 'S+',  from: thresholds.sPlus, to: thresholds.god },
+    { rank: 'GOD', from: thresholds.god,   to: 100 },
+  ];
+
+  const barGap = 1;
+  const barWidth = Math.max(0.5, PLOT_W / histogram.length - barGap);
+
+  const activeBinScore = activeBin * BIN_WIDTH + BIN_WIDTH / 2;
+  const activePct = hoverBin !== null ? pctAtScore(curve, activeBinScore) : (result.topPercentile ?? pctAtScore(curve, result.score));
 
   return (
     <div className="w-full">
@@ -116,7 +108,7 @@ export default function ScoreDistributionChart({ result }: Props) {
         className="w-full h-auto"
         style={{ background: '#fafafa', border: '1px solid #e5e7eb', borderRadius: 8 }}
         onMouseMove={handleMove}
-        onMouseLeave={() => setHoverScore(null)}
+        onMouseLeave={() => setHoverBin(null)}
       >
         {/* ランク帯（スコア方向の縦帯） */}
         {bands.map((b) => {
@@ -132,28 +124,41 @@ export default function ScoreDistributionChart({ result }: Props) {
               width={Math.max(0, x2 - x1)}
               height={PLOT_H}
               fill={color}
-              opacity={0.1}
+              opacity={0.08}
             />
           );
         })}
 
-        {/* 上位%グリッド線 */}
-        {gridPcts.map((pct) => (
-          <g key={pct}>
-            <line
-              x1={PAD.left} x2={PAD.left + PLOT_W}
-              y1={yForPct(pct)} y2={yForPct(pct)}
-              stroke="#e5e7eb" strokeWidth={1}
-            />
-            <text x={PAD.left - 4} y={yForPct(pct) + 3} textAnchor="end" fontSize={7} fill="#9ca3af">
-              {pct >= 1 ? pct : pct.toFixed(2)}%
-            </text>
-          </g>
+        {/* y軸グリッド線（頻度） */}
+        {[0.25, 0.5, 0.75, 1].map((f) => (
+          <line
+            key={f}
+            x1={PAD.left} x2={PAD.left + PLOT_W}
+            y1={yForFreq(maxFreq * f)} y2={yForFreq(maxFreq * f)}
+            stroke="#e5e7eb" strokeWidth={1}
+          />
         ))}
 
-        {/* 分布曲線 */}
-        <path d={areaPath} fill="#0275fd" opacity={0.08} />
-        <path d={linePath} fill="none" stroke="#0275fd" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+        {/* ヒストグラム本体 */}
+        {histogram.map((freq, i) => {
+          const binScore = i * BIN_WIDTH;
+          const x = xForScore(binScore) + barGap / 2;
+          const y = yForFreq(freq);
+          const barH = Math.max(0, PAD.top + PLOT_H - y);
+          const isActive = i === activeBin;
+          return (
+            <rect
+              key={i}
+              x={x}
+              y={y}
+              width={barWidth}
+              height={barH}
+              rx={1.5}
+              fill={isActive ? BAR_COLOR_ACTIVE : BAR_COLOR}
+              opacity={isActive ? 1 : 0.65}
+            />
+          );
+        })}
 
         {/* ランクラベル（帯の上部） */}
         {bands.map((b) => {
@@ -177,14 +182,6 @@ export default function ScoreDistributionChart({ result }: Props) {
           );
         })}
 
-        {/* 現在のスコア（またはホバー位置）のマーカー */}
-        <line
-          x1={xForScore(activeScore)} x2={xForScore(activeScore)}
-          y1={PAD.top} y2={PAD.top + PLOT_H}
-          stroke="#111827" strokeWidth={1} strokeDasharray="3,2" opacity={0.6}
-        />
-        <circle cx={xForScore(activeScore)} cy={yForPct(activePct)} r={3.5} fill="#111827" stroke="#fff" strokeWidth={1.5} />
-
         {/* x軸ラベル */}
         <text x={PAD.left} y={H - 4} fontSize={7} fill="#9ca3af">0</text>
         <text x={PAD.left + PLOT_W} y={H - 4} textAnchor="end" fontSize={7} fill="#9ca3af">100</text>
@@ -192,15 +189,23 @@ export default function ScoreDistributionChart({ result }: Props) {
       </svg>
 
       {/* ツールチップ相当（下部に常時表示、ホバーで更新） */}
-      <div className="mt-1 text-[11px] text-[#374151] flex items-center gap-1.5">
+      <div className="mt-1 text-[11px] text-[#374151] flex items-center gap-1.5 flex-wrap">
         <span
           className="inline-block w-2 h-2 rounded-full"
-          style={{ background: hoverScore !== null ? '#111827' : RANK_COLORS[result.rank] }}
+          style={{ background: hoverBin !== null ? BAR_COLOR_ACTIVE : RANK_COLORS[result.rank] }}
         />
         <span className="tabular-nums font-medium">
-          {hoverScore === null ? T.distYourScore : `${Math.round(activeScore)} ${T.distAxisLabel}`}
+          {hoverBin === null
+            ? T.distYourScore
+            : `${activeBin * BIN_WIDTH}–${activeBin * BIN_WIDTH + BIN_WIDTH} ${T.distAxisLabel}`}
         </span>
         <span className="text-[#9ca3af]">→</span>
+        <span className="tabular-nums text-[#6b7280]">
+          {locale === 'ja'
+            ? `出現率 ${(histogram[activeBin] * 100).toFixed(2)}%`
+            : `${(histogram[activeBin] * 100).toFixed(2)}% of drops`}
+        </span>
+        <span className="text-[#9ca3af]">/</span>
         <span className="tabular-nums font-semibold" style={{ color: '#0275fd' }}>
           {locale === 'ja' ? `上位 ${formatPct(activePct)}%` : `Top ${formatPct(activePct)}%`}
         </span>
