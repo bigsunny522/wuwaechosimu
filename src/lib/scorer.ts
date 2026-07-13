@@ -255,10 +255,13 @@ export function pickVariant(echo: EchoState, build: CharacterBuild): RoleVariant
   return matched ?? variants[0];
 }
 
-// 重み導出時に使った基準ロール位置（旧 REFERENCE_TIER=5/7段階 と同じ基準点）
-// 8段階ステは values[5]（旧実装と同一インデックス）、4段階ステ(atkFlat/defFlat)は
-// 同じ「全体の 5/7 地点」に相当するインデックスへ換算する
-const REFERENCE_ROLL_FRACTION = 5 / 7;
+// 重み導出時に使った基準ロール位置。
+// 実際のロール確率（TIER_WEIGHTS_BY_KEY）での平均ロールは8段階ステで
+// 約Tier3.2（全体の約46%地点）であり、旧基準の5/7(≈71%、Tier5)は
+// 「平均的なドロップ」を大きく上回る基準だった。これがスコア分布の山を
+// 左（低スコア側）に寄せる主因だったため、4/7(Tier4、約57%)に緩和し、
+// 山を中央寄りにシフトさせている。
+const REFERENCE_ROLL_FRACTION = 4 / 7;
 
 function referenceRatio(key: SubstatKey): number {
   const entry = SUBSTAT_MAP[key];

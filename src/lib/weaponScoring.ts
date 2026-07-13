@@ -22,6 +22,10 @@ import { SUBSTAT_MAP } from '@/data/substats';
 // 要チューニング：パイロット検証で実キャラのスコアが直感と乖離する場合はここを調整する。
 const ASSUMED_EXISTING_SCALING_PCT = 0.45;
 
+// 無関係サブステ（重み0）に与える床値の比率（そのキャラの最大重みに対する割合）。
+// v1のMULT.unnecessary(0.1) / MULT.recommended(2.0) = 5% を参考にした値。
+const FLOOR_WEIGHT_RATIO = 0.06;
+
 // 共鳴効率は閾値型ステータス（要求値に届くまでは高価値、届いた後はほぼ無価値）
 // のため、ダメージ式からの線形近似ができない。目標ERからの静的重みで代替する。
 // 数値のスケールは他の重み（crit/atk 系が概ね 0.02〜0.10 に収まる）に揃えてある。
@@ -155,6 +159,17 @@ export function deriveSubstatWeights(
   }
 
   weights.energyRegen = erWeight(variant.erRequirement);
+
+  // 無関係サブステ（重み0）にも小さな床値を与える。v1のMULT.unnecessary(0.1)が
+  // MULT.recommended(2.0)の5%だったのと同じ発想で、完全な死に枠を無くし、
+  // 「無関係サブステだらけ」なドロップがスコア0に張り付いてしまう分布の
+  // 左端スパイクを緩和する（分布の山を中央寄りに寄せる調整の一部）。
+  const maxWeight = Math.max(...Object.values(weights));
+  if (maxWeight > 0) {
+    for (const key of ALL_SUBSTAT_KEYS) {
+      if (weights[key] === 0) weights[key] = maxWeight * FLOOR_WEIGHT_RATIO;
+    }
+  }
 
   return { weights, totalMainStat };
 }
