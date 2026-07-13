@@ -29,11 +29,17 @@ const FLOOR_WEIGHT_RATIO = 0.06;
 // 共鳴効率は閾値型ステータス（要求値に届くまでは高価値、届いた後はほぼ無価値）
 // のため、ダメージ式からの線形近似ができない。目標ERからの静的重みで代替する。
 // 数値のスケールは他の重み（crit/atk 系が概ね 0.02〜0.10 に収まる）に揃えてある。
+//
+// 回復系キャラは250〜260%ものERを要求されることがあり（DPSの多くは160%以下）、
+// 従来は最上位バケット(0.11)に張り付いて頭打ちしていたため、より高いER要求に
+// 対応するバケットを追加した。
 function erWeight(erRequirement: number): number {
   if (erRequirement <= 1.05) return 0.02;
   if (erRequirement <= 1.30) return 0.05;
   if (erRequirement <= 1.60) return 0.08;
-  return 0.11;
+  if (erRequirement <= 2.00) return 0.11;
+  if (erRequirement <= 2.40) return 0.14;
+  return 0.17;
 }
 
 // サブステの最大ロール値を比率化（%系は /100、固定値系はそのまま実数）
@@ -88,8 +94,8 @@ interface DamageWeights {
   resonanceLibDmg: number;
 }
 
-// crit・攻撃タイプ別ダメージ%の重み（DPS運用、およびハイブリッド運用の
-// damageContributionShare分に使う）
+// crit・攻撃タイプ別ダメージ%の重み（DPS運用、およびdamageProfileを持つ
+// ハイブリッド回復運用の実ダメージ成分に使う）
 function damageWeights(dp: DamageProfile): DamageWeights {
   const cr = dp.baselineCritRate;
   // baselineCritDmg は表示値（2.30 = 230%）。クリット時の「非クリ超過分」は cd−1。
@@ -132,42 +138,46 @@ export function deriveSubstatWeights(
   const dp = variant.damageProfile;
   const hp = variant.healProfile;
 
-  if (dp && totalMainStat != null) {
-    const existingPctSum = ASSUMED_EXISTING_SCALING_PCT + dp.selfAtkBuffPercent + weaponScalingPct(scalingStat, weapon);
-    const { pctKey, pctWeight, flatKey, flatWeight } = scalingPctFlatWeights(scalingStat, totalMainStat, existingPctSum);
-    weights[pctKey] = pctWeight;
-    weights[flatKey] = flatWeight;
-    Object.assign(weights, damageWeights(dp));
-  }
-
-  if (hp && totalMainStat != null) {
-    const existingPctSum = hp.assumedExistingScalingPercent + weaponScalingPct(scalingStat, weapon);
-    const { pctKey, pctWeight, flatKey, flatWeight } = scalingPctFlatWeights(scalingStat, totalMainStat, existingPctSum);
-    weights[pctKey] = pctWeight;
-    weights[flatKey] = flatWeight;
-
-    if (hp.damageContributionShare > 0 && hp.damageProfile) {
-      const dw = damageWeights(hp.damageProfile);
-      const share = hp.damageContributionShare;
-      weights.critRate          += dw.critRate * share;
-      weights.critDmg           += dw.critDmg * share;
-      weights.basicAttackDmg    += dw.basicAttackDmg * share;
-      weights.heavyAttackDmg    += dw.heavyAttackDmg * share;
-      weights.resonanceSkillDmg += dw.resonanceSkillDmg * share;
-      weights.resonanceLibDmg   += dw.resonanceLibDmg * share;
+  // ── メインスケールステ%/実数の重み ──────────────────────────────────────
+  // healProfileがあればそちらが「回復の頭打ち」を織り込んだ希釈率で計算する。
+  // 無ければ（純粋なダメージ系運用）従来通りdamageProfileのselfAtkBuffPercent等で計算する。
+  if (totalMainStat != null) {
+    if (hp) {
+      const existingPctSum = hp.assumedExistingScalingPercent + weaponScalingPct(scalingStat, weapon);
+      const { pctKey, pctWeight, flatKey, flatWeight } = scalingPctFlatWeights(scalingStat, totalMainStat, existingPctSum);
+      weights[pctKey] = pctWeight;
+      weights[flatKey] = flatWeight;
+    } else if (dp) {
+      const existingPctSum = ASSUMED_EXISTING_SCALING_PCT + dp.selfAtkBuffPercent + weaponScalingPct(scalingStat, weapon);
+      const { pctKey, pctWeight, flatKey, flatWeight } = scalingPctFlatWeights(scalingStat, totalMainStat, existingPctSum);
+      weights[pctKey] = pctWeight;
+      weights[flatKey] = flatWeight;
     }
   }
 
-  weights.energyRegen = erWeight(variant.erRequirement);
+  // ── クリ・攻撃タイプ別ダメージ%の重み ────────────────────────────────────
+  // damageProfileが設定されていれば、healProfileの有無に関わらず独立して加算する
+  // （回復キャラのハイブリッドダメージ成分も、割引かず「本物のダメージ」として扱う）。
+  if (dp && totalMainStat != null) {
+    const dw = damageWeights(dp);
+    weights.critRate          += dw.critRate;
+    weights.critDmg           += dw.critDmg;
+    weights.basicAttackDmg    += dw.basicAttackDmg;
+    weights.heavyAttackDmg    += dw.heavyAttackDmg;
+    weights.resonanceSkillDmg += dw.resonanceSkillDmg;
+    weights.resonanceLibDmg   += dw.resonanceLibDmg;
+  }
+
+  weights.energyRegen = erWeight(variant.erRequirement) * (variant.erWeightMultiplier ?? 1);
 
   // 無関係サブステ（重み0）にも小さな床値を与える。v1のMULT.unnecessary(0.1)が
   // MULT.recommended(2.0)の5%だったのと同じ発想で、完全な死に枠を無くし、
   // 「無関係サブステだらけ」なドロップがスコア0に張り付いてしまう分布の
   // 左端スパイクを緩和する（分布の山を中央寄りに寄せる調整の一部）。
   //
-  // 回復系運用（healProfile）はモデル自体が推定パラメータ主体で検証途上のため、
-  // この調整の対象外とする（dpによるダメージ系運用のみ床値を与える）。
-  if (dp) {
+  // 回復系運用（healProfileあり）は依然としてパラメータの検証途上のため、
+  // この調整の対象外とする（healProfileが無い運用のみ床値を与える）。
+  if (!hp) {
     const maxWeight = Math.max(...Object.values(weights));
     if (maxWeight > 0) {
       for (const key of ALL_SUBSTAT_KEYS) {

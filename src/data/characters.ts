@@ -529,10 +529,10 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'def',
     baseStats90: { atk: 287, hp: 15375, def: 1356 },
     motifWeaponId: 'mortefi',
-    // v2: 防御力参照の回復/シールドキャラ。ダメージ要素は無し（damageContributionShare: 0）。
+    // v2: 防御力参照の回復/シールドキャラ。ダメージ要素は無し（damageProfileなし）。
     // erRequirement は「ER260%到達で全体バフ・Lib中のクリボーナスが解放される」という
-    // ビルドガイドの言及を根拠にした値。要検証：assumedExistingScalingPercent は
-    // 他キャラと同じ暫定デフォルト(0.45)を流用しており未チューニング。
+    // ビルドガイドの言及を根拠にした値。assumedExistingScalingPercent は「回復量は
+    // 頭打ちする指標」という考え方からDPSの0.45より高めの0.9を暫定設定（要検証）。
     variants: [
       {
         id: 'main',
@@ -546,8 +546,7 @@ export const CHARACTERS: CharacterBuild[] = [
         },
         erRequirement: 2.60,
         healProfile: {
-          assumedExistingScalingPercent: 0.45,
-          damageContributionShare: 0,
+          assumedExistingScalingPercent: 0.9,
         },
       },
     ],
@@ -1378,12 +1377,12 @@ export const CHARACTERS: CharacterBuild[] = [
     baseStats90: { atk: 287, hp: 16712, def: 1099 },
     motifWeaponId: 'shorekeeper',
     // v2: HP参照の回復＋イントロスキルで実ダメージも出すハイブリッドキット。
-    // damageContributionShare は「回復・バフが本分だがイントロスキルの火力も
-    // 無視できない」という定性情報からの暫定値であり要検証（プレイテストで
-    // スコアの体感とズレる場合はここを調整する）。イントロスキルはtypeShares上
-    // 分類が無いため便宜上 skill 扱いにしている。
-    // 既知の制限: 目標ER250%はLibの味方クリバフ強度にも直結するが、
-    // 現状は他キャラと同じ閾値テーブルでのみ評価している。
+    // damageProfileはhealProfileと独立して加算されるため、割引率(旧
+    // damageContributionShare)は使わない——イントロスキルはクリの影響を受ける
+    // 「本物のダメージ」であり、通常のDPSキャラと同じ計算式をそのまま適用する。
+    // typeSharesはtypeShares上「イントロスキル」の分類が無いため便宜上skill扱い。
+    // 目標ER250%はLibの味方クリバフ強度にも直結するため、erWeightMultiplierで
+    // 通常より重み付けを高くしている（要検証：倍率1.3は暫定値）。
     variants: [
       {
         id: 'main',
@@ -1396,15 +1395,15 @@ export const CHARACTERS: CharacterBuild[] = [
           cost1: { recommended: ['hpPercent'],  acceptable: ['atkPercent'] },
         },
         erRequirement: 2.50,
+        erWeightMultiplier: 1.3,
         healProfile: {
-          assumedExistingScalingPercent: 0.45,
-          damageContributionShare: 0.3,
-          damageProfile: {
-            typeShares: { basic: 0, heavy: 0, skill: 1.0, lib: 0 },
-            selfAtkBuffPercent: 0,
-            baselineCritRate: 0.70,
-            baselineCritDmg: 2.30,
-          },
+          assumedExistingScalingPercent: 0.9,
+        },
+        damageProfile: {
+          typeShares: { basic: 0, heavy: 0, skill: 1.0, lib: 0 },
+          selfAtkBuffPercent: 0,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
         },
       },
     ],
@@ -1917,8 +1916,7 @@ export const CHARACTERS: CharacterBuild[] = [
         },
         erRequirement: 1.60,
         healProfile: {
-          assumedExistingScalingPercent: 0.45,
-          damageContributionShare: 0,
+          assumedExistingScalingPercent: 0.9,
         },
       },
     ],

@@ -41,26 +41,29 @@ export interface DamageProfile {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  回復/シールド量の偏微分に基づく重み導出用プロファイル（ヒーラー・純サポート運用）
+//  回復/シールド量の重み導出用プロファイル（ヒーラー・純サポート運用）
 //
 //  HEAL ∝ MainStat_total(scalingStat) × (1 + %scalingStat_total)
 //
-//  ダメージ式と違い、回復量にはクリティカルも攻撃タイプ別ダメージ%も
-//  基本的に影響しない（このゲームでは回復はクリットしない）。そのため
-//  DamageProfile とは別の軽量なプロファイルとして扱う。
+//  ダメージ式と根本的に異なる前提がある：ダメージは「多いほど常に良い」
+//  無制限の線形価値だが、回復量は味方の被ダメージを上回った時点で
+//  それ以上は「オーバーヒール」となり実質価値が急減する、頭打ちのある指標。
+//  そのため、%scalingStat/実数の重みはDPSと同じ希釈式
+//  （scalingPctFlatWeights）を流用しつつ、assumedExistingScalingPercent に
+//  「回復が頭打ちに近づいた状態」を表す高めの値を仮定することで、
+//  回復系%/実数サブステの重みをDPSより相対的に低く抑える。
+//
 //  実ダメージも出すハイブリッドキット（例: ショアキーパーのイントロスキル）は
-//  damageContributionShare（0〜1）と damageProfile を併記することで、
-//  crit・攻撃タイプ別ダメージ%の重みをその割合だけ加算する。
+//  damageContributionShareのような曖昧な混合比率は使わない。RoleVariantに
+//  damageProfile を healProfile と併記すれば、crit・攻撃タイプ別ダメージ%の
+//  重みは通常のダメージ式からそのまま独立して加算される（イントロスキルの
+//  実ダメージはクリの影響を受ける「本物のダメージ」であり、割引く理由がないため）。
 // ═══════════════════════════════════════════════════════════════════════════
 export interface HealProfile {
   // 評価対象のscalingStat%以外に、既にビルドで積まれていると仮定する
-  // 同スケーリングステ%量の合計（DamageProfileのASSUMED_EXISTING_SCALING_PCT
-  // 相当。ハーモニーセットのバフ等を含む）
+  // 同スケーリングステ%量の合計。回復の頭打ち特性を反映し、DPSの
+  // ASSUMED_EXISTING_SCALING_PCT(0.45)よりも高めの値を設定するのが通例。
   assumedExistingScalingPercent: number;
-  // 実ダメージ要素への寄与割合（0=純粋回復、1に近いほど通常DPSキャラ相当）
-  damageContributionShare: number;
-  // damageContributionShare > 0 の場合のみ使用
-  damageProfile?: DamageProfile;
 }
 
 export interface RoleVariant {
@@ -77,16 +80,24 @@ export interface RoleVariant {
 
   // 目標共鳴効率（例 1.2 = 120%）。共鳴効率は閾値型のため重み導出では
   // 連続値でなく erRequirement からの静的重みテーブルを介して評価する。
-  //
-  // 既知の制限: ショアキーパーのように共鳴効率の値そのものが味方への
-  // クリバフ強度に直結するキャラでも、他キャラと同じ閾値テーブルで
-  // 評価している（継続値としての追加価値は未反映）。
   erRequirement: number;
 
-  // ダメージ系運用（DPS/SubDPS）はこちらを設定する。
+  // ERが通常の資源循環に加えて別の役割（味方へのクリバフ強度など）も
+  // 持つキャラ用の追加重み倍率。既定は1.0（=通常の閾値テーブルそのまま）。
+  // 例: ショアキーパーはLib中の味方クリ率/クリダメバフがER値に直結するため
+  // 1.0より大きい値を設定する。
+  erWeightMultiplier?: number;
+
+  // ダメージ系運用（DPS/SubDPS、通常アタッカーおよびハイブリッドキャラの
+  // 実ダメージ成分）はこちらを設定する。crit・攻撃タイプ別ダメージ%の
+  // 重みに反映される。
   damageProfile?: DamageProfile;
 
-  // ヒーラー/純サポート運用はこちらを設定する（damageProfileとは排他）。
+  // ヒーラー/純サポート運用の回復/防御スケーリングステはこちらを設定する。
+  // damageProfileと併記可能（例: 回復しつつイントロスキルで実ダメージも
+  // 出すハイブリッドキャラ）。その場合、%scalingStat/実数の重みはこちら、
+  // crit/攻撃タイプ別ダメージ%の重みはdamageProfileから、それぞれ独立して
+  // 計算され合算される。
   healProfile?: HealProfile;
 }
 
