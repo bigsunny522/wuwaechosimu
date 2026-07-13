@@ -1,0 +1,326 @@
+[
+  {
+    "id": "yangyang_xuanling",
+    "slug": "yangyang-xuanling",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 70755, "heavy": 1491269, "skill": 0, "liberation": 0, "intro": 18309, "outro": 47112, "echo": 42966 },
+    "typeShares": { "basic": 0.0453, "heavy": 0.9547, "skill": 0, "lib": 0 },
+    "note": "Liberation (Hush of a Thousand Voices) explicitly stated in kit text as 'considered Heavy Attack DMG', hence 0 in Liberation and huge Heavy share."
+  },
+  {
+    "id": "lucilare",
+    "slug": "lucilla",
+    "variant": "sub",
+    "available": true,
+    "rawValues": { "basic": 202833, "heavy": 0, "skill": 50055, "liberation": 0, "intro": 8568, "outro": 0, "echo": 24063, "other_GlacioBite": 438800 },
+    "typeShares": { "basic": 0.8020, "heavy": 0, "skill": 0.1980, "lib": 0 },
+    "note": "Liberation (Clear As Day) kit text states DMG is 'considered Basic Attack DMG' (in Glacio Chafe mode) or 'considered Echo Skill DMG' (in Echo mode), hence 0 in Liberation bucket. Page also shows a large extra category 'Glacio Bite' (438,800 dmg, bigger than the whole total4) not matching Basic/Heavy/Skill/Liberation/Intro/Outro/Echo - excluded per spec since it doesn't map to the 4 buckets; unclear what skill this corresponds to, worth manual review since it dwarfs the counted damage."
+  },
+  {
+    "id": "lucy",
+    "slug": "lucy",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 47753, "heavy": 948725, "skill": 27654, "liberation": 0, "intro": 16599, "outro": 0, "echo": 42330, "other_Hack": 152527 },
+    "typeShares": { "basic": 0.0466, "heavy": 0.9264, "skill": 0.0270, "lib": 0 },
+    "note": "Kit text explicitly reclassifies most of her Skill (Deadlock) and Liberation (Netrunner's Override, Ping, Synapse Burnout follow-ups) as 'considered Heavy Attack DMG', hence Liberation=0 and Heavy dominates at ~93%. Page also shows a separate 'Hack' category (152,527 dmg) which is a distinct damage type (Hack DMG, from Spoofing Program: Cripple Movement), excluded per spec since it's outside the 4 buckets."
+  },
+  {
+    "id": "rebecca",
+    "slug": "rebecca",
+    "variant": "sub",
+    "available": true,
+    "rawValues": { "basic": 301984, "heavy": 0, "skill": 20774, "liberation": 0, "intro": 22532, "outro": 0, "echo": 3588, "other_Hack": 213091 },
+    "typeShares": { "basic": 0.9356, "heavy": 0, "skill": 0.0644, "lib": 0 },
+    "note": "Damage overwhelmingly Basic Attack. Separate 'Hack' category (213,091 dmg, a distinct damage type) excluded per spec. No Heavy or Liberation damage recorded at all."
+  },
+  {
+    "id": "denia",
+    "slug": "denia",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 10011, "heavy": 0, "skill": 8174, "liberation": 284485, "intro": 7861, "outro": 0, "echo": 20558, "other_FusionBurst": 136776 },
+    "typeShares": { "basic": 0.0331, "heavy": 0, "skill": 0.0270, "lib": 0.9399 },
+    "note": "Damage dominated by Liberation (~94%). Separate 'Fusion Burst' category (136,776 dmg, a distinct damage type/stance) excluded per spec since it's outside the 4 buckets. No Heavy Attack damage recorded."
+  },
+  {
+    "id": "hiyuki",
+    "slug": "hiyuki",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 0, "heavy": 0, "skill": 88174, "liberation": 880054, "intro": 0, "outro": 0, "echo": 39937, "other_GlacioBite": 438900 },
+    "typeShares": { "basic": 0, "heavy": 0, "skill": 0.0911, "lib": 0.9089 },
+    "note": "Only a single '1 Target scenario' rotation is shown on Prydwen's Calculations tab - no distinct off-field/sub rotation was found, so this single rotation is used for both main and sub if needed. Damage is Skill+Liberation only (no Basic/Heavy at all in this rotation). Separate 'Glacio Bite' category (438,900 dmg) excluded per spec, same unexplained extra category seen on Lucilla's page (both Glacio element, possibly a shared echo/weapon skill in the simulated team, not part of Hiyuki's own kit)."
+  },
+  {
+    "id": "sigrid",
+    "slug": "sigrika",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 79389, "heavy": 0, "skill": 0, "liberation": 0, "intro": 13573, "outro": 82890, "echo": 1563992 },
+    "typeShares": { "basic": 1.0, "heavy": 0, "skill": 0, "lib": 0 },
+    "note": "CAUTION: total4 (Basic+Heavy+Skill+Liberation) is only 79,389 dmg, dwarfed by her Echo category (1,563,992 dmg - ~20x larger). Sigrika's actual playstyle/damage output is almost entirely Echo-Skill-DMG focused (buffs to the equipped Echo's own skill), which the spec explicitly excludes from the 4-bucket total. The typeShares here (100% basic) are technically correct per the exact formula requested but are NOT a meaningful signal of her real damage distribution - flagging for manual review since this character may need special handling outside the 4-bucket model entirely."
+  },
+  {
+    "id": "ryuk",
+    "slug": "luuk-herssen",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 1294590, "heavy": 0, "skill": 0, "liberation": 0, "intro": 41895, "outro": 96084, "echo": 23987 },
+    "typeShares": { "basic": 1.0, "heavy": 0, "skill": 0, "lib": 0 },
+    "note": "100% Basic Attack in the 4-bucket total; Skill and Liberation both show 0, which is suspicious given Luuk Herssen presumably has an active Resonance Skill/Liberation - likely his kit reclassifies that damage as Basic Attack DMG (common Gauntlets-character pattern), but this was not independently verified against Kit tab text; worth a manual spot-check."
+  },
+  {
+    "id": "aimes",
+    "slug": "aemeath",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 91118, "heavy": 0, "skill": 0, "liberation": 849871, "intro": 19006, "outro": 0, "echo": 34765, "other_FusionBurst": 512904 },
+    "typeShares": { "basic": 0.0969, "heavy": 0, "skill": 0, "lib": 0.9032 },
+    "note": "Damage dominated by Liberation (~90%). Skill shows 0 despite Aemeath presumably having a Resonance Skill - not independently verified but likely reclassified elsewhere (possibly folded into the separate 'Fusion Burst' category, 512,904 dmg, which is excluded per spec). No Heavy Attack damage recorded."
+  },
+  {
+    "id": "linne",
+    "slug": "lynae",
+    "variant": "sub",
+    "available": true,
+    "rawValues": { "basic": 202837, "heavy": 0, "skill": 23655, "liberation": 74268, "intro": 18407, "outro": 8188, "echo": 22403, "other_TuneRupture": 183043 },
+    "typeShares": { "basic": 0.6744, "heavy": 0, "skill": 0.0787, "lib": 0.2470 },
+    "note": "Reasonably balanced between Basic (~67%) and Liberation (~25%) with a small Skill slice. Separate 'Tune Rupture' category (183,043 dmg) excluded per spec. No Heavy Attack damage."
+  },
+  {
+    "id": "chixia_sanhua",
+    "slug": "chisa",
+    "variant": "sub",
+    "available": true,
+    "rawValues": { "basic": 6168, "heavy": 9764, "skill": 9254, "liberation": 192455, "intro": 5918, "outro": 0, "echo": 4211 },
+    "typeShares": { "basic": 0.0283, "heavy": 0.0449, "skill": 0.0425, "lib": 0.8843 },
+    "note": "Overwhelmingly Liberation (~88%) with small slivers of the other 3 categories. No extra unmapped category on this page."
+  },
+  {
+    "id": "quyuan",
+    "slug": "qiuyuan",
+    "variant": "sub",
+    "available": true,
+    "rawValues": { "basic": 0, "heavy": 90775, "skill": 0, "liberation": 0, "intro": 0, "outro": 0, "echo": 58465 },
+    "typeShares": { "basic": 0, "heavy": 1.0, "skill": 0, "lib": 0 },
+    "note": "100% Heavy Attack in the 4-bucket total - clean off-field support whose entire kit damage is Heavy Attack type. Echo (58,465) is comparable in magnitude to Heavy but excluded per spec."
+  },
+  {
+    "id": "galbrena",
+    "slug": "galbrena",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 0, "heavy": 163569, "skill": 0, "liberation": 0, "intro": 4796, "outro": 50362, "echo": 290945 },
+    "typeShares": { "basic": 0, "heavy": 1.0, "skill": 0, "lib": 0 },
+    "note": "100% Heavy Attack in the 4-bucket total. Echo (290,945) is actually larger than the counted Heavy damage - Galbrena's real rotation leans heavily on Echo Skill DMG, which is excluded per spec; treat with moderate caution similar to Sigrika/Galbrena-type Echo-focused builds."
+  },
+  {
+    "id": "yuanwu",
+    "slug": "iuno",
+    "variant": "sub",
+    "available": true,
+    "rawValues": { "basic": 0, "heavy": 0, "skill": 27851, "liberation": 443125, "intro": 8966, "outro": 7577, "echo": 22805 },
+    "typeShares": { "basic": 0, "heavy": 0, "skill": 0.0591, "lib": 0.9409 },
+    "note": "Almost entirely Liberation (~94%) with a small Skill slice. No Basic or Heavy Attack damage at all."
+  },
+  {
+    "id": "augusta",
+    "slug": "augusta",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 0, "heavy": 335431, "skill": 75044, "liberation": 0, "intro": 10208, "outro": 0, "echo": 29054 },
+    "typeShares": { "basic": 0, "heavy": 0.8172, "skill": 0.1828, "lib": 0 },
+    "note": "Dominated by Heavy Attack (~82%). Liberation shows 0 despite presumably having a Resonance Liberation - not independently verified, may be reclassified as Heavy Attack DMG per kit text (unconfirmed)."
+  },
+  {
+    "id": "flova",
+    "slug": "phrolova",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 39077, "heavy": 0, "skill": 279425, "liberation": 0, "intro": 0, "outro": 0, "echo": 318009 },
+    "typeShares": { "basic": 0.1227, "heavy": 0, "skill": 0.8773, "lib": 0 },
+    "note": "Dominated by Resonance Skill (~88%). No Heavy or Liberation damage recorded at all. Echo (318,009) is comparable in magnitude to the whole total4, worth noting but not treated as extreme as Sigrika."
+  },
+  {
+    "id": "lupa",
+    "slug": "lupa",
+    "variant": "sub",
+    "available": true,
+    "rawValues": { "basic": 19965, "heavy": 25687, "skill": 44978, "liberation": 283095, "intro": 0, "outro": 0, "echo": 19676 },
+    "typeShares": { "basic": 0.0534, "heavy": 0.0687, "skill": 0.1204, "lib": 0.7576 },
+    "note": "Dominated by Liberation (~76%) with meaningful Skill (~12%) contribution and small Basic/Heavy slices. No extra unmapped category."
+  },
+  {
+    "id": "cartethia",
+    "slug": "cartethyia",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 225945, "heavy": 0, "skill": 54679, "liberation": 103156, "intro": 13133, "outro": 0, "echo": 11885, "other_Debuff": 29099 },
+    "typeShares": { "basic": 0.5887, "heavy": 0, "skill": 0.1425, "lib": 0.2688 },
+    "note": "Basic-heavy mix (~59%) with meaningful Liberation (~27%) and Skill (~14%). Separate 'Debuff' category (29,099 dmg) excluded per spec. No Heavy Attack damage."
+  },
+  {
+    "id": "shaconne",
+    "slug": "ciaccona",
+    "variant": "sub",
+    "available": true,
+    "rawValues": { "basic": 43686, "heavy": 40925, "skill": 9370, "liberation": 67722, "intro": 10561, "outro": 0, "echo": 19863, "other_Debuff": 48496 },
+    "typeShares": { "basic": 0.2701, "heavy": 0.2531, "skill": 0.0579, "lib": 0.4188 },
+    "note": "Fairly balanced across all 4 buckets with Liberation the largest slice (~42%). Separate 'Debuff' category (48,496 dmg) excluded per spec."
+  },
+  {
+    "id": "zanni",
+    "slug": "zani",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 8212, "heavy": 221626, "skill": 22666, "liberation": 98268, "intro": 11949, "outro": 19309, "echo": 11949 },
+    "typeShares": { "basic": 0.0234, "heavy": 0.6320, "skill": 0.0646, "lib": 0.2802 },
+    "note": "Dominated by Heavy Attack (~63%) with a large Liberation contribution (~28%). Small Basic and Skill slices. No extra unmapped category."
+  },
+  {
+    "id": "cantarella",
+    "slug": "cantarella",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 144413, "heavy": 4884, "skill": 14966, "liberation": 0, "intro": 6775, "outro": 20510, "echo": 17305 },
+    "typeShares": { "basic": 0.8791, "heavy": 0.0297, "skill": 0.0911, "lib": 0 },
+    "note": "Overwhelmingly Basic Attack (~88%). Liberation shows 0 - not independently verified against kit text but worth a manual spot-check given Cantarella presumably has a Resonance Liberation."
+  },
+  {
+    "id": "brant",
+    "slug": "brant",
+    "variant": "sub",
+    "available": true,
+    "rawValues": { "basic": 169014, "heavy": 0, "skill": 0, "liberation": 44052, "intro": 10359, "outro": 0, "echo": 20588 },
+    "typeShares": { "basic": 0.7932, "heavy": 0, "skill": 0, "lib": 0.2068 },
+    "note": "Basic Attack (~79%) and Liberation (~21%) only - no Heavy or Skill damage recorded at all."
+  },
+  {
+    "id": "phoebe",
+    "slug": "phoebe",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 151021, "heavy": 463904, "skill": 13133, "liberation": 181976, "intro": 20195, "outro": 190566, "echo": 38202 },
+    "typeShares": { "basic": 0.1864, "heavy": 0.5726, "skill": 0.0162, "lib": 0.2247 },
+    "note": "Dominated by Heavy Attack (~57%) with a large Liberation slice (~22%) and modest Basic (~19%). Very small Skill contribution."
+  },
+  {
+    "id": "rococo",
+    "slug": "roccia",
+    "variant": "sub",
+    "available": true,
+    "rawValues": { "basic": 12073, "heavy": 170745, "skill": 3652, "liberation": 0, "intro": 9350, "outro": 26557, "echo": 22408 },
+    "typeShares": { "basic": 0.0647, "heavy": 0.9157, "skill": 0.0196, "lib": 0 },
+    "note": "Almost entirely Heavy Attack (~92%). Liberation shows 0 - not independently verified but worth a manual spot-check."
+  },
+  {
+    "id": "carlotta",
+    "slug": "carlotta",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 6056, "heavy": 0, "skill": 440311, "liberation": 0, "intro": 14569, "outro": 43872, "echo": 22373 },
+    "typeShares": { "basic": 0.0136, "heavy": 0, "skill": 0.9864, "lib": 0 },
+    "note": "Almost entirely Resonance Skill (~99%). No Heavy or Liberation damage recorded at all - very concentrated single-bucket profile."
+  },
+  {
+    "id": "camellya",
+    "slug": "camellya",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 319984, "heavy": 0, "skill": 0, "liberation": 78645, "intro": 12217, "outro": 49675, "echo": 16260 },
+    "typeShares": { "basic": 0.8027, "heavy": 0, "skill": 0, "lib": 0.1973 },
+    "note": "Basic Attack (~80%) and Liberation (~20%) only. No Heavy or Skill damage recorded - likely Skill damage is reclassified as Basic Attack per her kit (unconfirmed, not checked against Kit tab text)."
+  },
+  {
+    "id": "xiangli_yao",
+    "slug": "xiangli-yao",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 71892, "heavy": 0, "skill": 113199, "liberation": 619078, "intro": 18577, "outro": 26794, "echo": 45665 },
+    "typeShares": { "basic": 0.0894, "heavy": 0, "skill": 0.1407, "lib": 0.7698 },
+    "note": "Dominated by Liberation (~77%) with a meaningful Skill contribution (~14%). No Heavy Attack damage recorded."
+  },
+  {
+    "id": "zhezhi",
+    "slug": "zhezhi",
+    "variant": "sub",
+    "available": true,
+    "rawValues": { "basic": 159744, "heavy": 11274, "skill": 13367, "liberation": 0, "intro": 11078, "outro": 0, "echo": 8319 },
+    "typeShares": { "basic": 0.8664, "heavy": 0.0611, "skill": 0.0725, "lib": 0 },
+    "note": "Overwhelmingly Basic Attack (~87%). No Liberation damage recorded at all."
+  },
+  {
+    "id": "changli",
+    "slug": "changli",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 15851, "heavy": 7019, "skill": 221055, "liberation": 85792, "intro": 8103, "outro": 0, "echo": 22122 },
+    "typeShares": { "basic": 0.0481, "heavy": 0.0213, "skill": 0.6704, "lib": 0.2602 },
+    "note": "Dominated by Resonance Skill (~67%) with a solid Liberation slice (~26%). Small Basic/Heavy contributions."
+  },
+  {
+    "id": "jinhsi",
+    "slug": "jinhsi",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 0, "heavy": 0, "skill": 879672, "liberation": 117943, "intro": 32573, "outro": 0, "echo": 13280 },
+    "typeShares": { "basic": 0, "heavy": 0, "skill": 0.8818, "lib": 0.1182 },
+    "note": "Almost entirely Resonance Skill (~88%). No Basic or Heavy Attack damage at all - fully Skill/Liberation kit."
+  },
+  {
+    "id": "yinlin",
+    "slug": "yinlin",
+    "variant": "sub",
+    "available": true,
+    "rawValues": { "basic": 6594, "heavy": 24590, "skill": 246630, "liberation": 51751, "intro": 8678, "outro": 0, "echo": 24542 },
+    "typeShares": { "basic": 0.0200, "heavy": 0.0746, "skill": 0.7484, "lib": 0.1570 },
+    "note": "Dominated by Resonance Skill (~75%) with a modest Liberation slice (~16%). Small Basic/Heavy contributions."
+  },
+  {
+    "id": "jiyan",
+    "slug": "jiyan",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 0, "heavy": 586105, "skill": 63978, "liberation": 0, "intro": 13844, "outro": 21824, "echo": 31336 },
+    "typeShares": { "basic": 0, "heavy": 0.9016, "skill": 0.0984, "lib": 0 },
+    "note": "Dominated by Heavy Attack (~90%). Liberation shows 0 despite Jiyan's iconic Resonance Liberation (Windqueller) - very likely reclassified as Heavy Attack DMG in his kit (well-known community fact, not independently re-verified against kit text here)."
+  },
+  {
+    "id": "lingyang",
+    "slug": "lingyang",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 108417, "heavy": 10209, "skill": 101511, "liberation": 23550, "intro": 13631, "outro": 44664, "echo": 18488 },
+    "typeShares": { "basic": 0.4449, "heavy": 0.0419, "skill": 0.4165, "lib": 0.0966 },
+    "note": "Fairly even split between Basic (~44%) and Skill (~42%), with a modest Liberation slice (~10%) and small Heavy contribution."
+  },
+  {
+    "id": "encore",
+    "slug": "encore",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 143664, "heavy": 0, "skill": 45821, "liberation": 44546, "intro": 10587, "outro": 39258, "echo": 21566 },
+    "typeShares": { "basic": 0.6139, "heavy": 0, "skill": 0.1958, "lib": 0.1903 },
+    "note": "Dominated by Basic Attack (~61%) with roughly even Skill (~20%) and Liberation (~19%) slices. No Heavy Attack damage recorded."
+  },
+  {
+    "id": "calcharo",
+    "slug": "calcharo",
+    "variant": "main",
+    "available": true,
+    "rawValues": { "basic": 98697, "heavy": 0, "skill": 9050, "liberation": 213564, "intro": 20081, "outro": 29693, "echo": 20454 },
+    "typeShares": { "basic": 0.3072, "heavy": 0, "skill": 0.0282, "lib": 0.6647 },
+    "note": "Dominated by Liberation (~66%) with meaningful Basic (~31%). Very small Skill contribution and no Heavy Attack damage."
+  },
+  {
+    "id": "jianxin",
+    "slug": "jianxin",
+    "variant": "sub",
+    "available": true,
+    "rawValues": { "basic": 48268, "heavy": 18878, "skill": 12367, "liberation": 56486, "intro": 7749, "outro": 0, "echo": 12546 },
+    "typeShares": { "basic": 0.3549, "heavy": 0.1388, "skill": 0.0909, "lib": 0.4153 },
+    "note": "Fairly balanced across all 4 buckets, Liberation (~42%) and Basic (~35%) the largest slices."
+  }
+]
