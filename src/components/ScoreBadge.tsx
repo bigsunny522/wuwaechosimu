@@ -9,6 +9,13 @@ interface Props {
   result: ScoreResult;
 }
 
+// 上位%を桁数に応じて読みやすく整形する（0.01 → "0.01"、6.4 → "6.4"、63 → "63"）
+function formatPercentile(pct: number): string {
+  if (pct < 1) return pct.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+  if (pct < 10) return pct.toFixed(1).replace(/\.0$/, '');
+  return Math.round(pct).toString();
+}
+
 export default function ScoreBadge({ result }: Props) {
   const { locale } = useLocale();
   const T     = TRANSLATIONS[locale];
@@ -30,11 +37,21 @@ export default function ScoreBadge({ result }: Props) {
 
       {/* Score + bar + bonuses */}
       <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-        <div className="text-sm text-[#707070]">
-          {interpolate(T.scoreOf, [result.score]).split(String(result.score)).map((part, i, arr) =>
-            i < arr.length - 1
-              ? [part, <span key={i} className="font-bold tabular-nums" style={{ color }}>{result.score}</span>]
-              : part
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="text-sm text-[#707070]">
+            {interpolate(T.scoreOf, [result.score]).split(String(result.score)).map((part, i, arr) =>
+              i < arr.length - 1
+                ? [part, <span key={i} className="font-bold tabular-nums" style={{ color }}>{result.score}</span>]
+                : part
+            )}
+          </div>
+          {result.topPercentile !== undefined && (
+            <span
+              className="text-[11px] font-semibold tabular-nums px-2 py-0.5 rounded-full"
+              style={{ color, background: `${color}1a`, border: `1px solid ${color}40` }}
+            >
+              {interpolate(T.topPercentile, [formatPercentile(result.topPercentile)])}
+            </span>
           )}
         </div>
         <div className="w-full h-1.5 bg-[#e5e7eb] rounded-full overflow-hidden">

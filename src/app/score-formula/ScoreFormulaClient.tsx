@@ -302,8 +302,8 @@ rank     = rawScore >= 100 ? 'GOD' : toRankFromThresholds(score, thresholds)`}</
             head={['ランク', '累積確率（上位）']}
             rows={[
               ['GOD', '0.01%'],
-              ['S+', '0.1%'],
-              ['S', '1%'],
+              ['S+', '1%'],
+              ['S', '5%'],
               ['A', '15%'],
               ['B', '35%'],
               ['C', '65%'],
@@ -342,6 +342,21 @@ rank     = rawScore >= 100 ? 'GOD' : toRankFromThresholds(score, thresholds)`}</
               ['対応範囲', '全キャラ', 'variants定義済み・武器基礎データありのキャラのみ（無ければv1にフォールバック）'],
             ]}
           />
+        </Section>
+
+        <Section title="7. UI：上位%表示と分布図">
+          <p>
+            スコアの絶対値とランクの体感がズレる問題（例：50点台でもAランクになりうる）に対応するため、
+            スコア表示の隣に <InlineCode>topPercentile</InlineCode>（ドロップ分布上「上位X%」）をバッジ表示し、
+            <FilePath>ScoreDistributionChart.tsx</FilePath> でスコア→上位%の分布曲線（<InlineCode>distributionCurve</InlineCode>）を
+            対数スケールのグラフとして可視化する。ランク帯を背景色で示し、自分のスコア位置にマーカーを表示、
+            グラフ上をホバーすると任意スコア位置の上位%をその場で確認できる。
+          </p>
+          <p>
+            <InlineCode>topPercentile</InlineCode> ・ <InlineCode>distributionCurve</InlineCode> は
+            <FilePath>src/data/rankThresholds.ts</FilePath> の <InlineCode>curve</InlineCode>
+            （上位% ↔ スコアのサンプル列）から <InlineCode>getPercentileForScore()</InlineCode> で対数線形補間して求める。
+          </p>
         </Section>
 
         {/* ── フッター ── */}

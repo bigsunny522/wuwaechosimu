@@ -82,6 +82,10 @@ export interface ScoreResult {
   variantId?: string;
   variantLabel?: string;
   isVariantScore?: boolean;
+  // v2: ドロップ分布上「上位X%」に相当するか（パーセンタイル閾値データがある場合のみ）
+  topPercentile?: number;
+  distributionCurve?: [pct: number, score: number][];
+  rankThresholds?: { god: number; sPlus: number; s: number; a: number; b: number; c: number };
 }
 
 export type Theme = 'default' | 'azure' | 'crimson' | 'emerald' | 'void';

@@ -5,6 +5,7 @@ import { SUBSTAT_COUNT } from '@/data/mainstats';
 import { HARMONY_SETS_EN, getHarmonyBadgeColor } from '@/data/echoes';
 import SubstatRow from './SubstatRow';
 import ScoreBadge from './ScoreBadge';
+import ScoreDistributionChart from './ScoreDistributionChart';
 import { RANK_COLORS } from '@/lib/scorer';
 import { useLocale } from '@/lib/locale';
 import { TRANSLATIONS, MAINSTAT_LABEL_EN } from '@/data/translations';
@@ -135,6 +136,11 @@ export default function EchoCard({ echo, score, cardRef, maxedAt, compact = fals
       {score && isMax && (
         <div className={`${hPad} ${sPy}`} style={{ borderBottom: '1px solid #f3f4f6' }}>
           <ScoreBadge result={score} />
+          {!compact && score.distributionCurve && (
+            <div className="mt-2.5">
+              <ScoreDistributionChart result={score} />
+            </div>
+          )}
           {/* maxedAt date — hidden in compact mode */}
           {!compact && maxedAt && (
             <div

@@ -6,7 +6,7 @@ import { ROLE_TEMPLATE_CATEGORIES } from '@/data/roleTemplates';
 import type { RoleTemplate } from '@/data/roleTemplates';
 import { getMotifWeapon } from '@/data/weapons';
 import { deriveSubstatWeights } from '@/lib/weaponScoring';
-import { getRankThresholds } from '@/data/rankThresholds';
+import { getRankThresholds, getPercentileForScore } from '@/data/rankThresholds';
 import type { RankThresholds } from '@/data/rankThresholds';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -325,6 +325,7 @@ function scoreWithVariant(echo: EchoState, build: CharacterBuild, variant: RoleV
   const rank: ScoreRank = thresholds
     ? toRankFromThresholds(score, thresholds)
     : (rawScore >= 100 ? 'GOD' : toRank(score));
+  const topPercentile = thresholds ? getPercentileForScore(build.id, variant.id, score) : undefined;
 
   return {
     score,
@@ -339,6 +340,11 @@ function scoreWithVariant(echo: EchoState, build: CharacterBuild, variant: RoleV
     variantId: variant.id,
     variantLabel: variant.label,
     isVariantScore: true,
+    topPercentile,
+    distributionCurve: thresholds?.curve,
+    rankThresholds: thresholds
+      ? { god: thresholds.god, sPlus: thresholds.sPlus, s: thresholds.s, a: thresholds.a, b: thresholds.b, c: thresholds.c }
+      : undefined,
   };
 }
 

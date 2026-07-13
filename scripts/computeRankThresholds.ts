@@ -5,7 +5,7 @@
 //
 // variants を持つキャラ全員を対象に、キャラ・運用バリアントごとに
 // 「推奨メインステ・推奨ハーモニーセット固定 + サブステ5枠を完全ランダム抽選」
-// をN回試行し、スコア分布の上位パーセンタイル閾値を算出する。
+// をN回試行し、スコア分布の上位パーセンタイル閾値・分布曲線を算出する。
 // 重み付け（weaponScoring.ts）やキャラの damageProfile を変更した場合は
 // このスクリプトを再実行して閾値を更新すること。
 
@@ -21,11 +21,18 @@ const N = 500_000;
 // 上位X%（累積確率）→ 出力キー名
 const PERCENTILES: [keyof RankThresholdsShape, number][] = [
   ['god', 0.01],
-  ['sPlus', 0.1],
-  ['s', 1],
+  ['sPlus', 1],
+  ['s', 5],
   ['a', 15],
   ['b', 35],
   ['c', 65],
+];
+
+// 分布曲線（UI上の「上位X%表示」「分布図」用）のサンプル点。
+// 累積確率(上位%)が小さいほど珍しい＝スコアが高い側。
+const CURVE_PERCENTILES = [
+  0.01, 0.05, 0.1, 0.25, 0.5, 1, 2, 3, 5, 7, 10,
+  15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100,
 ];
 
 interface RankThresholdsShape {
@@ -37,7 +44,12 @@ interface RankThresholdsShape {
   c: number;
 }
 
-function simulateVariant(build: CharacterBuild, variant: RoleVariant): RankThresholdsShape {
+interface SimResult {
+  thresholds: RankThresholdsShape;
+  curve: [pct: number, score: number][];
+}
+
+function simulateVariant(build: CharacterBuild, variant: RoleVariant): SimResult {
   const mainstatKey = variant.mainstat.cost4.recommended[0] ?? variant.mainstat.cost4.acceptable[0];
   const echoTemplate: EchoState = {
     cost: 4,
@@ -63,15 +75,19 @@ function simulateVariant(build: CharacterBuild, variant: RoleVariant): RankThres
   }
 
   const sorted = Array.from(scores).sort((a, b) => b - a);
-  const result = {} as RankThresholdsShape;
+  const scoreAtPct = (pct: number) => sorted[Math.max(0, Math.floor((N * pct) / 100) - 1)];
+
+  const thresholds = {} as RankThresholdsShape;
   for (const [name, pct] of PERCENTILES) {
-    const idx = Math.max(0, Math.floor((N * pct) / 100) - 1);
-    result[name] = sorted[idx];
+    thresholds[name] = scoreAtPct(pct);
   }
-  return result;
+
+  const curve: [number, number][] = CURVE_PERCENTILES.map((pct) => [pct, scoreAtPct(pct)]);
+
+  return { thresholds, curve };
 }
 
-const output: Record<string, RankThresholdsShape> = {};
+const output: Record<string, SimResult> = {};
 
 for (const build of CHARACTERS) {
   if (!build.variants || build.variants.length === 0) continue;
@@ -83,7 +99,10 @@ for (const build of CHARACTERS) {
 }
 
 const entries = Object.entries(output)
-  .map(([key, th]) => `  ${JSON.stringify(key)}: { "god": ${th.god}, "sPlus": ${th.sPlus}, "s": ${th.s}, "a": ${th.a}, "b": ${th.b}, "c": ${th.c} },`)
+  .map(([key, { thresholds: th, curve }]) => {
+    const curveStr = curve.map(([pct, score]) => `[${pct}, ${score}]`).join(', ');
+    return `  ${JSON.stringify(key)}: { "god": ${th.god}, "sPlus": ${th.sPlus}, "s": ${th.s}, "a": ${th.a}, "b": ${th.b}, "c": ${th.c}, "curve": [${curveStr}] },`;
+  })
   .join('\n');
 
 const fileContent = `// ═══════════════════════════════════════════════════════════════════════════
@@ -98,12 +117,16 @@ const fileContent = `// ══════════════════�
 //
 //  帯の意味（累積確率）:
 //    god:   上位 0.01%
-//    sPlus: 上位 0.1%
-//    s:     上位 1%
+//    sPlus: 上位 1%
+//    s:     上位 5%
 //    a:     上位 15%
 //    b:     上位 35%
 //    c:     上位 65%
 //    （それ未満は D）
+//
+//  curve: [上位%, その%に対応するスコア] のサンプル列（降順スコア想定）。
+//  UIの「上位X%」表示・分布図描画・任意スコア→パーセンタイル逆引きに使う
+//  （getPercentileForScore を参照）。
 //
 //  「推奨ステの排出確率自体が低い」ことを踏まえ、性能の絶対値ではなく
 //  ドロップの中での相対位置でランクを決める。詳細な設計意図は
@@ -117,6 +140,8 @@ export interface RankThresholds {
   a: number;
   b: number;
   c: number;
+  /** [上位%, スコア] のサンプル列。上位%昇順・スコア降順。 */
+  curve: [number, number][];
 }
 
 // キー形式: \`\${characterId}:\${variantId}\`
@@ -126,6 +151,34 @@ ${entries}
 
 export function getRankThresholds(charId: string, variantId: string): RankThresholds | undefined {
   return RANK_THRESHOLDS[\`\${charId}:\${variantId}\`];
+}
+
+// 任意のスコアから、そのスコアが分布上「上位何%」に相当するかを曲線から
+// 線形補間して求める（対数スケールで補間し、極端な裾での粗さを緩和する）。
+// 曲線範囲外は最も近い端点にクランプする。
+export function getPercentileForScore(charId: string, variantId: string, score: number): number | undefined {
+  const th = getRankThresholds(charId, variantId);
+  if (!th || th.curve.length === 0) return undefined;
+
+  // curve はスコア降順（=上位%昇順）。スコア昇順に並べ替えて探索する。
+  const bySco = [...th.curve].sort((a, b) => a[1] - b[1]);
+
+  if (score >= bySco[bySco.length - 1][1]) return bySco[bySco.length - 1][0];
+  if (score <= bySco[0][1]) return bySco[0][0];
+
+  for (let i = 0; i < bySco.length - 1; i++) {
+    const [pctLo, scoreLo] = bySco[i];
+    const [pctHi, scoreHi] = bySco[i + 1];
+    if (score >= scoreLo && score <= scoreHi) {
+      if (scoreHi === scoreLo) return pctLo;
+      const t = (score - scoreLo) / (scoreHi - scoreLo);
+      // 上位%は対数的に変化するため log 空間で線形補間する
+      const logLo = Math.log10(Math.max(pctLo, 0.001));
+      const logHi = Math.log10(Math.max(pctHi, 0.001));
+      return Math.pow(10, logLo + (logHi - logLo) * t);
+    }
+  }
+  return bySco[0][0];
 }
 `;
 
