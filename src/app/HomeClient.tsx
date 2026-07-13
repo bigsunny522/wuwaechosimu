@@ -1035,11 +1035,11 @@ export default function HomeClient() {
           onClick={() => setShowResultModal(false)}
         >
           <div
-            className="w-full rounded-t-3xl bg-white shadow-2xl animate-fadeUp"
+            className="w-full rounded-t-3xl bg-white shadow-2xl animate-fadeUp max-h-[88vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drag handle */}
-            <div className="flex justify-center pt-2.5 pb-1">
+            <div className="flex justify-center pt-2.5 pb-1 sticky top-0 bg-white">
               <div className="w-8 h-1 rounded-full bg-[#e5e7eb]" />
             </div>
 

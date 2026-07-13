@@ -175,10 +175,10 @@ export default function EchoCard({ echo, score, cardRef, maxedAt, compact = fals
         ))}
       </div>
 
-      {/* Score distribution chart — below the 5 substat rows */}
-      {score && isMax && !compact && score.distributionCurve && (
+      {/* Score distribution chart — below the 5 substat rows (shown in compact mode too) */}
+      {score && isMax && score.distributionCurve && (
         <div className={subPad}>
-          <ScoreDistributionChart result={score} />
+          <ScoreDistributionChart result={score} compact={compact} />
         </div>
       )}
     </div>

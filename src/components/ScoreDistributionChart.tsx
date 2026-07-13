@@ -8,6 +8,8 @@ import { TRANSLATIONS } from '@/data/translations';
 
 interface Props {
   result: ScoreResult;
+  /** モバイルのコンパクト表示用: タイトル・凡例テキストを簡略化して縦幅を抑える */
+  compact?: boolean;
 }
 
 // data/rankThresholds.ts の HIST_BIN_WIDTH / HIST_BIN_COUNT と一致させること
@@ -51,7 +53,7 @@ function formatPct(pct: number): string {
   return Math.round(pct).toString();
 }
 
-export default function ScoreDistributionChart({ result }: Props) {
+export default function ScoreDistributionChart({ result, compact = false }: Props) {
   const { locale } = useLocale();
   const T = TRANSLATIONS[locale];
   const svgRef = useRef<SVGSVGElement>(null);
@@ -101,7 +103,7 @@ export default function ScoreDistributionChart({ result }: Props) {
 
   return (
     <div className="w-full">
-      <div className="text-[11px] font-medium text-[#6b7280] mb-1">{T.distTitle}</div>
+      {!compact && <div className="text-[11px] font-medium text-[#6b7280] mb-1">{T.distTitle}</div>}
       <svg
         ref={svgRef}
         viewBox={`0 0 ${W} ${H}`}
@@ -194,21 +196,29 @@ export default function ScoreDistributionChart({ result }: Props) {
           className="inline-block w-2 h-2 rounded-full"
           style={{ background: hoverBin !== null ? BAR_COLOR_ACTIVE : RANK_COLORS[result.rank] }}
         />
-        <span className="tabular-nums font-medium">
-          {hoverBin === null
-            ? T.distYourScore
-            : `${activeBin * BIN_WIDTH}–${activeBin * BIN_WIDTH + BIN_WIDTH} ${T.distAxisLabel}`}
-        </span>
-        <span className="text-[#9ca3af]">→</span>
-        <span className="tabular-nums text-[#6b7280]">
-          {locale === 'ja'
-            ? `出現率 ${(histogram[activeBin] * 100).toFixed(2)}%`
-            : `${(histogram[activeBin] * 100).toFixed(2)}% of drops`}
-        </span>
-        <span className="text-[#9ca3af]">/</span>
-        <span className="tabular-nums font-semibold" style={{ color: '#0275fd' }}>
-          {locale === 'ja' ? `上位 ${formatPct(activePct)}%` : `Top ${formatPct(activePct)}%`}
-        </span>
+        {compact ? (
+          <span className="tabular-nums font-semibold" style={{ color: '#0275fd' }}>
+            {locale === 'ja' ? `ドロップ上位 ${formatPct(activePct)}%` : `Top ${formatPct(activePct)}% of drops`}
+          </span>
+        ) : (
+          <>
+            <span className="tabular-nums font-medium">
+              {hoverBin === null
+                ? T.distYourScore
+                : `${activeBin * BIN_WIDTH}–${activeBin * BIN_WIDTH + BIN_WIDTH} ${T.distAxisLabel}`}
+            </span>
+            <span className="text-[#9ca3af]">→</span>
+            <span className="tabular-nums text-[#6b7280]">
+              {locale === 'ja'
+                ? `出現率 ${(histogram[activeBin] * 100).toFixed(2)}%`
+                : `${(histogram[activeBin] * 100).toFixed(2)}% of drops`}
+            </span>
+            <span className="text-[#9ca3af]">/</span>
+            <span className="tabular-nums font-semibold" style={{ color: '#0275fd' }}>
+              {locale === 'ja' ? `上位 ${formatPct(activePct)}%` : `Top ${formatPct(activePct)}%`}
+            </span>
+          </>
+        )}
       </div>
     </div>
   );
