@@ -1381,10 +1381,13 @@ export const CHARACTERS: CharacterBuild[] = [
     baseStats90: { atk: 287, hp: 16712, def: 1099 },
     motifWeaponId: 'shorekeeper',
     // v2: HP参照の回復＋イントロスキルで実ダメージも出すハイブリッドキット。
+    // イントロスキルのダメージはHP参照＝共鳴解放ダメージ(lib)扱いが正しいため
+    // typeShares.lib=1.0とする。HP%・HP実数は回復とイントロスキルダメージの
+    // 両方に効く共有因子のため、weaponScoring.ts側でhealProfile・damageProfile
+    // 双方の希釈式の寄与を合算するようにしている（片方だけでは過小評価になる）。
     // damageProfileはhealProfileと独立して加算されるため、割引率(旧
     // damageContributionShare)は使わない——イントロスキルはクリの影響を受ける
     // 「本物のダメージ」であり、通常のDPSキャラと同じ計算式をそのまま適用する。
-    // typeSharesはtypeShares上「イントロスキル」の分類が無いため便宜上skill扱い。
     // ERはビルドガイドに明記された変換式（1%につき全体クリ率+0.05%・
     // クリダメ+0.1%、250%で頭打ち）をerConversionsにそのまま反映。
     variants: [
@@ -1407,7 +1410,7 @@ export const CHARACTERS: CharacterBuild[] = [
           ],
         },
         damageProfile: {
-          typeShares: { basic: 0, heavy: 0, skill: 1.0, lib: 0 },
+          typeShares: { basic: 0, heavy: 0, skill: 0, lib: 1.0 },
           selfAtkBuffPercent: 0,
           baselineCritRate: 0.70,
           baselineCritDmg: 2.30,

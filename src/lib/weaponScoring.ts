@@ -152,19 +152,24 @@ export function deriveSubstatWeights(
   const hp = variant.healProfile;
 
   // ── メインスケールステ%/実数の重み ──────────────────────────────────────
-  // healProfileがあればそちらが「回復の頭打ち」を織り込んだ希釈率で計算する。
-  // 無ければ（純粋なダメージ系運用）従来通りdamageProfileのselfAtkBuffPercent等で計算する。
+  // scalingStatはキャラ単位で1つしか無い（character.scalingStat）ため、
+  // healProfileとdamageProfileの両方が設定されているハイブリッドキャラ
+  // （例: ショアキーパーのHP参照イントロスキル）は、%scalingStat/実数の
+  // 増加が回復量とダメージ量の「両方」を同時に押し上げる共有因子になる。
+  // そのため、両プロファイルが存在する場合は両方の希釈式の寄与を合算する
+  // （crit・攻撃タイプ別ダメージ%と同じ「独立した価値源の加算」という考え方）。
   if (totalMainStat != null) {
     if (hp) {
       const existingPctSum = hp.assumedExistingScalingPercent + weaponScalingPct(scalingStat, weapon);
       const { pctKey, pctWeight, flatKey, flatWeight } = scalingPctFlatWeights(scalingStat, totalMainStat, existingPctSum);
-      weights[pctKey] = pctWeight;
-      weights[flatKey] = flatWeight;
-    } else if (dp) {
+      weights[pctKey] += pctWeight;
+      weights[flatKey] += flatWeight;
+    }
+    if (dp) {
       const existingPctSum = ASSUMED_EXISTING_SCALING_PCT + dp.selfAtkBuffPercent + weaponScalingPct(scalingStat, weapon);
       const { pctKey, pctWeight, flatKey, flatWeight } = scalingPctFlatWeights(scalingStat, totalMainStat, existingPctSum);
-      weights[pctKey] = pctWeight;
-      weights[flatKey] = flatWeight;
+      weights[pctKey] += pctWeight;
+      weights[flatKey] += flatWeight;
     }
   }
 
