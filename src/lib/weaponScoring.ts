@@ -164,10 +164,15 @@ export function deriveSubstatWeights(
   // MULT.recommended(2.0)の5%だったのと同じ発想で、完全な死に枠を無くし、
   // 「無関係サブステだらけ」なドロップがスコア0に張り付いてしまう分布の
   // 左端スパイクを緩和する（分布の山を中央寄りに寄せる調整の一部）。
-  const maxWeight = Math.max(...Object.values(weights));
-  if (maxWeight > 0) {
-    for (const key of ALL_SUBSTAT_KEYS) {
-      if (weights[key] === 0) weights[key] = maxWeight * FLOOR_WEIGHT_RATIO;
+  //
+  // 回復系運用（healProfile）はモデル自体が推定パラメータ主体で検証途上のため、
+  // この調整の対象外とする（dpによるダメージ系運用のみ床値を与える）。
+  if (dp) {
+    const maxWeight = Math.max(...Object.values(weights));
+    if (maxWeight > 0) {
+      for (const key of ALL_SUBSTAT_KEYS) {
+        if (weights[key] === 0) weights[key] = maxWeight * FLOOR_WEIGHT_RATIO;
+      }
     }
   }
 

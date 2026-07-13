@@ -259,13 +259,17 @@ export function pickVariant(echo: EchoState, build: CharacterBuild): RoleVariant
 // 実際のロール確率（TIER_WEIGHTS_BY_KEY）での平均ロールは8段階ステで
 // 約Tier3.2（全体の約46%地点）であり、旧基準の5/7(≈71%、Tier5)は
 // 「平均的なドロップ」を大きく上回る基準だった。これがスコア分布の山を
-// 左（低スコア側）に寄せる主因だったため、4/7(Tier4、約57%)に緩和し、
-// 山を中央寄りにシフトさせている。
-const REFERENCE_ROLL_FRACTION = 4 / 7;
+// 左（低スコア側）に寄せる主因だったため、ダメージ系運用は4/7(Tier4、約57%)に
+// 緩和し、山を中央寄りにシフトさせている。
+//
+// 回復系運用（healProfile）はモデル自体がまだ推定パラメータ主体で検証途上のため、
+// この調整の対象外とし、従来の5/7を維持する。
+const REFERENCE_ROLL_FRACTION_DPS  = 4 / 7;
+const REFERENCE_ROLL_FRACTION_HEAL = 5 / 7;
 
-function referenceRatio(key: SubstatKey): number {
+function referenceRatio(key: SubstatKey, fraction: number): number {
   const entry = SUBSTAT_MAP[key];
-  const idx = Math.round(REFERENCE_ROLL_FRACTION * (entry.values.length - 1));
+  const idx = Math.round(fraction * (entry.values.length - 1));
   return entry.values[idx] / entry.values[entry.values.length - 1];
 }
 
@@ -298,7 +302,8 @@ function scoreWithVariant(echo: EchoState, build: CharacterBuild, variant: RoleV
   const substatCount = SUBSTAT_COUNT[echo.cost];
   const sortedKeys = (Object.keys(weights) as SubstatKey[]).sort((a, b) => weights[b] - weights[a]);
   const topKeys = sortedKeys.slice(0, substatCount);
-  const theoreticalMax = topKeys.reduce((sum, k) => sum + referenceRatio(k) * weights[k], 0);
+  const referenceFraction = variant.healProfile ? REFERENCE_ROLL_FRACTION_HEAL : REFERENCE_ROLL_FRACTION_DPS;
+  const theoreticalMax = topKeys.reduce((sum, k) => sum + referenceRatio(k, referenceFraction) * weights[k], 0);
   const idealMult = topKeys.reduce((sum, k) => sum + weights[k], 0) / substatCount;
 
   const raw = breakdown.reduce((s, b) => s + b.points, 0);
