@@ -529,6 +529,28 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'def',
     baseStats90: { atk: 287, hp: 15375, def: 1356 },
     motifWeaponId: 'mortefi',
+    // v2: 防御力参照の回復/シールドキャラ。ダメージ要素は無し（damageContributionShare: 0）。
+    // erRequirement は「ER260%到達で全体バフ・Lib中のクリボーナスが解放される」という
+    // ビルドガイドの言及を根拠にした値。要検証：assumedExistingScalingPercent は
+    // 他キャラと同じ暫定デフォルト(0.45)を流用しており未チューニング。
+    variants: [
+      {
+        id: 'main',
+        role: 'healer',
+        label: '耐久・回復運用',
+        harmonySets: { recommended: [SET.STARLIGHT], acceptable: [] },
+        mainstat: {
+          cost4: { recommended: ['healingBonus', 'defPercent'],    acceptable: [] },
+          cost3: { recommended: ['Resonanceeff'],    acceptable: ['GlacioDmg', 'defPercent'] },
+          cost1: { recommended: ['defPercent'],                    acceptable: [] },
+        },
+        erRequirement: 2.60,
+        healProfile: {
+          assumedExistingScalingPercent: 0.45,
+          damageContributionShare: 0,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'energyRegen' },
@@ -1355,6 +1377,37 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'hp',
     baseStats90: { atk: 287, hp: 16712, def: 1099 },
     motifWeaponId: 'shorekeeper',
+    // v2: HP参照の回復＋イントロスキルで実ダメージも出すハイブリッドキット。
+    // damageContributionShare は「回復・バフが本分だがイントロスキルの火力も
+    // 無視できない」という定性情報からの暫定値であり要検証（プレイテストで
+    // スコアの体感とズレる場合はここを調整する）。イントロスキルはtypeShares上
+    // 分類が無いため便宜上 skill 扱いにしている。
+    // 既知の制限: 目標ER250%はLibの味方クリバフ強度にも直結するが、
+    // 現状は他キャラと同じ閾値テーブルでのみ評価している。
+    variants: [
+      {
+        id: 'main',
+        role: 'healer',
+        label: '耐久・回復運用',
+        harmonySets: { recommended: [SET.HEALER], acceptable: [SET.CELESTIAL, SET.MOONLIT] },
+        mainstat: {
+          cost4: { recommended: ['healingBonus'],    acceptable: ['critDmg'] },
+          cost3: { recommended: ['Resonanceeff', 'SpectroDmg', 'atkPercent'],    acceptable: ['SpectroDmg'] },
+          cost1: { recommended: ['hpPercent'],  acceptable: ['atkPercent'] },
+        },
+        erRequirement: 2.50,
+        healProfile: {
+          assumedExistingScalingPercent: 0.45,
+          damageContributionShare: 0.3,
+          damageProfile: {
+            typeShares: { basic: 0, heavy: 0, skill: 1.0, lib: 0 },
+            selfAtkBuffPercent: 0,
+            baselineCritRate: 0.70,
+            baselineCritDmg: 2.30,
+          },
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'energyRegen' },
@@ -1844,6 +1897,31 @@ export const CHARACTERS: CharacterBuild[] = [
     role: '継続回復サポート',
     scalingStat: 'atk',
     baseStats90: { atk: 337, hp: 14237, def: 1099 },
+    // v2: ヴェリーナには固有武器（モチーフ武器）が存在しないため、コミュニティ
+    // ビルドガイドで最も推奨されている汎用武器 Stellar Symphony
+    // （weapons.ts の 'shorekeeper' エントリと同一武器）を代理の基準武器として
+    // 割り当てている。要検証：この割り当てが適切かはユーザー確認待ち。
+    motifWeaponId: 'shorekeeper',
+    // v2: ATK参照の純粋回復キャラ。ダメージ要素なし。
+    // erRequirement は正確な目標値のソースが見つからなかったため暫定値。要検証。
+    variants: [
+      {
+        id: 'main',
+        role: 'healer',
+        label: '継続回復運用',
+        harmonySets: { recommended: [SET.HEALER], acceptable: [SET.CELESTIAL, SET.MOONLIT] },
+        mainstat: {
+          cost4: { recommended: ['healingBonus', ],    acceptable: ['hpPercent'] },
+          cost3: { recommended: ['Resonanceeff'],    acceptable: ['SpectroDmg', 'atkPercent'] },
+          cost1: { recommended: ['atkPercent'],    acceptable: ['hpPercent'] },
+        },
+        erRequirement: 1.60,
+        healProfile: {
+          assumedExistingScalingPercent: 0.45,
+          damageContributionShare: 0,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'energyRegen' },
@@ -1866,6 +1944,33 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'rover_spectro', name: '漂泊者(回折)', nameEn: 'Rover (Spectro)', element: '回折', weapon: '迅刀',
     role: 'サポート・サブ火力',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    // v2: 未対応（データ待ち）。漂泊者は装備武器を自由に持ち替えられるため
+    // motifWeaponId・baseStats90（Lv90基礎ATK、武器によらず固定値のはず）を
+    // 別途決定する必要がある。基準武器は要相談（例: Emerald of Genesis）。
+    // 数値が揃うまでは totalMainStat が null になり v1 のままフォールバックする。
+    // damageProfile の typeShares/crit目標値はビルドガイドの定性情報からの
+    // 暫定推定（「ダメージはLib+スキル中心」「ER優先度が高い」）であり要検証。
+    variants: [
+      {
+        id: 'sub',
+        role: 'sub',
+        label: 'サブアタッカー運用',
+        harmonySets: { recommended: [SET.CELESTIAL, SET.ETERNAL], acceptable: [] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],               acceptable: ['atkPercent'] },
+          cost3: { recommended: ['atkPercent', 'SpectroDmg'],        acceptable: [] },
+          cost1: { recommended: ['atkPercent'],           acceptable: [] },
+        },
+        erRequirement: 1.60,
+        damageProfile: {
+          typeShares: { basic: 0, heavy: 0, skill: 0.55, lib: 0.45 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -1889,6 +1994,30 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'rover_havoc', name: '漂泊者(消滅)', nameEn: 'Rover (Havoc)', element: '消滅', weapon: '迅刀',
     role: 'メインアタッカー',
     roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    // v2: 未対応（データ待ち）。motifWeaponId・baseStats90 は要相談
+    // （基準武器候補: Emerald of Genesis、コミュニティ推奨）。
+    // damageProfile は「標準的なクリ/ATKメインDPS」という定性情報からの暫定値、要検証。
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.MIDNIGHT, SET.HAVOC_OLD], acceptable: [] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
+          cost3: { recommended: ['HavocDmg','atkPercent'],              acceptable: [] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0.05, heavy: 0.05, skill: 0.55, lib: 0.35 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
@@ -1911,6 +2040,31 @@ export const CHARACTERS: CharacterBuild[] = [
     id: 'rover_aero', name: '漂泊者(気動)', nameEn: 'Rover (Aero)', element: '気動', weapon: '迅刀',
     role: '耐久・回復サポート',
     roleTemplate: 'SubDPS',
+    scalingStat: 'atk',
+    // v2: 未対応（データ待ち）。motifWeaponId・baseStats90 は要相談。
+    // キットは実ダメージ(Windstring/Unbound Flow)と回復のハイブリッドだが、
+    // 既存v1データがクリ役重視のサブDPS構成になっているためそれに合わせ
+    // damageProfileのみを設定（healProfileは付与せず）。要検証。
+    variants: [
+      {
+        id: 'sub',
+        role: 'sub',
+        label: 'サブアタッカー運用',
+        harmonySets: { recommended: [SET.BOUNDLESS], acceptable: [SET.GALE, SET.GLORY_WIND] },
+        mainstat: {
+          cost4: { recommended:  ['critRate', 'critDmg'],    acceptable: ['atkPercent'] },
+          cost3: { recommended: [ 'AeroDmg','atkPercent'],    acceptable: [] },
+          cost1: { recommended: ['atkPercent'],       acceptable: [] },
+        },
+        erRequirement: 1.40,
+        damageProfile: {
+          typeShares: { basic: 0.05, heavy: 0, skill: 0.65, lib: 0.30 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },

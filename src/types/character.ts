@@ -40,6 +40,29 @@ export interface DamageProfile {
   baselineCritDmg: number;
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+//  回復/シールド量の偏微分に基づく重み導出用プロファイル（ヒーラー・純サポート運用）
+//
+//  HEAL ∝ MainStat_total(scalingStat) × (1 + %scalingStat_total)
+//
+//  ダメージ式と違い、回復量にはクリティカルも攻撃タイプ別ダメージ%も
+//  基本的に影響しない（このゲームでは回復はクリットしない）。そのため
+//  DamageProfile とは別の軽量なプロファイルとして扱う。
+//  実ダメージも出すハイブリッドキット（例: ショアキーパーのイントロスキル）は
+//  damageContributionShare（0〜1）と damageProfile を併記することで、
+//  crit・攻撃タイプ別ダメージ%の重みをその割合だけ加算する。
+// ═══════════════════════════════════════════════════════════════════════════
+export interface HealProfile {
+  // 評価対象のscalingStat%以外に、既にビルドで積まれていると仮定する
+  // 同スケーリングステ%量の合計（DamageProfileのASSUMED_EXISTING_SCALING_PCT
+  // 相当。ハーモニーセットのバフ等を含む）
+  assumedExistingScalingPercent: number;
+  // 実ダメージ要素への寄与割合（0=純粋回復、1に近いほど通常DPSキャラ相当）
+  damageContributionShare: number;
+  // damageContributionShare > 0 の場合のみ使用
+  damageProfile?: DamageProfile;
+}
+
 export interface RoleVariant {
   id: string;                 // キャラ内で一意（例: 'main' / 'sub'）
   role: OperatingRole;
@@ -54,18 +77,17 @@ export interface RoleVariant {
 
   // 目標共鳴効率（例 1.2 = 120%）。共鳴効率は閾値型のため重み導出では
   // 連続値でなく erRequirement からの静的重みテーブルを介して評価する。
+  //
+  // 既知の制限: ショアキーパーのように共鳴効率の値そのものが味方への
+  // クリバフ強度に直結するキャラでも、他キャラと同じ閾値テーブルで
+  // 評価している（継続値としての追加価値は未反映）。
   erRequirement: number;
 
-  // ダメージ系運用（DPS/SubDPS）のみ。ヒーラー/純サポート運用では省略。
-  //
-  // 既知の制限: damageProfile が無い場合、deriveSubstatWeights は
-  // energyRegen 以外の全サブステ重みを 0 にする（= ヒーラー/純サポートの
-  // HP%・防御力%等が現状スコアに反映されない）。回復量スケーリングは
-  // ダメージ式と別の計算体系が必要なため、healingProfile 相当の仕組みは
-  // 未実装。ヒーラー系キャラに variants を設定する場合は、当面は
-  // damageProfile を省略した従来カテゴリ採点（substats.recommended 等）の
-  // ままにしておくこと。
+  // ダメージ系運用（DPS/SubDPS）はこちらを設定する。
   damageProfile?: DamageProfile;
+
+  // ヒーラー/純サポート運用はこちらを設定する（damageProfileとは排他）。
+  healProfile?: HealProfile;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
