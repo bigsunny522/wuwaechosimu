@@ -136,11 +136,6 @@ export default function EchoCard({ echo, score, cardRef, maxedAt, compact = fals
       {score && isMax && (
         <div className={`${hPad} ${sPy}`} style={{ borderBottom: '1px solid #f3f4f6' }}>
           <ScoreBadge result={score} />
-          {!compact && score.distributionCurve && (
-            <div className="mt-2.5">
-              <ScoreDistributionChart result={score} />
-            </div>
-          )}
           {/* maxedAt date — hidden in compact mode */}
           {!compact && maxedAt && (
             <div
@@ -179,6 +174,13 @@ export default function EchoCard({ echo, score, cardRef, maxedAt, compact = fals
           </div>
         ))}
       </div>
+
+      {/* Score distribution chart — below the 5 substat rows */}
+      {score && isMax && !compact && score.distributionCurve && (
+        <div className={subPad}>
+          <ScoreDistributionChart result={score} />
+        </div>
+      )}
     </div>
   );
 }
