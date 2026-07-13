@@ -1043,7 +1043,7 @@ export default function HomeClient() {
               <div className="w-8 h-1 rounded-full bg-[#e5e7eb]" />
             </div>
 
-            <div className="px-4 pt-1 pb-5 flex flex-col gap-3">
+            <div className="px-4 pt-1 pb-2 flex flex-col gap-1.5">
               {/* Compact card (display only — image export uses hidden full card) */}
               <EchoCard echo={echo} score={score} maxedAt={maxedAt} compact />
 
@@ -1064,7 +1064,7 @@ export default function HomeClient() {
                     }
                   }}
                   disabled={downloading}
-                  className="flex-1 py-2.5 rounded-lg text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors disabled:opacity-50"
+                  className="flex-1 py-1.5 rounded-lg text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors disabled:opacity-50"
                 >
                   {downloading ? '⏳' : T.imgSave}
                 </button>
@@ -1078,14 +1078,14 @@ export default function HomeClient() {
                       '_blank', 'noopener,noreferrer'
                     );
                   }}
-                  className="flex-1 py-2.5 rounded-lg text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors"
+                  className="flex-1 py-1.5 rounded-lg text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors"
                 >
                   {T.shareBtn}
                 </button>
                 {saveSlots > 0 && (
                   <button
                     onClick={() => { handleSave(); setShowResultModal(false); }}
-                    className="flex-1 py-2.5 rounded-lg text-sm font-medium border transition-colors"
+                    className="flex-1 py-1.5 rounded-lg text-sm font-medium border transition-colors"
                     style={{ borderColor: '#10b98144', background: '#f0fdf4', color: '#059669' }}
                   >
                     {T.saveBtn}
@@ -1098,7 +1098,7 @@ export default function HomeClient() {
               {saveSlots === 0 && (
                 <button
                   onClick={() => { openAdModal('saves'); setShowResultModal(false); }}
-                  className="w-full py-2.5 rounded-[500px] text-sm font-medium text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
+                  className="w-full py-1.5 rounded-[500px] text-sm font-medium text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
                 >
                   {interpolate(T.saveCTABtn, [SAVE_PER_AD])}
                 </button>
@@ -1108,7 +1108,7 @@ export default function HomeClient() {
               <Link
                 href={withLang('/supporter', locale)}
                 onClick={() => setShowResultModal(false)}
-                className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-[500px] text-sm font-medium transition-colors"
+                className="flex items-center justify-center gap-1 w-full py-1.5 rounded-[500px] text-sm font-medium transition-colors"
                 style={{ background: '#eef9ff', color: ACCENT, border: '1px solid #0275fd33' }}
               >
                 {T.resultTrackerCTA}
@@ -1117,7 +1117,7 @@ export default function HomeClient() {
               {/* Close */}
               <button
                 onClick={() => setShowResultModal(false)}
-                className="w-full py-2.5 rounded-[500px] text-sm text-[#9ca3af] border border-[#e5e7eb] hover:text-[#222222] hover:border-[#d1d5db] transition-colors"
+                className="w-full py-1.5 rounded-[500px] text-sm text-[#9ca3af] border border-[#e5e7eb] hover:text-[#222222] hover:border-[#d1d5db] transition-colors"
               >
                 {T.adCloseBtn}
               </button>

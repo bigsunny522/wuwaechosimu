@@ -8,27 +8,16 @@ import { TRANSLATIONS } from '@/data/translations';
 
 interface Props {
   result: ScoreResult;
-  /** モバイルのコンパクト表示用: タイトル・凡例テキストを簡略化して縦幅を抑える */
+  /** モバイルのコンパクト表示用: 縦幅を大きく圧縮し、テキストも簡略化する */
   compact?: boolean;
 }
 
 // data/rankThresholds.ts の HIST_BIN_WIDTH / HIST_BIN_COUNT と一致させること
 const BIN_WIDTH = 2;
 
-const W = 320;
-const H = 168;
-const PAD = { top: 10, right: 8, bottom: 22, left: 30 };
-const PLOT_W = W - PAD.left - PAD.right;
-const PLOT_H = H - PAD.top - PAD.bottom;
-
 const BAR_COLOR = '#93c5fd';
 const BAR_COLOR_ACTIVE = '#0275fd';
 
-function xForScore(score: number): number {
-  return PAD.left + (Math.max(0, Math.min(100, score)) / 100) * PLOT_W;
-}
-
-// result.distributionCurve から任意スコアの上位%を対数補間で求める（getPercentileForScore と同じロジック）
 function pctAtScore(curve: [number, number][], score: number): number {
   const bySco = [...curve].sort((a, b) => a[1] - b[1]);
   if (score >= bySco[bySco.length - 1][1]) return bySco[bySco.length - 1][0];
@@ -62,6 +51,17 @@ export default function ScoreDistributionChart({ result, compact = false }: Prop
   const curve = result.distributionCurve;
   const histogram = result.distributionHistogram;
   const thresholds = result.rankThresholds;
+
+  // コンパクト表示は縦幅を大きく削る（軸ラベル・ランクラベルを省略できる分、上下の余白も縮める）
+  const W = 320;
+  const H = compact ? 54 : 168;
+  const PAD = compact
+    ? { top: 8, right: 6, bottom: 6, left: 6 }
+    : { top: 10, right: 8, bottom: 22, left: 30 };
+  const PLOT_W = W - PAD.left - PAD.right;
+  const PLOT_H = H - PAD.top - PAD.bottom;
+
+  const xForScore = (score: number) => PAD.left + (Math.max(0, Math.min(100, score)) / 100) * PLOT_W;
 
   const maxFreq = useMemo(() => (histogram ? Math.max(...histogram, 0.0001) : 0.0001), [histogram]);
 
@@ -131,8 +131,8 @@ export default function ScoreDistributionChart({ result, compact = false }: Prop
           );
         })}
 
-        {/* y軸グリッド線（頻度） */}
-        {[0.25, 0.5, 0.75, 1].map((f) => (
+        {/* y軸グリッド線（頻度） — コンパクト時は省略 */}
+        {!compact && [0.25, 0.5, 0.75, 1].map((f) => (
           <line
             key={f}
             x1={PAD.left} x2={PAD.left + PLOT_W}
@@ -162,8 +162,8 @@ export default function ScoreDistributionChart({ result, compact = false }: Prop
           );
         })}
 
-        {/* ランクラベル（帯の上部） */}
-        {bands.map((b) => {
+        {/* ランクラベル（帯の上部） — コンパクト時は省略 */}
+        {!compact && bands.map((b) => {
           if (b.to <= b.from) return null;
           const x1 = xForScore(b.from);
           const x2 = xForScore(b.to);
@@ -184,10 +184,14 @@ export default function ScoreDistributionChart({ result, compact = false }: Prop
           );
         })}
 
-        {/* x軸ラベル */}
-        <text x={PAD.left} y={H - 4} fontSize={7} fill="#9ca3af">0</text>
-        <text x={PAD.left + PLOT_W} y={H - 4} textAnchor="end" fontSize={7} fill="#9ca3af">100</text>
-        <text x={PAD.left + PLOT_W / 2} y={H - 4} textAnchor="middle" fontSize={7} fill="#9ca3af">{T.distAxisLabel}</text>
+        {/* x軸ラベル — コンパクト時は省略 */}
+        {!compact && (
+          <>
+            <text x={PAD.left} y={H - 4} fontSize={7} fill="#9ca3af">0</text>
+            <text x={PAD.left + PLOT_W} y={H - 4} textAnchor="end" fontSize={7} fill="#9ca3af">100</text>
+            <text x={PAD.left + PLOT_W / 2} y={H - 4} textAnchor="middle" fontSize={7} fill="#9ca3af">{T.distAxisLabel}</text>
+          </>
+        )}
       </svg>
 
       {/* ツールチップ相当（下部に常時表示、ホバーで更新） */}
