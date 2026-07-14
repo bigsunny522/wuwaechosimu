@@ -166,16 +166,13 @@ export default function SupporterClient() {
 
   const build = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
 
-  /* ── 理論値（ベースライン） ─────────────────────────────────── */
+  /* ── 理論値（ベースライン、予測計算にのみ使用。表示はしない） ──── */
   const [baseline, setBaseline] = useState<BaselineStats | null>(null);
-  const [baselineLoading, setBaselineLoading] = useState(false);
 
   useEffect(() => {
-    setBaselineLoading(true);
     const repEchoId = cost === 4 ? selectedEchoId : getRepresentativeEchoId(cost, selectedHarmonySet);
     const timer = setTimeout(() => {
       setBaseline(computeBaseline(cost, repEchoId, build));
-      setBaselineLoading(false);
     }, 0);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -438,8 +435,8 @@ export default function SupporterClient() {
           </h1>
           <p className="text-xs text-[#707070] leading-relaxed" style={{ lineHeight: 1.7 }}>
             {ja
-              ? '実際にゲーム内で出た音骸のサブステータスを記録すると、理論確率とベイズ推定を使って「今後どれくらいで目標ランクが出るか」を予測します。'
-              : 'Log the substats of echoes you actually pulled in-game. The tool combines theoretical probabilities with your real results (Bayesian updating) to predict how many more runs you need.'}
+              ? '実際にゲーム内で出た音骸のサブステータスを記録すると、今後どれくらいで目標ランクが出るかを予測します。'
+              : 'Log the substats of echoes you actually pulled in-game, and see a prediction of how many more runs you need to hit your target rank.'}
           </p>
         </div>
 
@@ -482,37 +479,6 @@ export default function SupporterClient() {
               borderColor="#cdbdfb"
             />
           )}
-        </section>
-
-        {/* ── 理論値 ── */}
-        <section className="flex flex-col gap-3 rounded-xl p-4" style={{ background: '#eef9ff', border: `1px solid ${ACCENT}33` }}>
-          <div className="text-xs font-medium uppercase tracking-wider" style={{ color: ACCENT, fontFamily: '"IBM Plex Mono", monospace' }}>
-            {ja ? '理論値（シミュレーション50000通り相当）' : 'Theoretical baseline (simulated)'}
-          </div>
-          {baselineLoading || !baseline ? (
-            <div className="text-xs text-[#9ca3af] text-center py-2">{ja ? '計算中…' : 'Calculating…'}</div>
-          ) : (
-            <div className="grid grid-cols-3 gap-2 text-center">
-              {(['A', 'S', 'S+'] as Threshold[]).map((t) => (
-                <div key={t} className="rounded-lg bg-white/70 py-2">
-                  <div className="text-[10px] text-[#707070] mb-0.5">{t}{ja ? '以上' : '+'}</div>
-                  <div className="text-sm font-semibold" style={{ color: ACCENT }}>{fmtPct(baseline.probByThreshold[t])}</div>
-                </div>
-              ))}
-            </div>
-          )}
-          <p className="text-[10px] text-center" style={{ color: `${ACCENT}99` }}>
-            {ja
-              ? `平均スコア ${baseline ? baseline.avgScore.toFixed(1) : '—'} / 100（メインステ・セットもランダムな1周分の期待値）`
-              : `Average score ${baseline ? baseline.avgScore.toFixed(1) : '—'} / 100 (one random full farm run, incl. random main stat / set)`}
-          </p>
-          <Link
-            href={withLang('/', locale)}
-            className="text-[10px] text-center underline underline-offset-2 hover:no-underline"
-            style={{ color: `${ACCENT}cc` }}
-          >
-            {ja ? 'この理論値は「ガチャ」と同じ計算エンジンです →' : 'Same engine as the "Gacha" simulator →'}
-          </Link>
         </section>
 
         {/* ── 記録フォーム ── */}
