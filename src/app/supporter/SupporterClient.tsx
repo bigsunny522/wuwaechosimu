@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import type { EchoCost, EchoState, Substat, SubstatKey } from '@/types/echo';
 import { SUBSTAT_DATA, SUBSTAT_MAP } from '@/data/substats';
@@ -69,6 +69,7 @@ export default function SupporterClient() {
 
   /* ── 記録フォーム：判明済みサブステ（+5ごとに1個ずつ追加） ────── */
   const [draftSubs, setDraftSubs] = useState<Substat[]>([]);
+  const resultSectionRef = useRef<HTMLDivElement>(null);
   const [pendingKey, setPendingKey] = useState('');
   const [pendingTier, setPendingTier] = useState(0);
 
@@ -310,6 +311,15 @@ export default function SupporterClient() {
     if (draftSubs.length < MAX_SUBSTATS) return null;
     return scoreEcho(buildDraftEcho(draftSubs), build);
   }, [draftSubs, buildDraftEcho, build]);
+
+  // 5個そろって確定スコアが出たら結果（スコア・グラフ）まで自動スクロール
+  useEffect(() => {
+    if (!draftFinalScore) return;
+    const timer = setTimeout(() => {
+      resultSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+    return () => clearTimeout(timer);
+  }, [draftFinalScore]);
 
   const canFinalize = draftSubs.length === MAX_SUBSTATS && (!cost4MultiSet || draftHarmonySet) && (cost === 4 || selectedHarmonySet);
 
@@ -594,7 +604,7 @@ export default function SupporterClient() {
 
           {/* 5個そろったら確定 */}
           {draftFinalScore && (
-            <div className="flex flex-col gap-3">
+            <div ref={resultSectionRef} className="flex flex-col gap-3">
               <div className="flex items-center justify-center gap-3 rounded-xl py-3" style={{ background: `${RANK_COLORS[draftFinalScore.rank]}18` }}>
                 <span
                   className="text-lg font-bold px-3 py-1 rounded-lg"
