@@ -15,6 +15,11 @@
       "pattern": "wuwaechotools.com",
       "zone_name": "wuwaechotools.com",
       "custom_domain": true
+    },
+    {
+      "pattern": "wuwaechosimu.xyzack271.com",
+      "zone_name": "xyzack271.com",
+      "custom_domain": true
     }
   ],
   "services": [
