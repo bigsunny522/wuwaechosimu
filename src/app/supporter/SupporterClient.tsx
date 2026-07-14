@@ -20,6 +20,7 @@ import { SUBSTAT_LABEL_EN, MAINSTAT_LABEL_EN } from '@/data/translations';
 import CustomSelect from '@/components/CustomSelect';
 import EchoIcon from '@/components/EchoIcon';
 import EchoAdvisor from '@/components/EchoAdvisor';
+import ScoreDistributionChart from '@/components/ScoreDistributionChart';
 
 const ACCENT = '#0275fd';
 const COST_OPTIONS: EchoCost[] = [4, 3, 1];
@@ -605,6 +606,12 @@ export default function SupporterClient() {
                   {draftFinalScore.score} <span className="text-xs font-normal text-[#9ca3af]">/ 100</span>
                 </span>
               </div>
+
+              {/* スコア分布図（v2運用バリアント方式が使えるキャラのみ表示） */}
+              {draftFinalScore.distributionCurve && (
+                <ScoreDistributionChart result={draftFinalScore} />
+              )}
+
               <button
                 onClick={handleFinalize}
                 disabled={!canFinalize}
