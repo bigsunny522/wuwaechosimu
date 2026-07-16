@@ -4,6 +4,13 @@ import type { EchoState, ScoreResult } from '@/types/echo';
 import { RANK_COLORS } from '@/lib/scorer';
 import { SUBSTAT_LABEL_EN, MAINSTAT_LABEL_EN } from '@/data/translations';
 import { HARMONY_SETS_EN, getHarmonyBadgeColor } from '@/data/echoes';
+import { TRANSLATIONS } from '@/data/translations';
+import { pctAtScore, formatPct } from '@/lib/distribution';
+
+// ScoreDistributionChart.tsx の HIST_BIN_WIDTH と一致させること
+const HIST_BIN_WIDTH = 2;
+const CHART_BAR_COLOR = '#93c5fd';
+const CHART_BAR_COLOR_ACTIVE = '#0275fd';
 
 const COST_COLOR: Record<number, string> = { 4: '#e6b800', 3: '#a855f7', 1: '#0d9488' };
 const CAT_COLOR: Record<string, string> = {
@@ -82,7 +89,16 @@ export function renderCardToCanvas(
   const SUB_GAP   = 4;
   const SUBS_H    = echo.substats.length * (SUB_ROW_H + SUB_GAP) - SUB_GAP;
   const FOOTER_H  = 1 + 8 + 14;
-  const CARD_H    = STRIPE + PAD + HEADER_H + GAP + SCORE_H + GAP + SUBS_H + GAP + FOOTER_H + PAD;
+
+  const hasChart  = !!(score.distributionHistogram && score.distributionHistogram.length > 0
+    && score.distributionCurve && score.distributionCurve.length > 0 && score.rankThresholds);
+  const CHART_TITLE_H = 15;
+  const CHART_PLOT_H  = 74;
+  const CHART_INFO_H  = 16;
+  const CHART_H   = hasChart ? CHART_TITLE_H + CHART_PLOT_H + CHART_INFO_H : 0;
+
+  const CARD_H    = STRIPE + PAD + HEADER_H + GAP + SCORE_H + GAP + SUBS_H
+    + (hasChart ? GAP + CHART_H : 0) + GAP + FOOTER_H + PAD;
 
   const CANVAS_W = CARD_W + MARGIN * 2;
   const CANVAS_H = CARD_H + MARGIN * 2;
@@ -328,7 +344,127 @@ export function renderCardToCanvas(
     ctx.textAlign = 'left';
   }
 
-  y += SUBS_H + GAP;
+  y += SUBS_H;
+
+  // ── Score distribution chart ────────────────────────────────────────────
+  if (hasChart) {
+    y += GAP;
+    const T = TRANSLATIONS[locale];
+    const curve      = score.distributionCurve!;
+    const histogram  = score.distributionHistogram!;
+    const thresholds = score.rankThresholds!;
+
+    const chartX = OX + PAD;
+    const chartW = CARD_W - PAD * 2;
+
+    // Title
+    ctx.font         = `500 11px ${SANS}`;
+    ctx.fillStyle    = '#6b7280';
+    ctx.textAlign    = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(T.distTitle, chartX, y + 9);
+    y += CHART_TITLE_H;
+
+    // Plot area
+    const CP = { top: 8, right: 6, bottom: 14, left: 22 };
+    const plotW = chartW - CP.left - CP.right;
+    const plotH = CHART_PLOT_H - CP.top - CP.bottom;
+    const plotX = chartX + CP.left;
+    const plotY = y + CP.top;
+
+    const xForScore = (s: number) => plotX + (Math.max(0, Math.min(100, s)) / 100) * plotW;
+    const maxFreq   = Math.max(...histogram, 0.0001);
+    const yForFreq  = (f: number) => plotY + plotH - (f / (maxFreq * 1.15)) * plotH;
+
+    // Background
+    ctx.fillStyle = '#fafafa';
+    ctx.fillRect(chartX, y, chartW, CHART_PLOT_H);
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(chartX + 0.5, y + 0.5, chartW - 1, CHART_PLOT_H - 1);
+
+    // Rank bands
+    const bands: { rank: typeof score.rank; from: number; to: number }[] = [
+      { rank: 'D',   from: 0,                to: thresholds.c },
+      { rank: 'C',   from: thresholds.c,     to: thresholds.b },
+      { rank: 'B',   from: thresholds.b,     to: thresholds.a },
+      { rank: 'A',   from: thresholds.a,     to: thresholds.s },
+      { rank: 'S',   from: thresholds.s,     to: thresholds.sPlus },
+      { rank: 'S+',  from: thresholds.sPlus, to: thresholds.god },
+      { rank: 'GOD', from: thresholds.god,   to: 100 },
+    ];
+    for (const b of bands) {
+      if (b.to <= b.from) continue;
+      const x1 = xForScore(b.from);
+      const x2 = xForScore(b.to);
+      ctx.globalAlpha = 0.08;
+      ctx.fillStyle = RANK_COLORS[b.rank];
+      ctx.fillRect(x1, plotY, Math.max(0, x2 - x1), plotH);
+      ctx.globalAlpha = 1;
+    }
+
+    // Histogram bars
+    const barGap = 1;
+    const barWidth = Math.max(0.5, plotW / histogram.length - barGap);
+    const activeBin = Math.min(histogram.length - 1, Math.floor(score.score / HIST_BIN_WIDTH));
+    for (let i = 0; i < histogram.length; i++) {
+      const freq = histogram[i];
+      const bx = xForScore(i * HIST_BIN_WIDTH) + barGap / 2;
+      const by = yForFreq(freq);
+      const bh = Math.max(0, plotY + plotH - by);
+      const isActive = i === activeBin;
+      ctx.fillStyle = isActive ? CHART_BAR_COLOR_ACTIVE : CHART_BAR_COLOR;
+      ctx.globalAlpha = isActive ? 1 : 0.65;
+      rrect(ctx, bx, by, barWidth, bh, 1.5);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    // Rank labels on bands (skip if too narrow)
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    for (const b of bands) {
+      if (b.to <= b.from) continue;
+      const x1 = xForScore(b.from);
+      const x2 = xForScore(b.to);
+      if (x2 - x1 < 14) continue;
+      ctx.font = `bold 8px ${SANS}`;
+      ctx.fillStyle = RANK_COLORS[b.rank];
+      ctx.fillText(b.rank, (x1 + x2) / 2, plotY + 9);
+    }
+
+    // X axis labels
+    ctx.font = `7px ${SANS}`;
+    ctx.fillStyle = '#9ca3af';
+    ctx.textAlign = 'left';
+    ctx.fillText('0', plotX, y + CHART_PLOT_H - 4);
+    ctx.textAlign = 'right';
+    ctx.fillText('100', plotX + plotW, y + CHART_PLOT_H - 4);
+    ctx.textAlign = 'center';
+    ctx.fillText(T.distAxisLabel, plotX + plotW / 2, y + CHART_PLOT_H - 4);
+    ctx.textAlign = 'left';
+
+    y += CHART_PLOT_H;
+
+    // Info line: dot + top percentile
+    const topPct = score.topPercentile ?? pctAtScore(curve, score.score);
+    ctx.beginPath();
+    ctx.fillStyle = RANK_COLORS[score.rank];
+    ctx.arc(chartX + 3, y + 8, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.font = `600 11px ${SANS}`;
+    ctx.fillStyle = '#0275fd';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(
+      locale === 'ja' ? `上位 ${formatPct(topPct)}%` : `Top ${formatPct(topPct)}%`,
+      chartX + 10, y + 8,
+    );
+
+    y += CHART_INFO_H;
+  }
+
+  y += GAP;
 
   // ── Footer ──────────────────────────────────────────────────────────────
   ctx.strokeStyle = '#f3f4f6';

@@ -5,6 +5,7 @@ import type { ScoreResult, ScoreRank } from '@/types/echo';
 import { RANK_COLORS } from '@/lib/scorer';
 import { useLocale } from '@/lib/locale';
 import { TRANSLATIONS } from '@/data/translations';
+import { pctAtScore, formatPct } from '@/lib/distribution';
 
 interface Props {
   result: ScoreResult;
@@ -17,30 +18,6 @@ const BIN_WIDTH = 2;
 
 const BAR_COLOR = '#93c5fd';
 const BAR_COLOR_ACTIVE = '#0275fd';
-
-function pctAtScore(curve: [number, number][], score: number): number {
-  const bySco = [...curve].sort((a, b) => a[1] - b[1]);
-  if (score >= bySco[bySco.length - 1][1]) return bySco[bySco.length - 1][0];
-  if (score <= bySco[0][1]) return bySco[0][0];
-  for (let i = 0; i < bySco.length - 1; i++) {
-    const [pctLo, scoreLo] = bySco[i];
-    const [pctHi, scoreHi] = bySco[i + 1];
-    if (score >= scoreLo && score <= scoreHi) {
-      if (scoreHi === scoreLo) return pctLo;
-      const t = (score - scoreLo) / (scoreHi - scoreLo);
-      const logLo = Math.log10(Math.max(pctLo, 0.001));
-      const logHi = Math.log10(Math.max(pctHi, 0.001));
-      return Math.pow(10, logLo + (logHi - logLo) * t);
-    }
-  }
-  return bySco[0][0];
-}
-
-function formatPct(pct: number): string {
-  if (pct < 1) return pct.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
-  if (pct < 10) return pct.toFixed(1).replace(/\.0$/, '');
-  return Math.round(pct).toString();
-}
 
 export default function ScoreDistributionChart({ result, compact = false }: Props) {
   const { locale } = useLocale();
