@@ -865,12 +865,6 @@ export default function HomeClient() {
         {!echo && (
           <div className="flex flex-col items-center gap-6 py-8 text-center">
             <div>
-              <div
-                className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                style={{ background: '#eef9ff', border: `1px solid ${ACCENT}33` }}
-              >
-                <EchoIcon size={48} color={ACCENT} bgColor="#eef9ff" />
-              </div>
               <p className="text-[#707070] text-sm max-w-xs leading-relaxed mx-auto" style={{ lineHeight: 1.7 }}>
                 {T.emptyText}
               </p>

@@ -165,16 +165,13 @@ export default function SupporterClient() {
 
   const build = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
 
-  /* ── 理論値（ベースライン） ─────────────────────────────────── */
+  /* ── 理論値（ベースライン、予測計算にのみ使用。表示はしない） ──── */
   const [baseline, setBaseline] = useState<BaselineStats | null>(null);
-  const [, setBaselineLoading] = useState(false);
 
   useEffect(() => {
-    setBaselineLoading(true);
     const repEchoId = cost === 4 ? selectedEchoId : getRepresentativeEchoId(cost, selectedHarmonySet);
     const timer = setTimeout(() => {
       setBaseline(computeBaseline(cost, repEchoId, build));
-      setBaselineLoading(false);
     }, 0);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
