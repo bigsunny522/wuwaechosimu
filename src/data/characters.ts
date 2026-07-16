@@ -269,18 +269,37 @@ export const CHARACTERS: CharacterBuild[] = [
 
   {
     id: 'denia', name: 'ダーニャ', nameEn: 'Denia', element: '焦熱', weapon: '長刃',
-    role: 'メインアタッカー',
-    roleTemplate: 'DPS',
+    role: 'サブアタッカー/メインアタッカー',
+    roleTemplate: 'SubDPS',
     scalingStat: 'atk',
     baseStats90: { atk: 425, hp: 11025, def: 1148 },
     motifWeaponId: 'denia',
-    // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
+    // v2: 基本はサブアタッカー運用。メインアタッカー運用も可能だが、その場合の
+    // ハーモニーセットはハウリング・フレイム(SET.FLAMING)寄りになる可能性があり要検証。
     variants: [
+      {
+        id: 'sub',
+        role: 'sub',
+        label: 'サブアタッカー運用',
+        harmonySets: { recommended: [SET.PATINA, SET.MONTAGE, SET.REFLECT, SET.MOONLIT], acceptable: [] },
+        mainstat: {
+          cost4: { recommended: ['critDmg', 'critRate'],      acceptable: ['atkPercent'] },
+          cost3: { recommended: ['FusionDmg', 'atkPercent'],  acceptable: [] },
+          cost1: { recommended: ['atkPercent'],               acceptable: [] },
+        },
+        erRequirement: 1.40,
+        damageProfile: {
+          typeShares: { basic: 0.0331, heavy: 0, skill: 0.027, lib: 0.9399 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
       {
         id: 'main',
         role: 'main',
         label: 'メインアタッカー運用',
-        harmonySets: { recommended: [SET.PATINA, SET.MONTAGE, SET.REFLECT, SET.MOONLIT], acceptable: [] },
+        harmonySets: { recommended: [SET.PATINA, SET.MONTAGE, SET.REFLECT, SET.MOONLIT], acceptable: [SET.FLAMING] },
         mainstat: {
           cost4: { recommended: ['critDmg', 'critRate'],      acceptable: ['atkPercent'] },
           cost3: { recommended: ['FusionDmg', 'atkPercent'],  acceptable: [] },
@@ -316,12 +335,11 @@ export const CHARACTERS: CharacterBuild[] = [
 
   {
     id: 'hiyuki', name: '緋雪', nameEn: 'Hiyuki', element: '凝縮', weapon: '迅刀',
-    role: 'メイン/サブ火力',
+    role: 'メインアタッカー',
     roleTemplate: 'DPS',
     scalingStat: 'atk',
     baseStats90: { atk: 462, hp: 10300, def: 1112 },
     motifWeaponId: 'hiyuki',
-    // v2パイロット: メイン/サブ両運用でセットが変わる代表例（既存role記述どおり）
     variants: [
       {
         id: 'main',
@@ -334,24 +352,6 @@ export const CHARACTERS: CharacterBuild[] = [
           cost1: { recommended: ['atkPercent'],             acceptable: [] },
         },
         erRequirement: 1.20,
-        damageProfile: {
-          typeShares: { basic: 0, heavy: 0, skill: 0.0911, lib: 0.9089 },
-          selfAtkBuffPercent: 0.15,
-          baselineCritRate: 0.70,
-          baselineCritDmg: 2.30,
-        },
-      },
-      {
-        id: 'sub',
-        role: 'sub',
-        label: 'サブアタッカー（凸待ち撃ち）運用',
-        harmonySets: { recommended: [SET.FROST, SET.FROSTY], acceptable: [SET.SNOWY] },
-        mainstat: {
-          cost4: { recommended: ['critDmg'],               acceptable: ['critRate', 'atkPercent'] },
-          cost3: { recommended: ['GlacioDmg', 'atkPercent'], acceptable: [] },
-          cost1: { recommended: ['atkPercent'],             acceptable: [] },
-        },
-        erRequirement: 1.40,
         damageProfile: {
           typeShares: { basic: 0, heavy: 0, skill: 0.0911, lib: 0.9089 },
           selfAtkBuffPercent: 0.15,
@@ -392,7 +392,7 @@ export const CHARACTERS: CharacterBuild[] = [
         id: 'main',
         role: 'main',
         label: 'メインアタッカー運用',
-        harmonySets: { recommended: [SET.GALE, SET.SEMANTIC], acceptable: [SET.GLORY_WIND] },
+        harmonySets: { recommended: [SET.SEMANTIC], acceptable: [SET.GALE, SET.GLORY_WIND] },
         mainstat: {
           cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
           cost3: { recommended: ['atkPercent'],               acceptable: ['AeroDmg', 'Resonanceeff'] },
@@ -426,7 +426,7 @@ export const CHARACTERS: CharacterBuild[] = [
       cost3: { recommended: ['atkPercent'],               acceptable: ['AeroDmg', 'Resonanceeff'] },
       cost1: { recommended: ['atkPercent'],            acceptable: [] },
     },
-    harmonySets: { recommended: [SET.GALE, SET.SEMANTIC], acceptable: [SET.GLORY_WIND] },
+    harmonySets: { recommended: [SET.SEMANTIC], acceptable: [SET.GALE, SET.GLORY_WIND] },
   },
 
   {
@@ -442,7 +442,7 @@ export const CHARACTERS: CharacterBuild[] = [
         id: 'main',
         role: 'main',
         label: 'メインアタッカー運用',
-        harmonySets: { recommended: [], acceptable: [SET.CELESTIAL, SET.ETERNAL] },
+        harmonySets: { recommended: [SET.ETERNAL], acceptable: [SET.CELESTIAL] },
         mainstat: {
           cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
           cost3: { recommended: ['atkPercent','SpectroDmg'],            acceptable: [] },
@@ -473,7 +473,7 @@ export const CHARACTERS: CharacterBuild[] = [
       cost3: { recommended: ['atkPercent','SpectroDmg'],            acceptable: [] },
       cost1: { recommended: ['atkPercent'],            acceptable: [] },
     },
-    harmonySets: { recommended: [], acceptable: [SET.CELESTIAL, SET.ETERNAL] },
+    harmonySets: { recommended: [SET.ETERNAL], acceptable: [SET.CELESTIAL] },
   },
 
   {
@@ -586,7 +586,7 @@ export const CHARACTERS: CharacterBuild[] = [
         id: 'sub',
         role: 'sub',
         label: 'サブアタッカー運用',
-        harmonySets: { recommended: [SET.GOLDEN], acceptable: [SET.CELESTIAL, SET.ETERNAL] },
+        harmonySets: { recommended: [SET.REFLECT, SET.MOONLIT], acceptable: [SET.GOLDEN] },
         mainstat: {
           cost4: { recommended: ['critRate', 'critDmg'],               acceptable: ['atkPercent'] },
           cost3: { recommended: ['SpectroDmg', 'atkPercent'],        acceptable: [] },
@@ -617,7 +617,7 @@ export const CHARACTERS: CharacterBuild[] = [
       cost3: { recommended: ['SpectroDmg', 'atkPercent'],        acceptable: [] },
       cost1: { recommended: ['atkPercent'],           acceptable: [] },
     },
-    harmonySets: { recommended: [SET.GOLDEN], acceptable: [SET.CELESTIAL, SET.ETERNAL] },
+    harmonySets: { recommended: [SET.REFLECT, SET.MOONLIT], acceptable: [SET.GOLDEN] },
   },
 
   {
@@ -1011,7 +1011,7 @@ export const CHARACTERS: CharacterBuild[] = [
         id: 'sub',
         role: 'sub',
         label: 'サブアタッカー運用',
-        harmonySets: { recommended: [SET.GALE, SET.GLORY_WIND], acceptable: [SET.LINGERING] },
+        harmonySets: { recommended: [SET.GALE, SET.GLORY_WIND, SET.MOONLIT], acceptable: [] },
         mainstat: {
           cost4: { recommended: ['critRate', 'critDmg'],               acceptable: ['atkPercent', 'hpPercent'] },
           cost3: { recommended: ['Resonanceeff', 'AeroDmg', 'atkPercent'],           acceptable: ['hpPercent'] },
@@ -1042,7 +1042,7 @@ export const CHARACTERS: CharacterBuild[] = [
       cost3: { recommended: ['Resonanceeff', 'AeroDmg', 'atkPercent'],           acceptable: ['hpPercent'] },
       cost1: { recommended: ['atkPercent', 'hpPercent'],           acceptable: [] },
     },
-    harmonySets: { recommended: [SET.GALE, SET.GLORY_WIND], acceptable: [SET.LINGERING] },
+    harmonySets: { recommended: [SET.GALE, SET.GLORY_WIND, SET.MOONLIT], acceptable: [] },
   },
 
   {
@@ -1105,7 +1105,7 @@ export const CHARACTERS: CharacterBuild[] = [
         id: 'main',
         role: 'main',
         label: 'メインアタッカー運用',
-        harmonySets: { recommended: [SET.EMPYREAN], acceptable: [SET.MIDNIGHT, SET.HAVOC_OLD] },
+        harmonySets: { recommended: [SET.EMPYREAN, SET.MOONLIT, SET.HEALER], acceptable: [SET.MIDNIGHT, SET.HAVOC_OLD] },
         mainstat: {
           cost4: { recommended: ['critRate', 'critDmg'],    acceptable: ['atkPercent'] },
           cost3: { recommended: ['HavocDmg', 'atkPercent'],    acceptable: [] },
@@ -1136,7 +1136,7 @@ export const CHARACTERS: CharacterBuild[] = [
       cost3: { recommended: ['HavocDmg', 'atkPercent'],    acceptable: [] },
       cost1: { recommended: ['atkPercent'],                    acceptable: [] },
     },
-    harmonySets: { recommended: [SET.EMPYREAN], acceptable: [SET.MIDNIGHT, SET.HAVOC_OLD] },
+    harmonySets: { recommended: [SET.EMPYREAN, SET.MOONLIT, SET.HEALER], acceptable: [SET.MIDNIGHT, SET.HAVOC_OLD] },
   },
 
   {
@@ -1213,6 +1213,24 @@ export const CHARACTERS: CharacterBuild[] = [
           baselineCritDmg: 2.30,
         },
       },
+      {
+        id: 'sub',
+        role: 'sub',
+        label: 'サブアタッカー運用',
+        harmonySets: { recommended: [SET.MOONLIT], acceptable: [] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
+          cost3: { recommended: ['SpectroDmg', 'atkPercent'],            acceptable: [] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.40,
+        damageProfile: {
+          typeShares: { basic: 0.1864, heavy: 0.5726, skill: 0.0162, lib: 0.2247 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
     ],
     substats: {
       recommended: [
@@ -1242,6 +1260,24 @@ export const CHARACTERS: CharacterBuild[] = [
     motifWeaponId: 'rococo',
     // v2: dmgType自動判定によるテンプレート適用(タイプ別テンプレート、要チューニング)
     variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.INFERNO, SET.HAVOC_OLD], acceptable: [] },
+        mainstat: {
+          cost4: { recommended: ['critRate'],   acceptable: ['atkPercent', 'critDmg'] },
+          cost3: { recommended: ['HavocDmg', 'atkPercent'],              acceptable: ['Resonanceeff'] },
+          cost1: { recommended: ['atkPercent'],            acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0.0647, heavy: 0.9157, skill: 0.0196, lib: 0 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
       {
         id: 'sub',
         role: 'sub',
@@ -1636,7 +1672,7 @@ export const CHARACTERS: CharacterBuild[] = [
         id: 'sub',
         role: 'sub',
         label: 'サブアタッカー運用',
-        harmonySets: { recommended: [SET.EMPYREAN,SET.VOID], acceptable: [SET.MOONLIT] },
+        harmonySets: { recommended: [SET.EMPYREAN, SET.MOONLIT], acceptable: [SET.VOID] },
         mainstat: {
           cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
           cost3: { recommended: ['ElectroDmg','atkPercent'],            acceptable: ['Resonanceeff'] },
@@ -1667,7 +1703,7 @@ export const CHARACTERS: CharacterBuild[] = [
       cost3: { recommended: ['ElectroDmg','atkPercent'],            acceptable: ['Resonanceeff'] },
       cost1: { recommended: ['atkPercent'],            acceptable: [] },
     },
-    harmonySets: { recommended: [SET.EMPYREAN,SET.VOID], acceptable: [SET.MOONLIT] },
+    harmonySets: { recommended: [SET.EMPYREAN, SET.MOONLIT], acceptable: [SET.VOID] },
   },
 
   {
@@ -1729,7 +1765,7 @@ export const CHARACTERS: CharacterBuild[] = [
         id: 'main',
         role: 'main',
         label: 'メインアタッカー運用',
-        harmonySets: { recommended: [SET.FROST, SET.FROSTY], acceptable: [] },
+        harmonySets: { recommended: [SET.FROST, SET.FROSTY, SET.LINGERING], acceptable: [] },
         mainstat: {
           cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['atkPercent'] },
           cost3: { recommended: ['GlacioDmg', 'atkPercent'],             acceptable: [] },
@@ -1760,7 +1796,7 @@ export const CHARACTERS: CharacterBuild[] = [
       cost3: { recommended: ['GlacioDmg', 'atkPercent'],             acceptable: [] },
       cost1: { recommended: ['atkPercent'],            acceptable: [] },
     },
-    harmonySets: { recommended: [SET.FROST, SET.FROSTY], acceptable: [] },
+    harmonySets: { recommended: [SET.FROST, SET.FROSTY, SET.LINGERING], acceptable: [] },
   },
 
   {
@@ -1867,7 +1903,7 @@ export const CHARACTERS: CharacterBuild[] = [
         id: 'sub',
         role: 'sub',
         label: 'サブアタッカー運用',
-        harmonySets: { recommended: [SET.HEALER], acceptable: [SET.GALE, SET.GLORY_WIND] },
+        harmonySets: { recommended: [SET.HEALER, SET.MOONLIT], acceptable: [] },
         mainstat: {
           cost4: { recommended: ['atkPercent','critRate', 'critDmg'],    acceptable: [] },
           cost3: { recommended: ['AeroDmg', 'atkPercent', 'Resonanceeff'],    acceptable: [] },
@@ -1898,7 +1934,7 @@ export const CHARACTERS: CharacterBuild[] = [
       cost3: { recommended: ['AeroDmg', 'atkPercent', 'Resonanceeff'],    acceptable: [] },
       cost1: { recommended: ['atkPercent'],                    acceptable: [] },
     },
-    harmonySets: { recommended: [SET.HEALER], acceptable: [SET.GALE, SET.GLORY_WIND] },
+    harmonySets: { recommended: [SET.HEALER, SET.MOONLIT], acceptable: [] },
   },
 
   {
@@ -2304,7 +2340,7 @@ export const CHARACTERS: CharacterBuild[] = [
   //     cost3: { recommended: ['Resonanceeff', 'AeroDmg'],           acceptable: ['atkPercent', 'hpPercent'] },
   //     cost1: { recommended: ['atkPercent', 'hpPercent'],           acceptable: [] },
   //   },
-  //   harmonySets: { recommended: [SET.GALE, SET.GLORY_WIND], acceptable: [SET.LINGERING] },
+  //   harmonySets: { recommended: [SET.GALE, SET.GLORY_WIND, SET.MOONLIT], acceptable: [] },
   // },
 
   // {

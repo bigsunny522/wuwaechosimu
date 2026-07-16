@@ -91,6 +91,7 @@ export default function HomeClient() {
   const [lifetimeCost, setLifetimeCost]       = useState<TotalCost>(ZERO_COST);
   const echoSectionRef   = useRef<HTMLDivElement>(null);
   const scrollOnNext     = useRef(false);
+  const finalResultRef   = useRef<HTMLDivElement>(null);
 
   /* ── Bonus time ─────────────────────────────────────────────── */
   const [bonusEndTime, setBonusEndTime]       = useState<number | null>(null);
@@ -133,6 +134,16 @@ export default function HomeClient() {
     }, 80);
     return () => clearTimeout(timer);
   }, [echo]);
+
+  /* ── Auto-scroll to final result once fully upgraded (PC のみ、スマホはモーダル表示) ── */
+  useEffect(() => {
+    if (!score || echo?.level !== 25) return;
+    if (window.innerWidth < 640) return;
+    const timer = setTimeout(() => {
+      finalResultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+    return () => clearTimeout(timer);
+  }, [score, echo?.level]);
 
   /* ── Save slots ─────────────────────────────────────────────── */
   const [saveSlots, setSaveSlots]             = useState(0);
@@ -686,7 +697,7 @@ export default function HomeClient() {
             )}
 
             {score && isMaxLevel && (
-              <>
+              <div ref={finalResultRef} className="w-full flex flex-col gap-2 scroll-mt-20">
                 <ScoreDebugPanel echo={echo} score={score} />
 
                 {/* ── PC: アクションボタンをインライン表示 ── */}
@@ -757,7 +768,7 @@ export default function HomeClient() {
                     {T.resultShowBtn}
                   </button>
                 )}
-              </>
+              </div>
             )}
 
           </div>

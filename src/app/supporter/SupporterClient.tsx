@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import type { EchoCost, EchoState, Substat, SubstatKey } from '@/types/echo';
 import { SUBSTAT_DATA, SUBSTAT_MAP } from '@/data/substats';
@@ -167,7 +167,7 @@ export default function SupporterClient() {
 
   /* ── 理論値（ベースライン） ─────────────────────────────────── */
   const [baseline, setBaseline] = useState<BaselineStats | null>(null);
-  const [baselineLoading, setBaselineLoading] = useState(false);
+  const [, setBaselineLoading] = useState(false);
 
   useEffect(() => {
     setBaselineLoading(true);
@@ -313,6 +313,16 @@ export default function SupporterClient() {
 
   const canFinalize = draftSubs.length === MAX_SUBSTATS && (!cost4MultiSet || draftHarmonySet) && (cost === 4 || selectedHarmonySet);
 
+  // 5個そろって確定スコアが出た瞬間、フォームが伸びて画面外に隠れている結果を自動で表示範囲に入れる
+  const resultRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!draftFinalScore) return;
+    const timer = setTimeout(() => {
+      resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+    return () => clearTimeout(timer);
+  }, [draftFinalScore]);
+
   const handleFinalize = useCallback(() => {
     if (!canFinalize || !draftFinalScore) return;
     const entry: TrackedEntry = {
@@ -426,11 +436,6 @@ export default function SupporterClient() {
           <h1 className="text-lg font-semibold text-[#222222]">
             {ja ? '厳選サポーター' : 'Selection Supporter'}
           </h1>
-          <p className="text-xs text-[#707070] leading-relaxed" style={{ lineHeight: 1.7 }}>
-            {ja
-              ? '実際にゲーム内で出た音骸のサブステータスを記録すると、理論確率とベイズ推定を使って「今後どれくらいで目標ランクが出るか」を予測します。'
-              : 'Log the substats of echoes you actually pulled in-game. The tool combines theoretical probabilities with your real results (Bayesian updating) to predict how many more runs you need.'}
-          </p>
         </div>
 
         {/* ── 対象ビルド ── */}
@@ -472,37 +477,6 @@ export default function SupporterClient() {
               borderColor="#cdbdfb"
             />
           )}
-        </section>
-
-        {/* ── 理論値 ── */}
-        <section className="flex flex-col gap-3 rounded-xl p-4" style={{ background: '#eef9ff', border: `1px solid ${ACCENT}33` }}>
-          <div className="text-xs font-medium uppercase tracking-wider" style={{ color: ACCENT, fontFamily: '"IBM Plex Mono", monospace' }}>
-            {ja ? '理論値（シミュレーション50000通り相当）' : 'Theoretical baseline (simulated)'}
-          </div>
-          {baselineLoading || !baseline ? (
-            <div className="text-xs text-[#9ca3af] text-center py-2">{ja ? '計算中…' : 'Calculating…'}</div>
-          ) : (
-            <div className="grid grid-cols-3 gap-2 text-center">
-              {(['A', 'S', 'S+'] as Threshold[]).map((t) => (
-                <div key={t} className="rounded-lg bg-white/70 py-2">
-                  <div className="text-[10px] text-[#707070] mb-0.5">{t}{ja ? '以上' : '+'}</div>
-                  <div className="text-sm font-semibold" style={{ color: ACCENT }}>{fmtPct(baseline.probByThreshold[t])}</div>
-                </div>
-              ))}
-            </div>
-          )}
-          <p className="text-[10px] text-center" style={{ color: `${ACCENT}99` }}>
-            {ja
-              ? `平均スコア ${baseline ? baseline.avgScore.toFixed(1) : '—'} / 100（メインステ・セットもランダムな1周分の期待値）`
-              : `Average score ${baseline ? baseline.avgScore.toFixed(1) : '—'} / 100 (one random full farm run, incl. random main stat / set)`}
-          </p>
-          <Link
-            href={withLang('/', locale)}
-            className="text-[10px] text-center underline underline-offset-2 hover:no-underline"
-            style={{ color: `${ACCENT}cc` }}
-          >
-            {ja ? 'この理論値は「ガチャ」と同じ計算エンジンです →' : 'Same engine as the "Gacha" simulator →'}
-          </Link>
         </section>
 
         {/* ── 記録フォーム ── */}
@@ -594,7 +568,7 @@ export default function SupporterClient() {
 
           {/* 5個そろったら確定 */}
           {draftFinalScore && (
-            <div className="flex flex-col gap-3">
+            <div ref={resultRef} className="flex flex-col gap-3 scroll-mt-20">
               <div className="flex items-center justify-center gap-3 rounded-xl py-3" style={{ background: `${RANK_COLORS[draftFinalScore.rank]}18` }}>
                 <span
                   className="text-lg font-bold px-3 py-1 rounded-lg"
