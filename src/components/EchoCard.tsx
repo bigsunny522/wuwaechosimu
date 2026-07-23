@@ -61,9 +61,10 @@ export default function EchoCard({ echo, score, cardRef, maxedAt, compact = fals
   return (
     <div
       ref={cardRef}
-      className="relative w-full max-w-sm rounded-2xl overflow-hidden bg-white"
+      className="relative w-full max-w-sm rounded-2xl overflow-hidden"
       style={{
-        border: `1px solid ${score && isMax ? `${rankColor}88` : '#e5e7eb'}`,
+        background: 'var(--home-card)',
+        border: `1px solid ${score && isMax ? `${rankColor}88` : 'var(--home-border)'}`,
         boxShadow: score && isMax
           ? `0 4px 24px ${rankColor}1a, 0 2px 8px rgba(0,0,0,0.06)`
           : '0 2px 8px rgba(0,0,0,0.06)',
@@ -75,7 +76,7 @@ export default function EchoCard({ echo, score, cardRef, maxedAt, compact = fals
       )}
 
       {/* Header */}
-      <div className={`${hPad} ${hPy}`} style={{ borderBottom: '1px solid #f3f4f6' }}>
+      <div className={`${hPad} ${hPy}`} style={{ borderBottom: '1px solid var(--home-border)' }}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
@@ -85,10 +86,10 @@ export default function EchoCard({ echo, score, cardRef, maxedAt, compact = fals
               >
                 COST {echo.cost}
               </span>
-              <span className="text-[10px] text-[#9ca3af]">{T.echoType}</span>
+              <span className="text-[10px]" style={{ color: 'var(--home-card-text-sub)' }}>{T.echoType}</span>
             </div>
             <div className="flex items-center gap-2 flex-wrap mb-0.5">
-              <span className="text-sm font-semibold text-[#222222] leading-snug">
+              <span className="text-sm font-semibold leading-snug" style={{ color: 'var(--home-card-text)' }}>
                 {echoDisplayName}
               </span>
               {harmonyDisplay && echo.activeHarmonySet && (() => {
@@ -104,7 +105,7 @@ export default function EchoCard({ echo, score, cardRef, maxedAt, compact = fals
               })()}
             </div>
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-xs text-[#707070]">{mainstatLabel}</span>
+              <span className="text-xs" style={{ color: 'var(--home-card-text-sub)' }}>{mainstatLabel}</span>
               <span className="text-xs font-semibold" style={{ color: COST_COLOR[echo.cost] }}>
                 {echo.mainstat.value}{echo.mainstat.unit}
               </span>
@@ -112,21 +113,21 @@ export default function EchoCard({ echo, score, cardRef, maxedAt, compact = fals
           </div>
           <div className="text-right shrink-0">
             <div
-              className="text-[10px] uppercase tracking-wider mb-0.5 text-[#9ca3af]"
-              style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+              className="text-[10px] uppercase tracking-wider mb-0.5"
+              style={{ fontFamily: '"IBM Plex Mono", monospace', color: 'var(--home-card-text-sub)' }}
             >
               {T.levelLabel}
             </div>
-            <div className="text-xl font-semibold text-[#222222]">+{echo.level}</div>
+            <div className="text-xl font-semibold" style={{ color: 'var(--home-card-text)' }}>+{echo.level}</div>
           </div>
         </div>
 
         {/* Level bar — hidden in compact mode */}
         {!compact && (
-          <div className="mt-2 w-full h-1 bg-[#e5e7eb] rounded-full overflow-hidden">
+          <div className="mt-2 w-full h-1 rounded-full overflow-hidden" style={{ background: 'var(--home-border)' }}>
             <div
               className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${(echo.level / 25) * 100}%`, background: '#0275fd' }}
+              style={{ width: `${(echo.level / 25) * 100}%`, background: 'var(--home-accent)' }}
             />
           </div>
         )}
@@ -134,7 +135,7 @@ export default function EchoCard({ echo, score, cardRef, maxedAt, compact = fals
 
       {/* Score section */}
       {score && isMax && (
-        <div className={`${hPad} ${sPy}`} style={{ borderBottom: '1px solid #f3f4f6' }}>
+        <div className={`${hPad} ${sPy}`} style={{ borderBottom: '1px solid var(--home-border)' }}>
           <ScoreBadge result={score} />
           {/* maxedAt date — hidden in compact mode */}
           {!compact && maxedAt && (

@@ -22,9 +22,40 @@ import { useLocale, withLang } from '@/lib/locale';
 import { TRANSLATIONS, MAINSTAT_LABEL_EN, interpolate } from '@/data/translations';
 import CustomSelect from '@/components/CustomSelect';
 import EchoIcon from '@/components/EchoIcon';
+import SiteThemeSwitcher from '@/components/SiteThemeSwitcher';
+import { useSiteTheme, type SiteTheme } from '@/contexts/SiteThemeContext';
 
 const COST_OPTIONS: EchoCost[] = [4, 3, 1];
-const ACCENT          = '#0275fd';
+
+/** サイトテーマごとのアクセント色(hex)。alpha付き文字列連結(`${ACCENT}44`)で
+ *  使われる箇所が多いため、CSS変数ではなく実hexで持つ。 */
+const ACCENT_BY_THEME: Record<SiteTheme, string> = {
+  blue: '#0275fd',
+  gold: '#a8823a',
+};
+/** CTAボタンの実際の塗り(グラデーション含む)に近い単色。SVGのfillはグラデーション文字列を
+ *  受け付けないため、EchoIconの「背景に溶け込む」用途にはこちらを使う。 */
+const CTA_SOLID_BY_THEME: Record<SiteTheme, string> = {
+  blue: '#222222',
+  gold: '#8a6a2e',
+};
+interface SelectTheme {
+  charAccent: string; charBg: string; charBorder: string;
+  echoAccent: string; echoBg: string; echoBorder: string;
+  text: string; dropdownBg: string;
+}
+const SELECT_ACCENT_BY_THEME: Record<SiteTheme, SelectTheme> = {
+  blue: {
+    charAccent: '#0275fd', charBg: 'linear-gradient(135deg, #f0f7ff 0%, #fafbff 100%)', charBorder: '#bdd4fb',
+    echoAccent: '#783cf0', echoBg: 'linear-gradient(135deg, #f5f0ff 0%, #fafbff 100%)', echoBorder: '#cdbdfb',
+    text: '#222222', dropdownBg: '#ffffff',
+  },
+  gold: {
+    charAccent: '#a8823a', charBg: 'linear-gradient(135deg, #17140d 0%, #0d0b07 100%)', charBorder: '#2e2412',
+    echoAccent: '#8a6a2e', echoBg: 'linear-gradient(135deg, #17140d 0%, #0d0b07 100%)', echoBorder: '#2e2412',
+    text: '#f3ead2', dropdownBg: '#1a160e',
+  },
+};
 
 function getRecommendedEchoId(charId: string): string | null {
   if (charId === 'generic') return null;
@@ -79,6 +110,10 @@ function addCost(a: TotalCost, b: TotalCost): TotalCost {
 export default function HomeClient() {
   const { locale, toggleLocale } = useLocale();
   const T = TRANSLATIONS[locale];
+  const { theme } = useSiteTheme();
+  const ACCENT = ACCENT_BY_THEME[theme];
+  const CTA_SOLID = CTA_SOLID_BY_THEME[theme];
+  const SEL = SELECT_ACCENT_BY_THEME[theme];
 
   const [cost, setCost]                       = useState<EchoCost>(4);
   const [selectedEchoId, setSelectedEchoId]   = useState<string>(DEFAULT_ECHO_ID[4]);
@@ -400,38 +435,44 @@ export default function HomeClient() {
   const formatTime  = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div
+      className="min-h-screen flex flex-col"
+      style={{ background: 'var(--home-bg)', color: 'var(--home-text)' }}
+    >
 
       {/* ── Header ────────────────────────────────────────────── */}
       <header
-        className="sticky top-0 z-30 bg-white"
-        style={{ borderBottom: '1px solid #e5e7eb' }}
+        className="sticky top-0 z-30"
+        style={{ background: 'var(--home-bg)', borderBottom: '1px solid var(--home-border)' }}
       >
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
           {/* Logo */}
           <div className="flex items-center gap-2 shrink-0">
             <EchoIcon size={28} color={ACCENT} />
-            <span className="font-semibold text-[#222222] text-sm tracking-tight">{T.appTitle}</span>
+            <span className="font-semibold text-sm tracking-tight" style={{ color: 'var(--home-text)' }}>{T.appTitle}</span>
           </div>
 
           {/* Nav buttons */}
           <div className="flex items-center gap-1.5 shrink-0">
+            <SiteThemeSwitcher />
+
             {/* Mode switcher: ガチャ（シミュレーター） / 厳選管理（サポーター） */}
             <div
               className="flex items-center rounded-lg p-0.5 shrink-0"
-              style={{ background: '#f3f4f6' }}
+              style={{ background: 'var(--home-surface)' }}
               title={locale === 'ja' ? 'ゲーム感覚で理論値を試す' : 'Try theoretical odds, game-style'}
             >
               <span
                 className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold"
-                style={{ background: '#ffffff', color: ACCENT, boxShadow: '0 1px 2px rgba(0,0,0,0.06)' }}
+                style={{ background: 'var(--home-card)', color: ACCENT, boxShadow: '0 1px 2px rgba(0,0,0,0.06)' }}
               >
                 <span>✦</span>
                 <span className="hidden sm:inline">{locale === 'ja' ? 'ガチャ' : 'Gacha'}</span>
               </span>
               <Link
                 href={withLang('/supporter', locale)}
-                className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-[#707070] hover:text-[#222222] transition-colors"
+                className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors"
+                style={{ color: 'var(--home-text-sub)' }}
                 title={locale === 'ja' ? '実際の厳選を記録・管理する' : 'Log and manage your real pulls'}
               >
                 <span>📊</span>
@@ -443,7 +484,7 @@ export default function HomeClient() {
             {bonusActive ? (
               <div
                 className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium border"
-                style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: '#eef9ff' }}
+                style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: 'var(--home-accent-bg)' }}
               >
                 <span className="animate-pulse">✨</span>
                 <span
@@ -457,7 +498,7 @@ export default function HomeClient() {
               <button
                 onClick={() => openAdModal('bonus')}
                 className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold transition-colors border animate-pulseRing"
-                style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: '#eef9ff' }}
+                style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: 'var(--home-accent-bg)' }}
               >
                 🎁<span className="hidden sm:inline"> {T.bonusBtn}</span>
               </button>
@@ -573,9 +614,11 @@ export default function HomeClient() {
             value={selectedCharId}
             onChange={handleCharacterChange}
             options={charOptions}
-            accentColor="#0275fd"
-            background="linear-gradient(135deg, #f0f7ff 0%, #fafbff 100%)"
-            borderColor="#bdd4fb"
+            accentColor={SEL.charAccent}
+            background={SEL.charBg}
+            borderColor={SEL.charBorder}
+            textColor={SEL.text}
+            dropdownBg={SEL.dropdownBg}
           />
         </div>
 
@@ -595,8 +638,8 @@ export default function HomeClient() {
                 className="px-6 py-2.5 rounded-[500px] font-medium text-sm transition-all"
                 style={
                   cost === c
-                    ? { background: '#222222', color: '#f7f7f7' }
-                    : { background: '#f7f7f7', border: '1px solid #e5e7eb', color: '#707070' }
+                    ? { background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }
+                    : { background: 'var(--home-surface)', border: '1px solid var(--home-border)', color: 'var(--home-text-sub)' }
                 }
               >
                 COST {c}
@@ -615,7 +658,7 @@ export default function HomeClient() {
         {showMainstatLock && (
           <div
             className="flex flex-col gap-2 rounded-xl p-4 border"
-            style={{ borderColor: `${ACCENT}44`, background: '#eef9ff' }}
+            style={{ borderColor: `${ACCENT}44`, background: 'var(--home-accent-bg)' }}
           >
             <div
               className="text-xs font-medium text-center uppercase tracking-wider"
@@ -628,8 +671,10 @@ export default function HomeClient() {
               onChange={setLockedMainstatKey}
               options={mainstatOptions}
               accentColor={ACCENT}
-              background="#ffffff"
+              background={SEL.dropdownBg}
               borderColor={`${ACCENT}44`}
+              textColor={SEL.text}
+              dropdownBg={SEL.dropdownBg}
             />
             <p className="text-xs text-center" style={{ color: `${ACCENT}99` }}>{T.bonusMainHint}</p>
           </div>
@@ -651,9 +696,11 @@ export default function HomeClient() {
               value={selectedEchoId}
               onChange={(v) => { setSelectedEchoId(v); setEcho(null); setScore(null); }}
               options={echoOptions}
-              accentColor="#783cf0"
-              background="linear-gradient(135deg, #f5f0ff 0%, #fafbff 100%)"
-              borderColor="#cdbdfb"
+              accentColor={SEL.echoAccent}
+              background={SEL.echoBg}
+              borderColor={SEL.echoBorder}
+              textColor={SEL.text}
+              dropdownBg={SEL.dropdownBg}
             />
           </div>
         ) : (
@@ -671,9 +718,11 @@ export default function HomeClient() {
               value={selectedHarmonySet}
               onChange={(v) => { setSelectedHarmonySet(v); setEcho(null); setScore(null); }}
               options={harmonyOptions}
-              accentColor="#783cf0"
-              background="linear-gradient(135deg, #f5f0ff 0%, #fafbff 100%)"
-              borderColor="#cdbdfb"
+              accentColor={SEL.echoAccent}
+              background={SEL.echoBg}
+              borderColor={SEL.echoBorder}
+              textColor={SEL.text}
+              dropdownBg={SEL.dropdownBg}
             />
             <div
               className="text-center text-xs text-[#9ca3af]"
@@ -745,7 +794,8 @@ export default function HomeClient() {
                   {saveSlots === 0 && (
                     <button
                       onClick={() => openAdModal('saves')}
-                      className="w-full py-2.5 rounded-[500px] text-sm font-medium text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
+                      className="w-full py-2.5 rounded-[500px] text-sm font-medium hover:opacity-80 transition-opacity"
+                      style={{ background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }}
                     >
                       {interpolate(T.saveCTABtn, [SAVE_PER_AD])}
                     </button>
@@ -753,7 +803,7 @@ export default function HomeClient() {
                   <Link
                     href={withLang('/supporter', locale)}
                     className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-[500px] text-sm font-medium transition-colors"
-                    style={{ background: '#eef9ff', color: ACCENT, border: '1px solid #0275fd33' }}
+                    style={{ background: 'var(--home-accent-bg)', color: ACCENT, border: `1px solid ${ACCENT}33` }}
                   >
                     {T.resultTrackerCTA}
                   </Link>
@@ -763,7 +813,8 @@ export default function HomeClient() {
                 {!showResultModal && (
                   <button
                     onClick={() => setShowResultModal(true)}
-                    className="sm:hidden w-full py-2.5 rounded-[500px] text-sm font-medium border border-[#0275fd44] text-[#0275fd] hover:bg-[#eef9ff] transition-colors"
+                    className="sm:hidden w-full py-2.5 rounded-[500px] text-sm font-medium border transition-colors"
+                    style={{ borderColor: `${ACCENT}44`, color: ACCENT }}
                   >
                     {T.resultShowBtn}
                   </button>
@@ -799,7 +850,7 @@ export default function HomeClient() {
         {showRerollPanel && echo && (
           <div
             className="rounded-xl border p-4 flex flex-col gap-3"
-            style={{ borderColor: `${ACCENT}44`, background: '#eef9ff' }}
+            style={{ borderColor: `${ACCENT}44`, background: 'var(--home-accent-bg)' }}
           >
             <div
               className="text-xs font-medium text-center uppercase tracking-wider"
@@ -842,8 +893,12 @@ export default function HomeClient() {
             <button
               onClick={handleReroll}
               disabled={rerollIndices.size === 0}
-              className="w-full py-2.5 rounded-[500px] font-medium text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed text-[#f7f7f7]"
-              style={{ background: rerollIndices.size > 0 ? '#222222' : '#9ca3af' }}
+              className="w-full py-2.5 rounded-[500px] font-medium text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              style={{
+                background: rerollIndices.size > 0 ? 'var(--home-cta-bg)' : '#9ca3af',
+                color: rerollIndices.size > 0 ? 'var(--home-cta-text)' : '#f7f7f7',
+                boxShadow: rerollIndices.size > 0 ? 'var(--home-cta-shadow)' : 'none',
+              }}
             >
               {rerollIndices.size > 0
                 ? interpolate(T.rerollBtn, [rerollIndices.size])
@@ -872,15 +927,15 @@ export default function HomeClient() {
 
             {!bonusActive && (
               <div
-                className="w-full rounded-2xl bg-white overflow-hidden animate-fadeUp"
-                style={{ border: '1px solid #e5e7eb', boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}
+                className="w-full rounded-2xl overflow-hidden animate-fadeUp"
+                style={{ background: 'var(--home-card)', border: '1px solid var(--home-border)', boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}
               >
                 {/* Top accent stripe */}
-                <div className="h-1 w-full" style={{ background: 'linear-gradient(90deg, #0275fd, #60a5fa)' }} />
+                <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, ${ACCENT}, ${ACCENT}88)` }} />
                 <div className="p-5">
                   {/* Header */}
                   <div className="flex items-center justify-center gap-2 mb-4">
-                    <span className="text-sm font-semibold text-[#222222]">🎁 {T.bonusCardTitle}</span>
+                    <span className="text-sm font-semibold" style={{ color: 'var(--home-card-text)' }}>🎁 {T.bonusCardTitle}</span>
                     <span
                       className="px-2 py-0.5 rounded-full text-[10px] font-semibold text-white shrink-0"
                       style={{ background: ACCENT }}
@@ -898,7 +953,7 @@ export default function HomeClient() {
                         >
                           ✓
                         </span>
-                        <span className="text-[#222222] leading-snug">{item}</span>
+                        <span className="leading-snug" style={{ color: 'var(--home-card-text)' }}>{item}</span>
                       </div>
                     ))}
                   </div>
@@ -912,7 +967,8 @@ export default function HomeClient() {
                   {/* CTA */}
                   <button
                     onClick={() => openAdModal('bonus')}
-                    className="w-full py-3 rounded-[500px] text-sm font-semibold text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity animate-pulseRing"
+                    className="w-full py-3 rounded-[500px] text-sm font-semibold hover:opacity-80 transition-opacity animate-pulseRing"
+                    style={{ background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }}
                   >
                     {T.bonusCTA}
                   </button>
@@ -925,8 +981,12 @@ export default function HomeClient() {
 
       {/* ── Sticky bottom action bar ─────────────────────────────────────────── */}
       <div
-        className="fixed bottom-0 inset-x-0 z-20 bg-white/95 backdrop-blur-sm"
-        style={{ borderTop: '1px solid #e5e7eb', paddingBottom: 'env(safe-area-inset-bottom)' }}
+        className="fixed bottom-0 inset-x-0 z-20 backdrop-blur-sm"
+        style={{
+          background: 'color-mix(in srgb, var(--home-bg) 95%, transparent)',
+          borderTop: '1px solid var(--home-border)',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+        }}
       >
         <div className="max-w-2xl mx-auto px-4 pt-2 pb-3">
           {/* アドバイザー: スマホのみ・コンパクト版（PCはメインコンテンツに表示） */}
@@ -950,9 +1010,10 @@ export default function HomeClient() {
             /* ── No echo: Get Echo CTA ── */
             <button
               onClick={handleStart}
-              className="w-full py-3 rounded-[500px] font-semibold text-sm text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-[500px] font-semibold text-sm hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
+              style={{ background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }}
             >
-              <EchoIcon size={15} color="white" bgColor="#222222" />
+              <EchoIcon size={15} color="var(--home-cta-text)" bgColor={CTA_SOLID} />
               {T.getEcho}
             </button>
           ) : !isMaxLevel ? (
@@ -960,8 +1021,8 @@ export default function HomeClient() {
             <div className="flex items-center gap-2">
               <button
                 onClick={handleUpgrade}
-                className="flex-1 py-3 rounded-[500px] font-semibold text-sm text-white hover:opacity-80 transition-opacity"
-                style={{ background: ACCENT }}
+                className="flex-1 py-3 rounded-[500px] font-semibold text-sm hover:opacity-80 transition-opacity"
+                style={{ background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }}
               >
                 +5 → +{echo.level + 5}
               </button>
@@ -969,14 +1030,15 @@ export default function HomeClient() {
                 <button
                   onClick={handleMaxUpgrade}
                   className="px-4 py-3 rounded-[500px] font-medium text-sm border hover:opacity-80 transition-opacity shrink-0"
-                  style={{ borderColor: `${ACCENT}66`, color: ACCENT, background: '#eef9ff' }}
+                  style={{ borderColor: `${ACCENT}66`, color: ACCENT, background: 'var(--home-accent-bg)' }}
                 >
                   {T.maxUpgrade}
                 </button>
               )}
               <button
                 onClick={handleReset}
-                className="px-4 py-3 rounded-[500px] text-sm text-[#707070] border border-[#e5e7eb] hover:border-[#d1d5db] hover:text-[#222222] transition-colors shrink-0"
+                className="px-4 py-3 rounded-[500px] text-sm border hover:opacity-70 transition-colors shrink-0"
+                style={{ color: 'var(--home-text-sub)', borderColor: 'var(--home-border)' }}
               >
                 {T.resetBtn}
               </button>
@@ -986,14 +1048,16 @@ export default function HomeClient() {
             <div className="flex items-center gap-2">
               <button
                 onClick={handleStart}
-                className="flex-1 py-3 rounded-[500px] font-semibold text-sm text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
+                className="flex-1 py-3 rounded-[500px] font-semibold text-sm hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
+                style={{ background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }}
               >
-                <EchoIcon size={15} color="white" bgColor="#222222" />
+                <EchoIcon size={15} color="var(--home-cta-text)" bgColor={CTA_SOLID} />
                 {T.getEcho}
               </button>
               <button
                 onClick={handleReset}
-                className="px-4 py-3 rounded-[500px] text-sm text-[#707070] border border-[#e5e7eb] hover:border-[#d1d5db] hover:text-[#222222] transition-colors shrink-0"
+                className="px-4 py-3 rounded-[500px] text-sm border hover:opacity-70 transition-colors shrink-0"
+                style={{ color: 'var(--home-text-sub)', borderColor: 'var(--home-border)' }}
               >
                 {T.resetBtn}
               </button>
@@ -1103,7 +1167,8 @@ export default function HomeClient() {
               {saveSlots === 0 && (
                 <button
                   onClick={() => { openAdModal('saves'); setShowResultModal(false); }}
-                  className="w-full py-1.5 rounded-[500px] text-sm font-medium text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
+                  className="w-full py-1.5 rounded-[500px] text-sm font-medium hover:opacity-80 transition-opacity"
+                  style={{ background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }}
                 >
                   {interpolate(T.saveCTABtn, [SAVE_PER_AD])}
                 </button>
@@ -1114,7 +1179,7 @@ export default function HomeClient() {
                 href={withLang('/supporter', locale)}
                 onClick={() => setShowResultModal(false)}
                 className="flex items-center justify-center gap-1 w-full py-1.5 rounded-[500px] text-sm font-medium transition-colors"
-                style={{ background: '#eef9ff', color: ACCENT, border: '1px solid #0275fd33' }}
+                style={{ background: 'var(--home-accent-bg)', color: ACCENT, border: `1px solid ${ACCENT}33` }}
               >
                 {T.resultTrackerCTA}
               </Link>

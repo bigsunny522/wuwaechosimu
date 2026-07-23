@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import HomeClient from './HomeClient';
 import { LocaleProvider } from '@/lib/locale';
+import { SiteThemeProvider } from '@/contexts/SiteThemeContext';
 import { resolveLocale, resolveExplicitLocale } from '@/lib/locale-utils';
 import { buildMetadata } from '@/lib/seo';
 
@@ -31,7 +32,9 @@ export default async function HomePage({ searchParams }: Props) {
   const initialLocale = resolveExplicitLocale(await searchParams);
   return (
     <LocaleProvider initialLocale={initialLocale}>
-      <HomeClient />
+      <SiteThemeProvider>
+        <HomeClient />
+      </SiteThemeProvider>
     </LocaleProvider>
   );
 }

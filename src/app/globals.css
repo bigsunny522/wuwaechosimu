@@ -10,6 +10,53 @@
   --border:    #e5e7eb;
 }
 
+/*
+ * Home page site theme (switchable). Scoped under --home-* so it never
+ * leaks into other routes, which keep the STUDIO-derived vars above.
+ * "blue" is the original brand look (default/fallback) — also applied at
+ * :root so SSR output matches before the FOUC-prevention script sets data-theme.
+ */
+:root,
+:root[data-theme="blue"] {
+  --home-bg:        #ffffff;
+  --home-surface:   #f7f7f7;
+  --home-card:      #ffffff;
+  --home-text:      #222222;
+  --home-text-sub:  #707070;
+  /* カード(--home-card)上のテキスト。blueはページ本文色と同じ */
+  --home-card-text:     #222222;
+  --home-card-text-sub: #707070;
+  --home-accent:    #0275fd;
+  --home-accent-bg: #eef9ff;
+  --home-cta-bg:    #222222;
+  --home-cta-text:  #f7f7f7;
+  --home-cta-shadow: none;
+  --home-border:    #e5e7eb;
+}
+
+/*
+ * "gold" — 鳴潮公式サイトの黒基調ヘッダー+金アクセントを参照した重厚感テーマ。
+ * 参考: wutheringwaves.kurogames.com（黒ナビ+金のアクティブ表示）、
+ * 競合ツール wuwa.uk（ほぼ黒の背景 #04070f + ネオンアクセント）
+ * 素材感を出すため、黒側も琥珀寄りの暖色にして金と馴染ませ、
+ * CTAは単色ではなく多段グラデーションで金属的なハイライトを付ける。
+ */
+:root[data-theme="gold"] {
+  --home-bg:        #0d0b07;
+  --home-surface:   #17140d;
+  --home-card:      #1a160e;
+  --home-text:      #f3ead2;
+  --home-text-sub:  #9c8f74;
+  --home-card-text:     #f3ead2;
+  --home-card-text-sub: #9c8f74;
+  --home-accent:    #a8823a;
+  --home-accent-bg: #a8823a22;
+  --home-cta-bg:    linear-gradient(135deg, #d9b76e 0%, #a8823a 30%, #5e4318 65%, #97722f 100%);
+  --home-cta-text:  #1a1204;
+  --home-cta-shadow: 0 4px 22px rgba(168, 130, 58, 0.3);
+  --home-border:    #2e2412;
+}
+
 body {
   background: var(--background);
   color: var(--text);

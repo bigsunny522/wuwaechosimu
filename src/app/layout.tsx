@@ -87,10 +87,23 @@ const jsonLd = {
   },
 };
 
+const SITE_THEME_SCRIPT = `
+(function () {
+  try {
+    var t = localStorage.getItem('wuwa-site-theme');
+    if (t === 'blue' || t === 'gold') {
+      document.documentElement.dataset.theme = t;
+    }
+  } catch (e) {}
+})();
+`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ja" className="h-full">
+    <html lang="ja" className="h-full" data-theme="blue">
       <head>
+        {/* サイトテーマ(Homeページ) — hydration前に反映してFOUCを防ぐ */}
+        <script dangerouslySetInnerHTML={{ __html: SITE_THEME_SCRIPT }} />
         {/* JSON-LD 構造化データ */}
         <script
           type="application/ld+json"

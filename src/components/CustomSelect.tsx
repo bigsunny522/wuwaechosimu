@@ -15,6 +15,10 @@ interface CustomSelectProps {
   accentColor?: string;
   background?: string;
   borderColor?: string;
+  /** トリガー・選択肢の基本文字色(ダークテーマ対応用。未指定時は従来通り) */
+  textColor?: string;
+  /** ドロップダウンパネルの背景色(未指定時は従来通り白) */
+  dropdownBg?: string;
 }
 
 export default function CustomSelect({
@@ -24,6 +28,8 @@ export default function CustomSelect({
   accentColor = '#0275fd',
   background = 'linear-gradient(135deg, #f0f7ff 0%, #fafbff 100%)',
   borderColor = '#bdd4fb',
+  textColor = '#222222',
+  dropdownBg = '#ffffff',
 }: CustomSelectProps) {
   const [open, setOpen] = useState(false);
   const [dropUp, setDropUp] = useState(false);
@@ -84,7 +90,7 @@ export default function CustomSelect({
           boxShadow: open
             ? `0 0 0 3px ${accentColor}1a, 0 2px 8px rgba(0,0,0,0.06)`
             : '0 2px 8px rgba(0,0,0,0.06)',
-          color: '#222222',
+          color: textColor,
           outline: 'none',
           transition: 'border-color 0.15s, box-shadow 0.15s',
         }}
@@ -109,7 +115,7 @@ export default function CustomSelect({
           className="absolute left-0 right-0 z-50 rounded-xl overflow-y-auto"
           style={{
             ...(dropUp ? { bottom: 'calc(100% + 6px)' } : { top: 'calc(100% + 6px)' }),
-            background: '#ffffff',
+            background: dropdownBg,
             border: `1.5px solid ${borderColor}`,
             boxShadow: '0 8px 32px rgba(0,0,0,0.14)',
             maxHeight: '240px',
@@ -133,7 +139,7 @@ export default function CustomSelect({
                     : isHovered
                       ? '#f5f7fa'
                       : 'transparent',
-                  color: isSelected ? accentColor : '#222222',
+                  color: isSelected ? accentColor : textColor,
                   fontWeight: isSelected ? 600 : 400,
                   borderBottom: '1px solid #f3f4f6',
                   transition: 'background 0.1s',
