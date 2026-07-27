@@ -125,7 +125,7 @@ const JA: ExplainerContent = {
     },
     {
       q: '記録したデータはどこに保存されますか？',
-      a: 'ブラウザ内（localStorage）にのみ保存されます。サーバーへは送信していません。ブラウザのデータを消去すると記録も消えるためご注意ください。',
+      a: '厳選サポーターに記録した内容は、ブラウザ内（localStorage）にのみ保存されます。サーバーへは送信していません。ブラウザのデータを消去すると記録も消えます。なお、シミュレーターの「保存」枠に入れた結果はページを開いている間だけ保持され、リロードすると消えるため、残しておきたい結果は画像として保存してください。',
     },
     {
       q: '利用料はかかりますか？会員登録は必要ですか？',
@@ -240,7 +240,7 @@ const EN: ExplainerContent = {
     },
     {
       q: 'Where is my tracked data stored?',
-      a: 'Only in your browser, via localStorage. Nothing is sent to a server. Clearing your browser data will also clear your records.',
+      a: 'Records you enter in the Farming Supporter are stored only in your browser, via localStorage. Nothing is sent to a server, and clearing your browser data clears the records. Results placed in the simulator\'s save slots are kept only while the page stays open and are lost on reload, so download anything you want to keep as an image.',
     },
     {
       q: 'Is there any cost or sign-up?',

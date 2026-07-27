@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
 import { useLocale, withLang } from '@/lib/locale';
 import EchoIcon from '@/components/EchoIcon';
 
@@ -52,18 +51,18 @@ const GUIDE = {
         num: '05', icon: '📊',
         title: 'スコアを確認・保存する',
         body:  '+25 になると結果ポップアップが表示されます。S+ ～ D のランクと 0〜100 のスコアで評価されます。画像保存・X シェア・アプリ内保存がそのまま行えます。',
-        chips: ['S+: 85 点以上', 'S: 70〜84 点', 'A: 55〜69 点'],
+        chips: ['ランクは上位%で判定', 'S = 上位 5%', 'S+ = 上位 1%'],
       },
     ],
     rankSection: {
       title: 'ランク評価基準',
-      scoreNote: '各サブステータスの数値を最小〜最大の範囲で Tier 評価し、キャラクターの推奨ステータスに応じた重みを掛けて合算します。推奨メインステートおよびハーモニーセットに合致する場合はボーナス補正が加算されます。',
+      scoreNote: '各サブステータスの数値を最小〜最大の範囲で Tier 評価し、キャラクターごとの重みを掛けて合算します。推奨メインステータスおよび推奨ハーモニーセットに合致しない場合は減点され、良いサブステータスが複数噛み合った場合は加点されます。\n\nランクの区切りは、データが揃っているキャラクターではドロップ分布のパーセンタイルで決まります。たとえば S ランクは「そのキャラクター向けのドロップとして上位5%に入る」という意味です。そのためスコアの絶対値が同じでも、キャラクターによってランクが変わることがあります。下表は、分布データがまだ無いキャラクターに使われる固定の区切りです。',
       ranks: [
-        { rank: 'S+', range: '85〜100',  color: '#f59e0b', bg: '#fef3c7' },
-        { rank: 'S',  range: '70〜84',   color: '#10b981', bg: '#d1fae5' },
-        { rank: 'A',  range: '55〜69',   color: '#3b82f6', bg: '#dbeafe' },
-        { rank: 'B',  range: '40〜54',   color: '#8b5cf6', bg: '#ede9fe' },
-        { rank: 'C',  range: '25〜39',   color: '#6b7280', bg: '#f3f4f6' },
+        { rank: 'S+', range: '90〜100',  color: '#f59e0b', bg: '#fef3c7' },
+        { rank: 'S',  range: '75〜89',   color: '#10b981', bg: '#d1fae5' },
+        { rank: 'A',  range: '58〜74',   color: '#3b82f6', bg: '#dbeafe' },
+        { rank: 'B',  range: '42〜57',   color: '#8b5cf6', bg: '#ede9fe' },
+        { rank: 'C',  range: '25〜41',   color: '#6b7280', bg: '#f3f4f6' },
         { rank: 'D',  range: '0〜24',    color: '#9ca3af', bg: '#f9fafb' },
       ],
     },
@@ -109,23 +108,35 @@ const GUIDE = {
       items: [
         {
           q: 'このツールのデータは正確ですか？',
-          a: 'サブステの数値範囲・確率・コスト別のメインステプールは実際のゲームデータをもとに設定しています。非公式ファンツールのため、アップデートで差異が生じる場合があります。',
+          a: 'サブステの種類が13種類から均等（各 7.6923%）に抽選される点は、Kuro Games が公開している公式の確率公示に基づいています。数値の8段階、コスト別のメインステプール、強化に必要な素材量は、ゲーム内で確認できる値をもとに設定しています。非公式ファンツールのため、アップデート直後は実装との差異が生じる場合があります。',
         },
         {
           q: 'スコア計算の「Tier」とは何ですか？',
-          a: '各サブステの数値をそのステータスの最小〜最大の範囲で正規化した評価です。T0（最低）〜T7（最高）の 8 段階があり、スコア計算の重み付けの基礎になります。',
+          a: '各サブステの数値をそのステータスの最小〜最大の範囲で正規化した評価です。T0（最低）〜T7（最高）の 8 段階があり、スコア計算の重み付けの基礎になります。たとえばクリティカル率は 6.3%（T0）から 10.5%（T7）まで、クリティカルダメージは 12.6%（T0）から 21.0%（T7）までの幅があります。',
+        },
+        {
+          q: 'サブステに同じ種類が2回出ることはありますか？',
+          a: 'ありません。1つの音骸に同じ種類のサブステが重複することはなく、13種類から重複なしで抽選されます。そのため COST 4 の5枠は、13種類から5つを選ぶ組み合わせ（1,287通り）のいずれかになります。',
+        },
+        {
+          q: '狙ったサブステが揃う確率はどのくらいですか？',
+          a: '欲しいサブステを4種類に絞った場合、その4種類すべてが5枠に収まる確率は 1,287通りのうち9通り、約 0.7%（およそ143個に1個）です。ここにさらに数値ロールの当たり外れが乗ります。1つの音骸に期待しすぎず、試行回数を稼ぐ前提で考えるのが現実的です。',
         },
         {
           q: '再抽選（リロール）とは何ですか？',
-          a: 'ボーナスタイム中に +25 音骸のサブステを最大 3 個まで選び、もう一度ランダムで引き直す機能です。1 音骸につき 1 回限り、ボーナスタイム中のみ使用できます。',
+          a: 'ボーナスタイム中に +25 音骸のサブステを最大 3 個まで選び、もう一度ランダムで引き直す機能です。1 音骸につき 1 回限り、ボーナスタイム中のみ使用できます。引き直した結果が元より悪くなることもあります。',
         },
         {
           q: '保存した結果はどこに保存されますか？',
-          a: 'ブラウザのメモリ（React state）上に保存されます。ページをリロードまたは閉じると消えます。重要な結果は「💾 画像保存」でダウンロードしておくことをお勧めします。',
+          a: 'ブラウザのメモリ上に保存されます。ページをリロードまたは閉じると消えます。重要な結果は「💾 画像保存」でダウンロードしておくことをお勧めします。なお、厳選サポーターに記録した内容はブラウザ内（localStorage）に保存されるため、リロードしても残ります。',
         },
         {
           q: 'COST 4 と COST 3・1 の違いは何ですか？',
-          a: 'COST 4 は特定の音骸名を直接指定できます。COST 3・1 はハーモニーセットを選択し、そのセットに属する音骸からランダムに抽選されます。',
+          a: 'COST 4 は特定の音骸名を直接指定できます。COST 3・1 はハーモニーセットを選択し、そのセットに属する音骸からランダムに抽選されます。またコストによってメインステータスの候補も異なり、クリティカル率・クリティカルダメージがメインステータスに出るのは COST 4 のみです。',
+        },
+        {
+          q: '厳選サポーターは何が違うのですか？',
+          a: 'シミュレーターが「架空の音骸を引いて試す」機能なのに対し、厳選サポーターは「実際のゲームで出た音骸を記録して管理する」機能です。判明済みのサブステを入力すると、残りの枠に何が来る見込みかをベイズ推定で予測します。強化を続けるか途中で切るかの判断材料になります。',
         },
         {
           q: 'PC とスマホどちらでも使えますか？',
@@ -183,18 +194,18 @@ const GUIDE = {
         num: '05', icon: '📊',
         title: 'Check Score & Save',
         body:  'A result popup appears at +25. Echoes are rated S+ through D with a 0–100 score. Save as image, share on X, or save the result in-app directly from the popup.',
-        chips: ['S+: 85+', 'S: 70–84', 'A: 55–69'],
+        chips: ['Ranks use percentiles', 'S = top 5%', 'S+ = top 1%'],
       },
     ],
     rankSection: {
       title: 'Rank Thresholds',
-      scoreNote: 'Each substat value is rated within its possible min–max range and multiplied by character-specific weights. Matching main stat and Sonata Set add bonus points on top.',
+      scoreNote: 'Each substat value is rated within its possible min-max range and multiplied by character-specific weights. Missing the recommended main stat or Sonata Set costs points, while several strong substats landing together earn a bonus.\n\nFor characters with distribution data, rank cutoffs come from percentiles of the drop distribution. An S rank means "in the top 5% of drops for this character," so the same raw score can land on different ranks for different characters. The table below shows the fixed cutoffs used for characters without distribution data yet.',
       ranks: [
-        { rank: 'S+', range: '85–100', color: '#f59e0b', bg: '#fef3c7' },
-        { rank: 'S',  range: '70–84',  color: '#10b981', bg: '#d1fae5' },
-        { rank: 'A',  range: '55–69',  color: '#3b82f6', bg: '#dbeafe' },
-        { rank: 'B',  range: '40–54',  color: '#8b5cf6', bg: '#ede9fe' },
-        { rank: 'C',  range: '25–39',  color: '#6b7280', bg: '#f3f4f6' },
+        { rank: 'S+', range: '90–100', color: '#f59e0b', bg: '#fef3c7' },
+        { rank: 'S',  range: '75–89',  color: '#10b981', bg: '#d1fae5' },
+        { rank: 'A',  range: '58–74',  color: '#3b82f6', bg: '#dbeafe' },
+        { rank: 'B',  range: '42–57',  color: '#8b5cf6', bg: '#ede9fe' },
+        { rank: 'C',  range: '25–41',  color: '#6b7280', bg: '#f3f4f6' },
         { rank: 'D',  range: '0–24',   color: '#9ca3af', bg: '#f9fafb' },
       ],
     },
@@ -240,23 +251,35 @@ const GUIDE = {
       items: [
         {
           q: 'Is the simulation data accurate?',
-          a: 'Substat value ranges, probabilities, and main stat pools are based on real game data. As an unofficial fan tool, discrepancies may appear after game updates.',
+          a: 'The equal 7.6923% selection chance across all 13 substat types comes from the official probability disclosure published by Kuro Games. The eight value steps, the main stat pools per cost, and the upgrade material costs are set from values observable in game. As an unofficial fan tool, discrepancies may appear right after a game update.',
         },
         {
           q: 'What is a substat "Tier"?',
-          a: 'Each substat value is normalized within its possible min–max range into a T0 (lowest) to T7 (highest) rating. These tiers form the basis of the weighted score calculation.',
+          a: 'Each substat value is normalized within its possible min-max range into a T0 (lowest) to T7 (highest) rating. These tiers form the basis of the weighted score calculation. Crit Rate, for instance, spans 6.3% (T0) to 10.5% (T7), and Crit DMG spans 12.6% (T0) to 21.0% (T7).',
+        },
+        {
+          q: 'Can the same substat type appear twice?',
+          a: 'No. A single echo never repeats a substat type — the five slots are drawn from the 13 types without replacement. That means a COST 4 echo lands on one of the 1,287 ways to choose 5 types out of 13.',
+        },
+        {
+          q: 'What are the odds of hitting the substats I want?',
+          a: 'If you narrow your wishlist to four types, the chance all four land within the five slots is 9 of those 1,287 combinations — about 0.7%, or roughly 1 echo in 143. The value rolls stack on top of that. Plan around volume rather than pinning hopes on any single echo.',
         },
         {
           q: 'What does "Reroll" do?',
-          a: 'During Bonus Time, you can select up to 3 substats on a +25 echo and re-draw them once randomly. Limited to once per echo, only available during Bonus Time.',
+          a: 'During Bonus Time, you can select up to 3 substats on a +25 echo and re-draw them once randomly. Limited to once per echo, only available during Bonus Time. The new roll can come out worse than what you had.',
         },
         {
           q: 'Where are saved results stored?',
-          a: 'Results are stored in browser memory (React state). They are lost on page reload or close. Use "💾 Save Image" to download important results.',
+          a: 'Results are held in browser memory and are lost on page reload or close. Use "💾 Save Image" to download anything important. Records entered in the Farming Supporter are stored in localStorage instead, so those survive a reload.',
         },
         {
           q: "What's the difference between COST 4 and COST 3/1?",
-          a: 'COST 4 echoes can be selected by name. COST 3 and 1 echoes use Sonata Sets — a random echo from the chosen set is drawn each time.',
+          a: 'COST 4 echoes can be selected by name. COST 3 and 1 echoes use Sonata Sets — a random echo from the chosen set is drawn each time. The main stat pools also differ by cost: Crit Rate and Crit DMG only appear as main stats on COST 4.',
+        },
+        {
+          q: 'How is the Farming Supporter different?',
+          a: 'The simulator draws hypothetical echoes so you can experiment. The Farming Supporter is for logging the echoes you actually pulled in game. Enter the substats revealed so far and it estimates, using Bayesian inference, what the remaining slots are likely to roll — which helps you decide whether to keep upgrading.',
         },
         {
           q: 'Does it work on mobile?',
@@ -276,8 +299,6 @@ const GUIDE = {
 export default function GuideClient() {
   const { locale, toggleLocale } = useLocale();
   const G = GUIDE[locale];
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-
   return (
     <div className="min-h-screen flex flex-col bg-white">
 
@@ -404,7 +425,7 @@ export default function GuideClient() {
 
             {/* Note */}
             <div
-              className="rounded-xl p-4 text-xs text-[#707070] leading-relaxed"
+              className="rounded-xl p-4 text-xs text-[#707070] leading-relaxed whitespace-pre-line"
               style={{ background: '#f7f7f7', border: '1px solid #e5e7eb' }}
             >
               {G.rankSection.scoreNote}
@@ -475,26 +496,20 @@ export default function GuideClient() {
         <section>
           <SectionLabel>{G.labels.faq}</SectionLabel>
           <div className="mt-6 flex flex-col gap-2">
+            {/* details 要素で開閉する。回答テキストが常にHTMLに含まれるため、
+                クローラーからも本文として読める */}
             {G.faq.items.map((item, i) => (
-              <div key={i} className="rounded-xl border border-[#e5e7eb] overflow-hidden">
-                <button
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full flex items-center justify-between px-4 py-3.5 text-left text-sm font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors"
-                >
+              <details key={i} className="rounded-xl border border-[#e5e7eb] overflow-hidden group">
+                <summary className="w-full flex items-center justify-between px-4 py-3.5 text-left text-sm font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors cursor-pointer list-none">
                   <span className="pr-4 leading-snug">{item.q}</span>
-                  <span
-                    className="shrink-0 text-[10px] text-[#9ca3af] transition-transform duration-200"
-                    style={{ transform: openFaq === i ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                  >
+                  <span className="shrink-0 text-[10px] text-[#9ca3af] transition-transform duration-200 group-open:rotate-180">
                     ▼
                   </span>
-                </button>
-                {openFaq === i && (
-                  <div className="px-4 pb-4 pt-1 text-sm text-[#707070] leading-relaxed border-t border-[#f3f4f6]">
-                    {item.a}
-                  </div>
-                )}
-              </div>
+                </summary>
+                <div className="px-4 pb-4 pt-3 text-sm text-[#707070] leading-relaxed border-t border-[#f3f4f6]">
+                  {item.a}
+                </div>
+              </details>
             ))}
           </div>
         </section>
