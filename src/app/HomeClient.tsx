@@ -1,5 +1,7 @@
 'use client';
 
+/* Hallmark · design-system: DESIGN.md (blue = STUDIO §1-9, gold = §10) */
+
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import type { EchoCost, EchoState, ScoreResult, MainstatInfo } from '@/types/echo';
@@ -24,6 +26,10 @@ import CustomSelect from '@/components/CustomSelect';
 import EchoIcon from '@/components/EchoIcon';
 import SiteThemeSwitcher from '@/components/SiteThemeSwitcher';
 import { useSiteTheme, type SiteTheme } from '@/contexts/SiteThemeContext';
+import {
+  Dices, BarChart3, Sparkles, Gift, History, Menu, BookOpen, Bell,
+  Globe, FileText, Mail, Swords, Clock, Check, Loader2,
+} from 'lucide-react';
 
 const COST_OPTIONS: EchoCost[] = [4, 3, 1];
 
@@ -449,7 +455,12 @@ export default function HomeClient() {
           {/* Logo */}
           <div className="flex items-center gap-2 shrink-0">
             <EchoIcon size={28} color={ACCENT} />
-            <span className="font-semibold text-sm tracking-tight" style={{ color: 'var(--home-text)' }}>{T.appTitle}</span>
+            <span
+              className="text-base tracking-tight"
+              style={{ color: 'var(--home-text)', fontFamily: 'var(--font-display-serif)' }}
+            >
+              {T.appTitle}
+            </span>
           </div>
 
           {/* Nav buttons */}
@@ -466,7 +477,7 @@ export default function HomeClient() {
                 className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold"
                 style={{ background: 'var(--home-card)', color: ACCENT, boxShadow: '0 1px 2px rgba(0,0,0,0.06)' }}
               >
-                <span>✦</span>
+                <Dices size={13} />
                 <span className="hidden sm:inline">{locale === 'ja' ? 'ガチャ' : 'Gacha'}</span>
               </span>
               <Link
@@ -475,7 +486,7 @@ export default function HomeClient() {
                 style={{ color: 'var(--home-text-sub)' }}
                 title={locale === 'ja' ? '実際の厳選を記録・管理する' : 'Log and manage your real pulls'}
               >
-                <span>📊</span>
+                <BarChart3 size={13} />
                 <span className="hidden sm:inline">{locale === 'ja' ? '厳選管理' : 'Manage'}</span>
               </Link>
             </div>
@@ -486,7 +497,7 @@ export default function HomeClient() {
                 className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium border"
                 style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: 'var(--home-accent-bg)' }}
               >
-                <span className="animate-pulse">✨</span>
+                <Sparkles size={13} className="animate-pulse" />
                 <span
                   className="font-medium"
                   style={{ fontFamily: '"IBM Plex Mono", monospace' }}
@@ -500,7 +511,7 @@ export default function HomeClient() {
                 className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold transition-colors border animate-pulseRing"
                 style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: 'var(--home-accent-bg)' }}
               >
-                🎁<span className="hidden sm:inline"> {T.bonusBtn}</span>
+                <Gift size={14} /><span className="hidden sm:inline"> {T.bonusBtn}</span>
               </button>
             )}
 
@@ -509,10 +520,10 @@ export default function HomeClient() {
               onClick={() => setHistoryOpen(true)}
               className="relative flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
             >
-              📋<span className="hidden sm:inline"> {T.historyBtn}</span>
+              <History size={14} /><span className="hidden sm:inline"> {T.historyBtn}</span>
               {savedResults.length > 0 && (
                 <span
-                  className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center text-white"
+                  className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-semibold flex items-center justify-center text-white"
                   style={{ background: ACCENT }}
                 >
                   {savedResults.length}
@@ -527,7 +538,7 @@ export default function HomeClient() {
                 className="relative flex items-center justify-center w-8 h-8 rounded-lg text-sm transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
                 aria-label={locale === 'ja' ? 'メニュー' : 'Menu'}
               >
-                ☰
+                <Menu size={16} />
                 {hasNewUpdate && (
                   <span
                     className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-white"
@@ -540,14 +551,14 @@ export default function HomeClient() {
                   <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
                   <div
                     className="absolute right-0 top-full mt-2 z-50 w-44 rounded-xl bg-white overflow-hidden"
-                    style={{ border: '1px solid #e5e7eb', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}
+                    style={{ border: '1px solid #e5e7eb', boxShadow: 'var(--shadow-3)' }}
                   >
                     <Link
                       href={withLang('/guide', locale)}
                       onClick={() => setMenuOpen(false)}
                       className="flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors"
                     >
-                      <span>📖</span>
+                      <BookOpen size={14} />
                       <span>{locale === 'ja' ? '使い方ガイド' : 'How to Use'}</span>
                     </Link>
                     <Link
@@ -555,7 +566,7 @@ export default function HomeClient() {
                       onClick={() => setMenuOpen(false)}
                       className="relative flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors"
                     >
-                      <span>🔔</span>
+                      <Bell size={14} />
                       <span>{locale === 'ja' ? 'お知らせ' : "What's New"}</span>
                       {hasNewUpdate && (
                         <span
@@ -569,7 +580,7 @@ export default function HomeClient() {
                       className="flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors w-full text-left"
                       style={{ borderTop: '1px solid #f3f4f6' }}
                     >
-                      <span>🌐</span>
+                      <Globe size={14} />
                       <span>{locale === 'ja' ? 'English に切替' : '日本語に切替'}</span>
                     </button>
                     <Link
@@ -578,7 +589,7 @@ export default function HomeClient() {
                       className="flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors"
                       style={{ borderTop: '1px solid #f3f4f6' }}
                     >
-                      <span>📄</span>
+                      <FileText size={14} />
                       <span>{locale === 'ja' ? 'プライバシーポリシー' : 'Privacy Policy'}</span>
                     </Link>
                     <Link
@@ -586,7 +597,7 @@ export default function HomeClient() {
                       onClick={() => setMenuOpen(false)}
                       className="flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors"
                     >
-                      <span>✉️</span>
+                      <Mail size={14} />
                       <span>{locale === 'ja' ? 'お問い合わせ' : 'Contact'}</span>
                     </Link>
                   </div>
@@ -602,7 +613,7 @@ export default function HomeClient() {
         {/* Character selector */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-center gap-1.5">
-            <span className="text-sm">⚔️</span>
+            <Swords size={14} />
             <label
               className="text-xs font-medium uppercase tracking-wider text-[#9ca3af]"
               style={{ fontFamily: '"IBM Plex Mono", monospace' }}
@@ -767,7 +778,7 @@ export default function HomeClient() {
                       disabled={downloading}
                       className="flex-1 py-2.5 rounded-lg text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors disabled:opacity-50"
                     >
-                      {downloading ? '⏳' : T.imgSave}
+                      {downloading ? <Loader2 size={14} className="animate-spin mx-auto" /> : T.imgSave}
                     </button>
                     <button
                       onClick={() => {
@@ -928,14 +939,16 @@ export default function HomeClient() {
             {!bonusActive && (
               <div
                 className="w-full rounded-2xl overflow-hidden animate-fadeUp"
-                style={{ background: 'var(--home-card)', border: '1px solid var(--home-border)', boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}
+                style={{ background: 'var(--home-card)', border: '1px solid var(--home-border)', boxShadow: 'var(--shadow-1)' }}
               >
                 {/* Top accent stripe */}
                 <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, ${ACCENT}, ${ACCENT}88)` }} />
                 <div className="p-5">
                   {/* Header */}
                   <div className="flex items-center justify-center gap-2 mb-4">
-                    <span className="text-sm font-semibold" style={{ color: 'var(--home-card-text)' }}>🎁 {T.bonusCardTitle}</span>
+                    <span className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: 'var(--home-card-text)' }}>
+                      <Gift size={15} /> {T.bonusCardTitle}
+                    </span>
                     <span
                       className="px-2 py-0.5 rounded-full text-[10px] font-semibold text-white shrink-0"
                       style={{ background: ACCENT }}
@@ -948,10 +961,10 @@ export default function HomeClient() {
                     {[T.bonusCardBenefit1, T.bonusCardBenefit2, T.bonusCardBenefit3].map((item, i) => (
                       <div key={i} className="flex items-start gap-2.5 text-sm">
                         <span
-                          className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold mt-0.5"
+                          className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white mt-0.5"
                           style={{ background: ACCENT }}
                         >
-                          ✓
+                          <Check size={12} strokeWidth={3} />
                         </span>
                         <span className="leading-snug" style={{ color: 'var(--home-card-text)' }}>{item}</span>
                       </div>
@@ -959,7 +972,7 @@ export default function HomeClient() {
                   </div>
                   {/* Duration badge */}
                   <div className="flex items-center gap-1.5 mb-3">
-                    <span className="text-xs text-[#9ca3af]">⏱</span>
+                    <Clock size={12} className="text-[#9ca3af]" />
                     <span className="text-xs font-medium" style={{ color: ACCENT }}>{T.adDuration}</span>
                   </div>
                   {/* Ad note */}
@@ -1135,7 +1148,7 @@ export default function HomeClient() {
                   disabled={downloading}
                   className="flex-1 py-1.5 rounded-lg text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors disabled:opacity-50"
                 >
-                  {downloading ? '⏳' : T.imgSave}
+                  {downloading ? <Loader2 size={14} className="animate-spin mx-auto" /> : T.imgSave}
                 </button>
                 <button
                   onClick={() => {

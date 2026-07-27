@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+/* Hallmark · design-system: DESIGN.md (blue) + DESIGN.md § Gold Theme (gold) */
+
 :root {
   --accent:    #0275fd;
   --accent-bg: #eef9ff;
@@ -8,6 +10,14 @@
   --text:      #222222;
   --text-sub:  #707070;
   --border:    #e5e7eb;
+
+  /* Elevation scale — DESIGN.md §6 (level 3 added for floating menus/popovers) */
+  --shadow-1: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-2: 0 4px 16px rgba(0,0,0,0.12);
+  --shadow-3: 0 8px 24px rgba(0,0,0,0.08);
+
+  /* Display pairing — DESIGN.md §3.2 (Instrument Serif, limited/accent use) */
+  --font-display-serif: "Instrument Serif", serif;
 }
 
 /*
