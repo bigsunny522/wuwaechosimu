@@ -131,7 +131,6 @@ export default function HomeClient() {
   const [maxedAt, setMaxedAt]                 = useState<number | null>(null);
   const echoSectionRef   = useRef<HTMLDivElement>(null);
   const scrollOnNext     = useRef(false);
-  const finalResultRef   = useRef<HTMLDivElement>(null);
 
   /* ── Bonus time ─────────────────────────────────────────────── */
   const [bonusEndTime, setBonusEndTime]       = useState<number | null>(null);
@@ -166,21 +165,24 @@ export default function HomeClient() {
   }, []);
 
   /* ── Auto-scroll to echo card on new draw ───────────────────── */
+  // 入手直後はカードが小さいため、上端合わせより中央寄せの方が収まりが良い
   useEffect(() => {
     if (!echo || !scrollOnNext.current) return;
     scrollOnNext.current = false;
     const timer = setTimeout(() => {
-      echoSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      echoSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 80);
     return () => clearTimeout(timer);
   }, [echo]);
 
-  /* ── Auto-scroll to final result once fully upgraded (PC のみ、スマホはモーダル表示) ── */
+  /* ── Auto-scroll once fully upgraded (PC のみ、スマホはモーダル表示) ── */
+  // 完成した音骸カード（サブステ5個）の上端に合わせる。結果ブロックを対象にすると
+  // カードが画面外へ流れてしまい、何を引いたのかが見えなくなる
   useEffect(() => {
     if (!score || echo?.level !== 25) return;
     if (window.innerWidth < 640) return;
     const timer = setTimeout(() => {
-      finalResultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      echoSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 80);
     return () => clearTimeout(timer);
   }, [score, echo?.level]);
@@ -764,9 +766,11 @@ export default function HomeClient() {
         )}
 
         {/* Echo card
-            scroll-mt-20: 自動スクロール時に sticky ヘッダー(59px)へ潜り込ませない */}
+            scroll-my-20: 自動スクロールの基準余白。上下対称にすることで
+            block:'start' では sticky ヘッダー(59px)を避け、
+            block:'center' では上下が相殺されて正確に中央へ来る */}
         {echo && (
-          <div ref={echoSectionRef} className="flex flex-col items-center gap-4 scroll-mt-20">
+          <div ref={echoSectionRef} className="flex flex-col items-center gap-4 scroll-my-20">
             <EchoCard echo={echo} score={score} maxedAt={maxedAt} />
 
             {/* アドバイザー: PC は直下に表示 / スマホは下固定バーに表示（showAdvisorInBar） */}
@@ -777,7 +781,7 @@ export default function HomeClient() {
             )}
 
             {score && isMaxLevel && (
-              <div ref={finalResultRef} className="w-full flex flex-col gap-2 scroll-mt-20">
+              <div className="w-full flex flex-col gap-2">
                 <ScoreDebugPanel echo={echo} score={score} />
 
                 {/* ── PC: アクションボタンをインライン表示 ── */}
