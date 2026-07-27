@@ -69,7 +69,7 @@ const GUIDE = {
     },
     bonusSection: {
       title: 'ボーナスタイムで厳選を加速',
-      sub:   '広告を 1 本（約 30 秒）視聴するだけで 5 分間の特典が解放されます',
+      sub:   'ヘッダーの「ボーナス」から誰でも無料で 5 分間の特典を解放できます',
       items: [
         {
           icon: '🔒', title: 'メインステータス固定',
@@ -93,7 +93,7 @@ const GUIDE = {
       items: [
         {
           icon: '📋', title: '結果を保存',
-          body: '+25 音骸のスコアをアプリ内に保存できます。広告視聴で 10 枠追加。ヘッダーの「履歴」から一覧確認できます。',
+          body: '+25 音骸のスコアをアプリ内に保存できます。保存枠は無料で 10 枠ずつ追加できます。ヘッダーの「履歴」から一覧確認できます。',
         },
         {
           icon: '💾', title: '画像保存',
@@ -200,7 +200,7 @@ const GUIDE = {
     },
     bonusSection: {
       title: 'Boost Your Farming',
-      sub:   'Watch one short ad (~30 sec) to unlock 5 minutes of premium features',
+      sub:   'Unlock 5 minutes of extra features for free from "Bonus" in the header',
       items: [
         {
           icon: '🔒', title: 'Lock Main Stat',
@@ -224,7 +224,7 @@ const GUIDE = {
       items: [
         {
           icon: '📋', title: 'Save Result',
-          body: 'Save a +25 echo inside the app. Watch an ad to add 10 save slots. View all saved results from "History" in the header.',
+          body: 'Save a +25 echo inside the app. Add 10 save slots at a time, free of charge. View all saved results from "History" in the header.',
         },
         {
           icon: '💾', title: 'Save as Image',

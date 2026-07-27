@@ -116,8 +116,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=Inter:wght@400;500;600&family=Instrument+Serif&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
-        {/* Google Publisher Tags — リワード広告 */}
-        <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js" />
         {/* Google AdSense */}
         <script
           async

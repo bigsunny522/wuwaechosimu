@@ -15,7 +15,7 @@ import EchoCard from '@/components/EchoCard';
 import EchoAdvisor from '@/components/EchoAdvisor';
 import ResourceCounter from '@/components/ResourceCounter';
 import ScoreDebugPanel from '@/components/ScoreDebugPanel';
-import AdBonusModal from '@/components/AdBonusModal';
+import BonusModal from '@/components/BonusModal';
 import SavedResultsModal, { type SavedResult } from '@/components/SavedResultsModal';
 import UpdateModal from '@/components/UpdateModal';
 import { LATEST_UPDATE_ID } from '@/data/updates';
@@ -96,12 +96,12 @@ function getRecommendedMainstatKey(cost: EchoCost, charId: string): string {
   return dmgKey ?? 'atkPercent';
 }
 const BONUS_DURATION_MS = 5 * 60 * 1000;
-const MAX_REROLL      = 3;
-const SAVE_PER_AD     = 10;
+const MAX_REROLL        = 3;
+const SAVE_PER_UNLOCK   = 10;
 
-const ZERO_COST = { shellCoins: 0, tunerBasic: 0, tunerAdvanced: 0, expMaterial: 0 };
-type TotalCost  = typeof ZERO_COST;
-type AdPurpose  = 'bonus' | 'saves';
+const ZERO_COST  = { shellCoins: 0, tunerBasic: 0, tunerAdvanced: 0, expMaterial: 0 };
+type TotalCost   = typeof ZERO_COST;
+type BonusKind   = 'bonus' | 'saves';
 
 function addCost(a: TotalCost, b: TotalCost): TotalCost {
   return {
@@ -136,8 +136,8 @@ export default function HomeClient() {
 
   /* ── Bonus time ─────────────────────────────────────────────── */
   const [bonusEndTime, setBonusEndTime]       = useState<number | null>(null);
-  const [adModalOpen, setAdModalOpen]         = useState(false);
-  const [adPurpose, setAdPurpose]             = useState<AdPurpose>('bonus');
+  const [bonusModalOpen, setBonusModalOpen]   = useState(false);
+  const [bonusKind, setBonusKind]             = useState<BonusKind>('bonus');
   const [timeLeft, setTimeLeft]               = useState(0);
   const [lockedMainstatKey, setLockedMainstatKey] = useState<string>('');
   const [rerollUsed, setRerollUsed]           = useState(false);
@@ -196,27 +196,27 @@ export default function HomeClient() {
   const [showResultModal, setShowResultModal] = useState(false);
   const [advisorResult, setAdvisorResult]     = useState<AdvisorResult | null>(null);
 
-  /* ── Ad configs (locale-aware) ──────────────────────────────── */
-  const adConfigs: Record<AdPurpose, { title: string; items: string[] }> = useMemo(() => ({
-    bonus: { title: T.adBonusTitle, items: [T.adBonusItem1, T.adBonusItem2] },
-    saves: { title: T.adSavesTitle, items: [interpolate(T.adSavesItem1, [SAVE_PER_AD]), T.adSavesItem2] },
+  /* ── Bonus configs (locale-aware) ───────────────────────────── */
+  const bonusConfigs: Record<BonusKind, { title: string; items: string[] }> = useMemo(() => ({
+    bonus: { title: T.bonusModalTitle, items: [T.bonusModalItem1, T.bonusModalItem2] },
+    saves: { title: T.savesModalTitle, items: [interpolate(T.savesModalItem1, [SAVE_PER_UNLOCK]), T.savesModalItem2] },
   }), [T]);
 
   /* ── Handlers ───────────────────────────────────────────────── */
   const handleGrantBonus = useCallback(() => {
-    if (adPurpose === 'bonus') {
+    if (bonusKind === 'bonus') {
       setBonusEndTime(Date.now() + BONUS_DURATION_MS);
       setLockedMainstatKey(getRecommendedMainstatKey(cost, selectedCharId));
       setRerollUsed(false);
       setRerollIndices(new Set());
     } else {
-      setSaveSlots((prev) => prev + SAVE_PER_AD);
+      setSaveSlots((prev) => prev + SAVE_PER_UNLOCK);
     }
-  }, [adPurpose, cost, selectedCharId]);
+  }, [bonusKind, cost, selectedCharId]);
 
-  const openAdModal = useCallback((purpose: AdPurpose) => {
-    setAdPurpose(purpose);
-    setAdModalOpen(true);
+  const openBonusModal = useCallback((kind: BonusKind) => {
+    setBonusKind(kind);
+    setBonusModalOpen(true);
   }, []);
 
   const handleCharacterChange = useCallback((charId: string) => {
@@ -507,7 +507,7 @@ export default function HomeClient() {
               </div>
             ) : (
               <button
-                onClick={() => openAdModal('bonus')}
+                onClick={() => openBonusModal('bonus')}
                 className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold transition-colors border animate-pulseRing"
                 style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: 'var(--home-accent-bg)' }}
               >
@@ -804,11 +804,11 @@ export default function HomeClient() {
                   </div>
                   {saveSlots === 0 && (
                     <button
-                      onClick={() => openAdModal('saves')}
+                      onClick={() => openBonusModal('saves')}
                       className="w-full py-2.5 rounded-[500px] text-sm font-medium hover:opacity-80 transition-opacity"
                       style={{ background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }}
                     >
-                      {interpolate(T.saveCTABtn, [SAVE_PER_AD])}
+                      {interpolate(T.saveCTABtn, [SAVE_PER_UNLOCK])}
                     </button>
                   )}
                   <Link
@@ -973,13 +973,13 @@ export default function HomeClient() {
                   {/* Duration badge */}
                   <div className="flex items-center gap-1.5 mb-3">
                     <Clock size={12} className="text-[#9ca3af]" />
-                    <span className="text-xs font-medium" style={{ color: ACCENT }}>{T.adDuration}</span>
+                    <span className="text-xs font-medium" style={{ color: ACCENT }}>{T.bonusValidFor}</span>
                   </div>
                   {/* Ad note */}
-                  <p className="text-xs text-[#9ca3af] mb-4">{T.bonusAdNote}</p>
+                  <p className="text-xs text-[#9ca3af] mb-4">{T.bonusNote}</p>
                   {/* CTA */}
                   <button
-                    onClick={() => openAdModal('bonus')}
+                    onClick={() => openBonusModal('bonus')}
                     className="w-full py-3 rounded-[500px] text-sm font-semibold hover:opacity-80 transition-opacity animate-pulseRing"
                     style={{ background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }}
                   >
@@ -1093,11 +1093,11 @@ export default function HomeClient() {
         />
       )}
 
-      {adModalOpen && (
-        <AdBonusModal
-          {...adConfigs[adPurpose]}
+      {bonusModalOpen && (
+        <BonusModal
+          {...bonusConfigs[bonusKind]}
           onGrantBonus={handleGrantBonus}
-          onClose={() => setAdModalOpen(false)}
+          onClose={() => setBonusModalOpen(false)}
         />
       )}
 
@@ -1179,11 +1179,11 @@ export default function HomeClient() {
               {/* Save CTA — compact single button (no card) */}
               {saveSlots === 0 && (
                 <button
-                  onClick={() => { openAdModal('saves'); setShowResultModal(false); }}
+                  onClick={() => { openBonusModal('saves'); setShowResultModal(false); }}
                   className="w-full py-1.5 rounded-[500px] text-sm font-medium hover:opacity-80 transition-opacity"
                   style={{ background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }}
                 >
-                  {interpolate(T.saveCTABtn, [SAVE_PER_AD])}
+                  {interpolate(T.saveCTABtn, [SAVE_PER_UNLOCK])}
                 </button>
               )}
 
@@ -1202,7 +1202,7 @@ export default function HomeClient() {
                 onClick={() => setShowResultModal(false)}
                 className="w-full py-1.5 rounded-[500px] text-sm text-[#9ca3af] border border-[#e5e7eb] hover:text-[#222222] hover:border-[#d1d5db] transition-colors"
               >
-                {T.adCloseBtn}
+                {T.closeBtn}
               </button>
             </div>
           </div>
