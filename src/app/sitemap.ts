@@ -41,6 +41,42 @@ export default function sitemap(): MetadataRoute.Sitemap {
       },
     },
     {
+      url: `${SITE_URL}/score-formula`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+      alternates: {
+        languages: {
+          ja: `${SITE_URL}/score-formula`,
+          en: `${SITE_URL}/score-formula?lang=en`,
+        },
+      },
+    },
+    {
+      url: `${SITE_URL}/chardb`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+      alternates: {
+        languages: {
+          ja: `${SITE_URL}/chardb`,
+          en: `${SITE_URL}/chardb?lang=en`,
+        },
+      },
+    },
+    {
+      url: `${SITE_URL}/about`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.5,
+      alternates: {
+        languages: {
+          ja: `${SITE_URL}/about`,
+          en: `${SITE_URL}/about?lang=en`,
+        },
+      },
+    },
+    {
       url: `${SITE_URL}/news`,
       lastModified: new Date(),
       changeFrequency: 'weekly',

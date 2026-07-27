@@ -17,6 +17,7 @@ import ResourceCounter from '@/components/ResourceCounter';
 import ScoreDebugPanel from '@/components/ScoreDebugPanel';
 import BonusModal from '@/components/BonusModal';
 import SavedResultsModal, { type SavedResult } from '@/components/SavedResultsModal';
+import HomeExplainer from '@/components/HomeExplainer';
 import UpdateModal from '@/components/UpdateModal';
 import { LATEST_UPDATE_ID } from '@/data/updates';
 import { generateResultCard, buildShareText } from '@/lib/imageGen';
@@ -28,7 +29,7 @@ import SiteThemeSwitcher from '@/components/SiteThemeSwitcher';
 import { useSiteTheme, type SiteTheme } from '@/contexts/SiteThemeContext';
 import {
   Dices, BarChart3, Sparkles, Gift, History, Menu, BookOpen, Bell,
-  Globe, FileText, Mail, Swords, Clock, Check, Loader2,
+  Globe, FileText, Mail, Swords, Clock, Check, Loader2, Calculator, Users, Info,
 } from 'lucide-react';
 
 const COST_OPTIONS: EchoCost[] = [4, 3, 1];
@@ -98,6 +99,17 @@ function getRecommendedMainstatKey(cost: EchoCost, charId: string): string {
 const BONUS_DURATION_MS = 5 * 60 * 1000;
 const MAX_REROLL        = 3;
 const SAVE_PER_UNLOCK   = 10;
+
+const FOOTER_LINKS = [
+  { href: '/guide',         ja: '使い方ガイド',           en: 'How to Use' },
+  { href: '/score-formula', ja: 'スコア計算方法',         en: 'Scoring Method' },
+  { href: '/chardb',        ja: 'キャラ別ビルド',         en: 'Build Data' },
+  { href: '/supporter',     ja: '厳選サポーター',         en: 'Farming Supporter' },
+  { href: '/news',          ja: 'お知らせ',               en: "What's New" },
+  { href: '/about',         ja: 'このサイトについて',     en: 'About' },
+  { href: '/privacy',       ja: 'プライバシーポリシー',   en: 'Privacy Policy' },
+  { href: '/contact',       ja: 'お問い合わせ',           en: 'Contact' },
+] as const;
 
 const ZERO_COST  = { shellCoins: 0, tunerBasic: 0, tunerAdvanced: 0, expMaterial: 0 };
 type TotalCost   = typeof ZERO_COST;
@@ -562,6 +574,22 @@ export default function HomeClient() {
                       <span>{locale === 'ja' ? '使い方ガイド' : 'How to Use'}</span>
                     </Link>
                     <Link
+                      href={withLang('/score-formula', locale)}
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors"
+                    >
+                      <Calculator size={14} />
+                      <span>{locale === 'ja' ? 'スコア計算方法' : 'Scoring Method'}</span>
+                    </Link>
+                    <Link
+                      href={withLang('/chardb', locale)}
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors"
+                    >
+                      <Users size={14} />
+                      <span>{locale === 'ja' ? 'キャラ別ビルド' : 'Build Data'}</span>
+                    </Link>
+                    <Link
                       href={withLang('/news', locale)}
                       onClick={() => setMenuOpen(false)}
                       className="relative flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors"
@@ -584,10 +612,18 @@ export default function HomeClient() {
                       <span>{locale === 'ja' ? 'English に切替' : '日本語に切替'}</span>
                     </button>
                     <Link
-                      href={withLang('/privacy', locale)}
+                      href={withLang('/about', locale)}
                       onClick={() => setMenuOpen(false)}
                       className="flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors"
                       style={{ borderTop: '1px solid #f3f4f6' }}
+                    >
+                      <Info size={14} />
+                      <span>{locale === 'ja' ? 'このサイトについて' : 'About'}</span>
+                    </Link>
+                    <Link
+                      href={withLang('/privacy', locale)}
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors"
                     >
                       <FileText size={14} />
                       <span>{locale === 'ja' ? 'プライバシーポリシー' : 'Privacy Policy'}</span>
@@ -990,6 +1026,8 @@ export default function HomeClient() {
             )}
           </div>
         )}
+
+        <HomeExplainer />
       </main>
 
       {/* ── Sticky bottom action bar ─────────────────────────────────────────── */}
@@ -1079,8 +1117,23 @@ export default function HomeClient() {
         </div>
       </div>
 
-      <footer className="border-t border-[#f3f4f6] py-4">
-        <p className="text-center text-xs text-[#9ca3af]">{T.footer}</p>
+      <footer
+        className="border-t pt-6 pb-32"
+        style={{ borderColor: 'var(--home-border)' }}
+      >
+        <nav className="max-w-2xl mx-auto px-4 flex flex-wrap justify-center gap-x-4 gap-y-2 mb-4">
+          {FOOTER_LINKS.map(({ href, ja, en }) => (
+            <Link
+              key={href}
+              href={withLang(href, locale)}
+              className="text-xs hover:opacity-70 transition-opacity"
+              style={{ color: 'var(--home-text-sub)' }}
+            >
+              {locale === 'ja' ? ja : en}
+            </Link>
+          ))}
+        </nav>
+        <p className="text-center text-xs" style={{ color: 'var(--home-text-sub)' }}>{T.footer}</p>
       </footer>
 
       {updateModalOpen && (

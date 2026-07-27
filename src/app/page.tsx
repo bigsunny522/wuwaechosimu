@@ -4,6 +4,7 @@ import { LocaleProvider } from '@/lib/locale';
 import { SiteThemeProvider } from '@/contexts/SiteThemeContext';
 import { resolveLocale, resolveExplicitLocale } from '@/lib/locale-utils';
 import { buildMetadata } from '@/lib/seo';
+import { buildFaqJsonLd } from '@/data/homeExplainer';
 
 type Props = { searchParams: Promise<{ lang?: string }> };
 
@@ -29,12 +30,18 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 }
 
 export default async function HomePage({ searchParams }: Props) {
-  const initialLocale = resolveExplicitLocale(await searchParams);
+  const sp = await searchParams;
+  const locale = resolveLocale(sp);
+  const initialLocale = resolveExplicitLocale(sp);
+  const faqJsonLd = buildFaqJsonLd(locale);
   return (
-    <LocaleProvider initialLocale={initialLocale}>
-      <SiteThemeProvider>
-        <HomeClient />
-      </SiteThemeProvider>
-    </LocaleProvider>
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <LocaleProvider initialLocale={initialLocale}>
+        <SiteThemeProvider>
+          <HomeClient />
+        </SiteThemeProvider>
+      </LocaleProvider>
+    </>
   );
 }
