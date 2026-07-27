@@ -13,7 +13,6 @@ import { ECHOES_BY_COST, ECHOES, DEFAULT_ECHO_ID, HARMONY_SETS, HARMONY_SETS_EN 
 import { CHARACTER_LIST, CHARACTER_MAP } from '@/data/characters';
 import EchoCard from '@/components/EchoCard';
 import EchoAdvisor from '@/components/EchoAdvisor';
-import ResourceCounter from '@/components/ResourceCounter';
 import ScoreDebugPanel from '@/components/ScoreDebugPanel';
 import BonusModal from '@/components/BonusModal';
 import SavedResultsModal, { type SavedResult } from '@/components/SavedResultsModal';
@@ -111,18 +110,7 @@ const FOOTER_LINKS = [
   { href: '/contact',       ja: 'お問い合わせ',           en: 'Contact' },
 ] as const;
 
-const ZERO_COST  = { shellCoins: 0, tunerBasic: 0, tunerAdvanced: 0, expMaterial: 0 };
-type TotalCost   = typeof ZERO_COST;
-type BonusKind   = 'bonus' | 'saves';
-
-function addCost(a: TotalCost, b: TotalCost): TotalCost {
-  return {
-    shellCoins:    a.shellCoins    + b.shellCoins,
-    tunerBasic:    a.tunerBasic    + b.tunerBasic,
-    tunerAdvanced: a.tunerAdvanced + b.tunerAdvanced,
-    expMaterial:   a.expMaterial   + b.expMaterial,
-  };
-}
+type BonusKind = 'bonus' | 'saves';
 
 
 export default function HomeClient() {
@@ -141,7 +129,6 @@ export default function HomeClient() {
   const [selectedCharId, setSelectedCharId]   = useState<string>('generic');
   const [downloading, setDownloading]         = useState(false);
   const [maxedAt, setMaxedAt]                 = useState<number | null>(null);
-  const [lifetimeCost, setLifetimeCost]       = useState<TotalCost>(ZERO_COST);
   const echoSectionRef   = useRef<HTMLDivElement>(null);
   const scrollOnNext     = useRef(false);
   const finalResultRef   = useRef<HTMLDivElement>(null);
@@ -273,7 +260,6 @@ export default function HomeClient() {
 
   const handleStart = useCallback(() => {
     scrollOnNext.current = true;
-    if (echo) setLifetimeCost(prev => addCost(prev, echo.totalCost));
     let echoId = selectedEchoId;
     if (cost !== 4) {
       const pool = ECHOES.filter(e => e.cost === cost && e.sets.includes(selectedHarmonySet));
@@ -320,11 +306,10 @@ export default function HomeClient() {
   }, [echo, selectedCharId]);
 
   const handleReset = useCallback(() => {
-    if (echo) setLifetimeCost(prev => addCost(prev, echo.totalCost));
     setEcho(null); setScore(null); setMaxedAt(null);
     setRerollUsed(false); setRerollIndices(new Set());
     setShowResultModal(false); setAdvisorResult(null);
-  }, [echo]);
+  }, []);
 
   const handleReroll = useCallback(() => {
     if (!echo || rerollUsed || rerollIndices.size === 0) return;
@@ -363,8 +348,6 @@ export default function HomeClient() {
   const isMaxLevel  = echo?.level === 25;
   // スマホ：アドバイザーを下固定バーに表示するフラグ
   const showAdvisorInBar = !!(advisorResult && echo && echo.level > 0 && echo.level < 25);
-  const displayCost = addCost(lifetimeCost, echo?.totalCost ?? ZERO_COST);
-  const hasAnyCost  = displayCost.shellCoins > 0;
   const echoList    = ECHOES_BY_COST[cost];
 
   const charOptions = useMemo(() => [
@@ -780,9 +763,10 @@ export default function HomeClient() {
           </div>
         )}
 
-        {/* Echo card */}
+        {/* Echo card
+            scroll-mt-20: 自動スクロール時に sticky ヘッダー(59px)へ潜り込ませない */}
         {echo && (
-          <div ref={echoSectionRef} className="flex flex-col items-center gap-4">
+          <div ref={echoSectionRef} className="flex flex-col items-center gap-4 scroll-mt-20">
             <EchoCard echo={echo} score={score} maxedAt={maxedAt} />
 
             {/* アドバイザー: PC は直下に表示 / スマホは下固定バーに表示（showAdvisorInBar） */}
@@ -869,27 +853,6 @@ export default function HomeClient() {
               </div>
             )}
 
-          </div>
-        )}
-
-        {/* 累計消費リソース */}
-        {hasAnyCost && (
-          <div className="w-full">
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <span
-                className="text-xs text-[#9ca3af] tracking-wider uppercase"
-                style={{ fontFamily: '"IBM Plex Mono", monospace' }}
-              >
-                {T.resourceLabel}
-              </span>
-              <button
-                onClick={() => setLifetimeCost(ZERO_COST)}
-                className="text-[10px] text-[#9ca3af] hover:text-[#707070] border border-[#e5e7eb] hover:border-[#d1d5db] px-1.5 py-0.5 rounded transition-colors"
-              >
-                {T.resourceReset}
-              </button>
-            </div>
-            <ResourceCounter totalCost={displayCost} />
           </div>
         )}
 

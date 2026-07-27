@@ -63,12 +63,6 @@ const JA = {
   maxed:            '✓ MAX',
   maxUpgrade:       '⚡ +25まで強化',
   resetBtn:         'リセット',
-  // Resources
-  resourceLabel:    '累計消費リソース',
-  resourceReset:    'リセット',
-  shellCoin:        'シェルコイン',
-  tunerAdv:         '高級チューナー',
-  expMat:           '秘音筒',
   // Until max hint
   untilMax:         'あと {0} 回強化でMAX (+25)',
   // Score actions
@@ -184,11 +178,6 @@ const EN: typeof JA = {
   maxed:            '✓ MAX',
   maxUpgrade:       '⚡ Max to +25',
   resetBtn:         'Reset',
-  resourceLabel:    'Session Resources',
-  resourceReset:    'Reset',
-  shellCoin:        'Shell Credits',
-  tunerAdv:         'Adv. Resonance Potion',
-  expMat:           'Echo EXP',
   untilMax:         '{0} more upgrades to MAX (+25)',
   imgSave:          '💾 Save Image',
   shareBtn:         '𝕏 Share',

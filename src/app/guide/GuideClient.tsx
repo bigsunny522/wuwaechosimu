@@ -108,7 +108,7 @@ const GUIDE = {
       items: [
         {
           q: 'このツールのデータは正確ですか？',
-          a: 'サブステの種類が13種類から均等（各 7.6923%）に抽選される点は、Kuro Games が公開している公式の確率公示に基づいています。数値の8段階、コスト別のメインステプール、強化に必要な素材量は、ゲーム内で確認できる値をもとに設定しています。非公式ファンツールのため、アップデート直後は実装との差異が生じる場合があります。',
+          a: 'サブステの種類が13種類から均等（各 7.6923%）に抽選される点は、Kuro Games が公開している公式の確率公示に基づいています。数値の8段階とコスト別のメインステプールは、ゲーム内で確認できる値をもとに設定しています。非公式ファンツールのため、アップデート直後は実装との差異が生じる場合があります。',
         },
         {
           q: 'スコア計算の「Tier」とは何ですか？',
@@ -251,7 +251,7 @@ const GUIDE = {
       items: [
         {
           q: 'Is the simulation data accurate?',
-          a: 'The equal 7.6923% selection chance across all 13 substat types comes from the official probability disclosure published by Kuro Games. The eight value steps, the main stat pools per cost, and the upgrade material costs are set from values observable in game. As an unofficial fan tool, discrepancies may appear right after a game update.',
+          a: 'The equal 7.6923% selection chance across all 13 substat types comes from the official probability disclosure published by Kuro Games. The eight value steps and the main stat pools per cost are set from values observable in game. As an unofficial fan tool, discrepancies may appear right after a game update.',
         },
         {
           q: 'What is a substat "Tier"?',

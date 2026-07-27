@@ -96,7 +96,7 @@ const JA: ExplainerContent = {
         },
         {
           term: 'ステップ2：入手して +25 まで強化する',
-          desc: '「音骸を入手」でメインステータスが確定します。あとは「+5」を押していくだけです。1回ごとにサブステータスが1つ解放され、消費した素材の累計も表示されます。',
+          desc: '「音骸を入手」でメインステータスが確定します。あとは「+5」を押していくだけです。1回ごとにサブステータスが1つ解放されていきます。',
         },
         {
           term: 'ステップ3：スコアとランクを確認する',
@@ -211,7 +211,7 @@ const EN: ExplainerContent = {
         },
         {
           term: 'Step 2: Obtain it and upgrade to +25',
-          desc: '"Get Echo" locks in the main stat. From there you just press "+5" repeatedly. Each press unlocks one more substat, and the running material cost is tracked as you go.',
+          desc: '"Get Echo" locks in the main stat. From there you just press "+5" repeatedly, and each press unlocks one more substat.',
         },
         {
           term: 'Step 3: Read the score and rank',

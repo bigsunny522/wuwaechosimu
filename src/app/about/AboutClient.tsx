@@ -42,7 +42,7 @@ const CONTENT: Record<'ja' | 'en', AboutCopy> = {
       },
       {
         h: 'データの出典',
-        body: 'サブステータスの種類選択が13種類均等（各 7.6923%）である点は、Kuro Games が公開している公式の確率公示に基づいています。\n\n各ステータスの数値範囲（8段階）、コスト別のメインステータスプールとその出現重み、強化に必要な素材量については、ゲーム内で実際に確認できる値をもとに設定しています。キャラクターごとの推奨ハーモニーセット・推奨メインステータス・サブステータスの優先度は、当サイトが独自に整理した評価データです。',
+        body: 'サブステータスの種類選択が13種類均等（各 7.6923%）である点は、Kuro Games が公開している公式の確率公示に基づいています。\n\n各ステータスの数値範囲（8段階）、コスト別のメインステータスプールとその出現重みについては、ゲーム内で実際に確認できる値をもとに設定しています。キャラクターごとの推奨ハーモニーセット・推奨メインステータス・サブステータスの優先度は、当サイトが独自に整理した評価データです。',
         links: [
           { href: '/score-formula', label: 'スコア計算方法の詳細を見る' },
           { href: '/chardb', label: 'キャラクター別のビルドデータを見る' },
@@ -83,7 +83,7 @@ const CONTENT: Record<'ja' | 'en', AboutCopy> = {
       },
       {
         h: 'Where the Data Comes From',
-        body: 'The equal 7.6923% selection chance across all 13 substat types comes from the official probability disclosure published by Kuro Games.\n\nThe eight-step value ranges, the main stat pools and draw weights per cost, and the upgrade material costs are set from values observable in game. The recommended harmony sets, main stats, and substat priorities for each character are evaluation data compiled independently by this site.',
+        body: 'The equal 7.6923% selection chance across all 13 substat types comes from the official probability disclosure published by Kuro Games.\n\nThe eight-step value ranges and the main stat pools and draw weights per cost are set from values observable in game. The recommended harmony sets, main stats, and substat priorities for each character are evaluation data compiled independently by this site.',
         links: [
           { href: '/score-formula', label: 'See the scoring method in detail' },
           { href: '/chardb', label: 'See build data by character' },
