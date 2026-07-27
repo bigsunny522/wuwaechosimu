@@ -112,6 +112,10 @@ const FOOTER_LINKS = [
 
 type BonusKind = 'bonus' | 'saves';
 
+/** ヘッダーのオーバーフローメニュー1行分の共通スタイル */
+const MENU_ITEM =
+  'flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors';
+
 
 export default function HomeClient() {
   const { locale, toggleLocale } = useLocale();
@@ -460,10 +464,9 @@ export default function HomeClient() {
             </span>
           </div>
 
-          {/* Nav buttons */}
+          {/* Nav buttons — 常時出すのはモード切替と ☰ のみ。
+              テーマ・履歴・ボーナス開放は ☰ に集約している */}
           <div className="flex items-center gap-1.5 shrink-0">
-            <SiteThemeSwitcher />
-
             {/* Mode switcher: ガチャ（シミュレーター） / 厳選管理（サポーター） */}
             <div
               className="flex items-center rounded-lg p-0.5 shrink-0"
@@ -488,47 +491,20 @@ export default function HomeClient() {
               </Link>
             </div>
 
-            {/* Bonus */}
-            {bonusActive ? (
+            {/* ボーナス発動中の残り時間。未発動時は ☰ と本文カードから開放する */}
+            {bonusActive && (
               <div
                 className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium border"
                 style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: 'var(--home-accent-bg)' }}
               >
                 <Sparkles size={13} className="animate-pulse" />
-                <span
-                  className="font-medium"
-                  style={{ fontFamily: '"IBM Plex Mono", monospace' }}
-                >
+                <span style={{ fontFamily: '"IBM Plex Mono", monospace' }}>
                   {formatTime(timeLeft)}
                 </span>
               </div>
-            ) : (
-              <button
-                onClick={() => openBonusModal('bonus')}
-                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold transition-colors border animate-pulseRing"
-                style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: 'var(--home-accent-bg)' }}
-              >
-                <Gift size={14} /><span className="hidden sm:inline"> {T.bonusBtn}</span>
-              </button>
             )}
 
-            {/* History */}
-            <button
-              onClick={() => setHistoryOpen(true)}
-              className="relative flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
-            >
-              <History size={14} /><span className="hidden sm:inline"> {T.historyBtn}</span>
-              {savedResults.length > 0 && (
-                <span
-                  className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-semibold flex items-center justify-center text-white"
-                  style={{ background: ACCENT }}
-                >
-                  {savedResults.length}
-                </span>
-              )}
-            </button>
-
-            {/* Overflow menu: Guide / News / Locale */}
+            {/* Overflow menu */}
             <div className="relative shrink-0">
               <button
                 onClick={() => setMenuOpen((v) => !v)}
@@ -547,13 +523,42 @@ export default function HomeClient() {
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
                   <div
-                    className="absolute right-0 top-full mt-2 z-50 w-44 rounded-xl bg-white overflow-hidden"
+                    className="absolute right-0 top-full mt-2 z-50 w-52 rounded-xl bg-white overflow-hidden"
                     style={{ border: '1px solid #e5e7eb', boxShadow: 'var(--shadow-3)' }}
                   >
+                    {/* ── 操作 ── */}
+                    {!bonusActive && (
+                      <button
+                        onClick={() => { openBonusModal('bonus'); setMenuOpen(false); }}
+                        className={`${MENU_ITEM} w-full text-left`}
+                        style={{ color: ACCENT }}
+                      >
+                        <Gift size={14} />
+                        <span>{T.bonusBtn}</span>
+                      </button>
+                    )}
+                    <button
+                      onClick={() => { setHistoryOpen(true); setMenuOpen(false); }}
+                      className={`${MENU_ITEM} w-full text-left`}
+                    >
+                      <History size={14} />
+                      <span>{T.historyBtn}</span>
+                      {savedResults.length > 0 && (
+                        <span
+                          className="ml-auto min-w-4 h-4 px-1 rounded-full text-[9px] font-semibold flex items-center justify-center text-white"
+                          style={{ background: ACCENT }}
+                        >
+                          {savedResults.length}
+                        </span>
+                      )}
+                    </button>
+
+                    {/* ── ページ ── */}
                     <Link
                       href={withLang('/guide', locale)}
                       onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors"
+                      className={MENU_ITEM}
+                      style={{ borderTop: '1px solid #f3f4f6' }}
                     >
                       <BookOpen size={14} />
                       <span>{locale === 'ja' ? '使い方ガイド' : 'How to Use'}</span>
@@ -561,7 +566,7 @@ export default function HomeClient() {
                     <Link
                       href={withLang('/score-formula', locale)}
                       onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors"
+                      className={MENU_ITEM}
                     >
                       <Calculator size={14} />
                       <span>{locale === 'ja' ? 'スコア計算方法' : 'Scoring Method'}</span>
@@ -569,7 +574,7 @@ export default function HomeClient() {
                     <Link
                       href={withLang('/chardb', locale)}
                       onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors"
+                      className={MENU_ITEM}
                     >
                       <Users size={14} />
                       <span>{locale === 'ja' ? 'キャラ別ビルド' : 'Build Data'}</span>
@@ -577,29 +582,32 @@ export default function HomeClient() {
                     <Link
                       href={withLang('/news', locale)}
                       onClick={() => setMenuOpen(false)}
-                      className="relative flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors"
+                      className={MENU_ITEM}
                     >
                       <Bell size={14} />
                       <span>{locale === 'ja' ? 'お知らせ' : "What's New"}</span>
                       {hasNewUpdate && (
-                        <span
-                          className="ml-auto w-2 h-2 rounded-full"
-                          style={{ background: ACCENT }}
-                        />
+                        <span className="ml-auto w-2 h-2 rounded-full" style={{ background: ACCENT }} />
                       )}
                     </Link>
+
+                    {/* ── 表示設定 ── */}
+                    <div style={{ borderTop: '1px solid #f3f4f6' }}>
+                      <SiteThemeSwitcher variant="menu" />
+                    </div>
                     <button
                       onClick={() => { toggleLocale(); setMenuOpen(false); }}
-                      className="flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors w-full text-left"
-                      style={{ borderTop: '1px solid #f3f4f6' }}
+                      className={`${MENU_ITEM} w-full text-left`}
                     >
                       <Globe size={14} />
                       <span>{locale === 'ja' ? 'English に切替' : '日本語に切替'}</span>
                     </button>
+
+                    {/* ── サイト情報 ── */}
                     <Link
                       href={withLang('/about', locale)}
                       onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors"
+                      className={MENU_ITEM}
                       style={{ borderTop: '1px solid #f3f4f6' }}
                     >
                       <Info size={14} />
@@ -608,7 +616,7 @@ export default function HomeClient() {
                     <Link
                       href={withLang('/privacy', locale)}
                       onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors"
+                      className={MENU_ITEM}
                     >
                       <FileText size={14} />
                       <span>{locale === 'ja' ? 'プライバシーポリシー' : 'Privacy Policy'}</span>
@@ -616,7 +624,7 @@ export default function HomeClient() {
                     <Link
                       href={withLang('/contact', locale)}
                       onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors"
+                      className={MENU_ITEM}
                     >
                       <Mail size={14} />
                       <span>{locale === 'ja' ? 'お問い合わせ' : 'Contact'}</span>
