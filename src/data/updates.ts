@@ -12,6 +12,21 @@ export interface UpdateEntry {
 
 export const UPDATES: UpdateEntry[] = [
   {
+    id: '2026-07-31',
+    date: '2026-07-31',
+    title: { ja: '穂穂（スイスイ）の音骸ビルドデータを追加', en: 'Added Echo Build Data for Suisui' },
+    items: [
+      {
+        ja: '実装されたばかりの穂穂（スイスイ）について、推奨ハーモニーセット・メインステータス・サブステータス優先度を追加しました。シミュレーターとキャラ別ビルドデータページで選択できます',
+        en: 'Added recommended harmony sets, main stats, and substat priorities for the newly released Suisui — now selectable in the simulator and on the Build Data page',
+      },
+    ],
+    link: {
+      href: '/chardb',
+      label: { ja: 'キャラ別ビルドデータを見る', en: 'View the Build Data' },
+    },
+  },
+  {
     id: '2026-07-27',
     date: '2026-07-27',
     title: { ja: '解説コンテンツを大幅に追加', en: 'Major Documentation Update' },
