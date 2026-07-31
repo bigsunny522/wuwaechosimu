@@ -87,13 +87,18 @@ function getRecommendedHarmonySet(charId: string, cost: EchoCost): string | null
 }
 
 function getRecommendedMainstatKey(cost: EchoCost, charId: string): string {
-  if (cost === 4) return 'critDmg';
-  if (cost === 1) return 'atkPercent';
-  if (charId === 'generic') return 'atkPercent';
-  const char = CHARACTER_MAP[charId];
+  const char = charId !== 'generic' ? CHARACTER_MAP[charId] : undefined;
+  if (cost === 4) {
+    if (char?.mainstat.cost4.recommended.includes('healingBonus')) return 'healingBonus';
+    return 'critDmg';
+  }
+  if (cost === 1) {
+    if (char?.mainstat.cost1.recommended.includes('hpPercent')) return 'hpPercent';
+    return 'atkPercent';
+  }
   if (!char) return 'atkPercent';
   const dmgKey = char.mainstat.cost3.recommended.find(k => k.endsWith('Dmg'));
-  return dmgKey ?? 'atkPercent';
+  return dmgKey ?? char.mainstat.cost3.recommended[0] ?? 'atkPercent';
 }
 const BONUS_DURATION_MS = 5 * 60 * 1000;
 const MAX_REROLL        = 3;
