@@ -83,8 +83,13 @@ export const CHARACTERS: CharacterBuild[] = [
     scalingStat: 'hp',
     baseStats90: { atk: 287, hp: 16712, def: 1099 },
     motifWeaponId: 'suisui',
-    // v2: HP参照の純粋回復＋全ダメバフキャラ。ショアキーパーと異なりイントロ等の
-    // 実ダメージ要素は確認できなかったためdamageProfileは設定しない。
+    // v2: HP参照の純粋回復＋全ダメバフキャラ。共鳴/変奏スキル命中時にクリ率80%・
+    // ダメージ240%アップの自己バフが乗る実ダメージ要素があるにはあるが、複数の
+    // ビルドガイドで「本人火力は二の次、クリ厳選は不要」と明言されているため
+    // damageProfileは設定しない（typeShares/baselineCritをまともに裏取りできない
+    // 状態で加えると、むしろ過大評価になりかねない）。そのためsubstats側もクリ系・
+    // 攻撃タイプ別ダメージ%はrecommended/acceptableに含めない（ヴェリーナと同じ
+    // ER・HP%のみの構成）。
     // ER260%到達で終奏スキルの全ダメバフ/攻撃力バフが最大化される旨が複数の
     // ビルドガイドで明言されていたためerRequirementにそのまま反映。
     // 要検証: 基礎ステータス・モチーフ武器の数値はショアキーパーと同一だった
@@ -110,10 +115,9 @@ export const CHARACTERS: CharacterBuild[] = [
       recommended: [
         { key: 'energyRegen' },
         { key: 'hpPercent' },
-        { key: 'critDmg' },
       ],
       preferred:   [],
-      acceptable:  [{ key: 'resonanceSkillDmg' }],
+      acceptable:  [],
     },
     mainstat: {
       cost4: { recommended: ['healingBonus'],  acceptable: ['critDmg', 'hpPercent'] },
