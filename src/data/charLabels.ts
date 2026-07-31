@@ -48,6 +48,7 @@ export const ROLE_EN: Record<string, string> = {
   '牽引・風蝕バフサポート':               'Crowd control & Aero Erosion support',
   '耐久・回復サポーター':                 'Survivability & healing support',
   '耐久・回復サポート':                   'Survivability & healing support',
+  '耐久・回復、全ダメバフ':               'Survivability, healing & all-damage buff',
   '耐久・回復サポート（重撃バフ）':       'Survivability & healing support (heavy attack buff)',
   '耐久・回復、防御力デバフ':             'Survivability, healing & DEF shred',
   '耐久・回復、消滅ダメバフ':             'Survivability, healing & Havoc damage buff',

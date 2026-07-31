@@ -290,6 +290,16 @@ export const MOTIF_WEAPONS: Record<string, WeaponData> = {
     substatValue90: 77,
     sourceConfidence: 'high',
   },
+  suisui: {
+    id: 'suisui',
+    name: "Firstlight's Herald",
+    nameEn: "Firstlight's Herald",
+    class: '増幅器',
+    baseAtk90: 412,
+    substatKey: 'energyRegen',
+    substatValue90: 77,
+    sourceConfidence: 'medium',
+  },
   xiangli_yao: {
     id: 'xiangli_yao',
     name: "Verity's Handle",

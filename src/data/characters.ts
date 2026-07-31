@@ -78,6 +78,56 @@ export const CHARACTERS: CharacterBuild[] = [
   // ── 5★ キャラクター（実装降順）────────────────────────────────────────
 
   {
+    id: 'suisui', name: '穂穂', nameEn: 'Suisui', element: '凝縮', weapon: '増幅器',
+    role: '耐久・回復、全ダメバフ',
+    scalingStat: 'hp',
+    baseStats90: { atk: 287, hp: 16712, def: 1099 },
+    motifWeaponId: 'suisui',
+    // v2: HP参照の純粋回復＋全ダメバフキャラ。共鳴/変奏スキル命中時にクリ率80%・
+    // ダメージ240%アップの自己バフが乗る実ダメージ要素があるにはあるが、複数の
+    // ビルドガイドで「本人火力は二の次、クリ厳選は不要」と明言されているため
+    // damageProfileは設定しない（typeShares/baselineCritをまともに裏取りできない
+    // 状態で加えると、むしろ過大評価になりかねない）。そのためsubstats側もクリ系・
+    // 攻撃タイプ別ダメージ%はrecommended/acceptableに含めない（ヴェリーナと同じ
+    // ER・HP%のみの構成）。
+    // ER260%到達で終奏スキルの全ダメバフ/攻撃力バフが最大化される旨が複数の
+    // ビルドガイドで明言されていたためerRequirementにそのまま反映。
+    // 要検証: 基礎ステータス・モチーフ武器の数値はショアキーパーと同一だった
+    // （Web検索経由の要約情報のため一次ソースでの裏取りはできていない）。
+    variants: [
+      {
+        id: 'main',
+        role: 'healer',
+        label: '耐久・回復運用',
+        harmonySets: { recommended: [SET.SONG, SET.HEALER], acceptable: [] },
+        mainstat: {
+          cost4: { recommended: ['healingBonus'],  acceptable: ['critDmg', 'hpPercent'] },
+          cost3: { recommended: ['Resonanceeff'],  acceptable: ['GlacioDmg', 'hpPercent'] },
+          cost1: { recommended: ['hpPercent'],     acceptable: [] },
+        },
+        erRequirement: 2.60,
+        healProfile: {
+          assumedExistingScalingPercent: 0.9,
+        },
+      },
+    ],
+    substats: {
+      recommended: [
+        { key: 'energyRegen' },
+        { key: 'hpPercent' },
+      ],
+      preferred:   [],
+      acceptable:  [],
+    },
+    mainstat: {
+      cost4: { recommended: ['healingBonus'],  acceptable: ['critDmg', 'hpPercent'] },
+      cost3: { recommended: ['Resonanceeff'],  acceptable: ['GlacioDmg', 'hpPercent'] },
+      cost1: { recommended: ['hpPercent'],     acceptable: [] },
+    },
+    harmonySets: { recommended: [SET.SONG, SET.HEALER], acceptable: [] },
+  },
+
+  {
     id: 'yangyang_xuanling', name: '秧秧・玄翎', nameEn: 'Yangyang (Xuanling)', element: '消滅', weapon: '迅刀',
     role: 'メインアタッカー（重撃重視）',
     roleTemplate: 'DPS',

@@ -12,6 +12,21 @@ export interface UpdateEntry {
 
 export const UPDATES: UpdateEntry[] = [
   {
+    id: '2026-07-31',
+    date: '2026-07-31',
+    title: { ja: '穂穂（スイスイ）のビルドデータを追加', en: 'Added Build Data for Suisui' },
+    items: [
+      {
+        ja: '穂穂（スイスイ）を追加しました',
+        en: 'Added Suisui',
+      },
+    ],
+    link: {
+      href: '/chardb',
+      label: { ja: 'キャラ別ビルドデータを見る', en: 'View the Build Data' },
+    },
+  },
+  {
     id: '2026-07-27',
     date: '2026-07-27',
     title: { ja: '解説コンテンツを大幅に追加', en: 'Major Documentation Update' },
