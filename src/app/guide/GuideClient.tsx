@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useLocale, withLang } from '@/lib/locale';
 import EchoIcon from '@/components/EchoIcon';
+import AdBanner from '@/components/AdBanner';
 
 const ACCENT = '#0275fd';
 
@@ -513,6 +514,8 @@ export default function GuideClient() {
             ))}
           </div>
         </section>
+
+        <AdBanner />
 
         {/* ── CTA ── */}
         <section className="pb-2">

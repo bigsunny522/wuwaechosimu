@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { useLocale, withLang } from '@/lib/locale';
 import { SCORE_FORMULA, type Block } from '@/data/scoreFormula';
+import AdBanner from '@/components/AdBanner';
 
 const ACCENT = '#0275fd';
 
@@ -167,6 +168,8 @@ export default function ScoreFormulaClient() {
             {section.blocks.map(renderBlock)}
           </Section>
         ))}
+
+        <AdBanner />
 
         {/* ── フッター ── */}
         <p style={{ textAlign: 'center' as const, color: '#9ca3af', fontSize: 12, marginTop: 32, lineHeight: 1.8 }}>

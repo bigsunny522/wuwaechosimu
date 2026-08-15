@@ -7,6 +7,7 @@ import { getHarmonyBadgeColor, HARMONY_SETS_EN } from '@/data/echoes';
 import { SUBSTAT_LABEL_EN, MAINSTAT_LABEL_EN } from '@/data/translations';
 import { ELEMENT_EN, WEAPON_EN, ROLE_EN, localizeLabel } from '@/data/charLabels';
 import { useLocale, withLang, type Locale } from '@/lib/locale';
+import AdBanner from '@/components/AdBanner';
 import type { CharacterBuild } from '@/types/character';
 import type { SubstatKey } from '@/types/echo';
 
@@ -360,6 +361,8 @@ export default function ChardbClient() {
             <CharCard key={char.id} char={char} locale={locale} />
           ))}
         </div>
+
+        <AdBanner />
 
         {/* ── フッター ── */}
         <p style={{ textAlign: 'center' as const, color: '#9ca3af', fontSize: 12, marginTop: 32, lineHeight: 1.8 }}>

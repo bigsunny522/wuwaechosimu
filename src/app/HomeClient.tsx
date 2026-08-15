@@ -17,6 +17,7 @@ import ScoreDebugPanel from '@/components/ScoreDebugPanel';
 import BonusModal from '@/components/BonusModal';
 import SavedResultsModal, { type SavedResult } from '@/components/SavedResultsModal';
 import HomeExplainer from '@/components/HomeExplainer';
+import AdBanner from '@/components/AdBanner';
 import UpdateModal from '@/components/UpdateModal';
 import { LATEST_UPDATE_ID } from '@/data/updates';
 import { generateResultCard, buildShareText } from '@/lib/imageGen';
@@ -1008,6 +1009,7 @@ export default function HomeClient() {
         )}
 
         <HomeExplainer />
+        <AdBanner />
       </main>
 
       {/* ── Sticky bottom action bar ─────────────────────────────────────────── */}
