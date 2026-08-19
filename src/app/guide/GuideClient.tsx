@@ -69,7 +69,7 @@ const GUIDE = {
     },
     bonusSection: {
       title: 'ボーナスタイムで厳選を加速',
-      sub:   'ヘッダーの「ボーナス」から誰でも無料で 5 分間の特典を解放できます',
+      sub:   'ヘッダーの「ボーナス」から短い広告（15秒）を見るだけで 5 分間の特典を解放できます',
       items: [
         {
           icon: '🔒', title: 'メインステータス固定',
@@ -212,7 +212,7 @@ const GUIDE = {
     },
     bonusSection: {
       title: 'Boost Your Farming',
-      sub:   'Unlock 5 minutes of extra features for free from "Bonus" in the header',
+      sub:   'Watch a short 15-second ad from "Bonus" in the header to unlock 5 minutes of extra features',
       items: [
         {
           icon: '🔒', title: 'Lock Main Stat',

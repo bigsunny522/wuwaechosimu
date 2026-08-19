@@ -1,8 +1,12 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Check, Clock, Gift, X } from 'lucide-react';
 import { useLocale } from '@/lib/locale';
-import { TRANSLATIONS } from '@/data/translations';
+import { TRANSLATIONS, interpolate } from '@/data/translations';
+import AdBanner from '@/components/AdBanner';
+
+const AD_WAIT_SECONDS = 15;
 
 interface Props {
   title: string;
@@ -11,10 +15,17 @@ interface Props {
   onClose: () => void;
 }
 
-/** 特典を無条件で開放する確認モーダル。視聴条件や外部配信は一切挟まない。 */
+/** Adsterra広告を表示しつつ15秒待機した後に特典を開放する確認モーダル。 */
 export default function BonusModal({ title, items, onGrantBonus, onClose }: Props) {
   const { locale } = useLocale();
   const T = TRANSLATIONS[locale];
+  const [secondsLeft, setSecondsLeft] = useState(AD_WAIT_SECONDS);
+
+  useEffect(() => {
+    if (secondsLeft <= 0) return;
+    const timer = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [secondsLeft]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
@@ -80,11 +91,23 @@ export default function BonusModal({ title, items, onGrantBonus, onClose }: Prop
             </div>
           </div>
 
+          {/* Ad */}
+          <div className="rounded-xl bg-[#f7f7f7] border border-[#e5e7eb] p-3 mb-5">
+            <p
+              className="text-[10px] uppercase tracking-wider text-[#9ca3af] mb-1 text-center"
+              style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+            >
+              {T.bonusAdShowing}
+            </p>
+            <AdBanner />
+          </div>
+
           <button
             onClick={() => { onGrantBonus(); onClose(); }}
-            className="w-full py-3 rounded-[500px] text-sm font-semibold text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity"
+            disabled={secondsLeft > 0}
+            className="w-full py-3 rounded-[500px] text-sm font-semibold text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:opacity-40"
           >
-            {T.bonusCTA}
+            {secondsLeft > 0 ? interpolate(T.bonusAdWaiting, [secondsLeft]) : T.bonusCTA}
           </button>
         </div>
       </div>

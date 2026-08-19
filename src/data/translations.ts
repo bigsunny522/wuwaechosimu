@@ -85,7 +85,7 @@ const JA = {
   bonusCardBenefit3: '+25 まで一括強化ボタンが解放される',
   bonusDuration:     '5分間',
   bonusFree:         '無料',
-  bonusNote:         '登録不要・完全無料。何度でも開放できます',
+  bonusNote:         '登録不要。短い広告（15秒）を見るだけで何度でも開放できます',
   bonusCTA:          'ボーナスタイムを開放する',
   // Save CTA
   saveCTATitle:      'この結果を保存しませんか？',
@@ -149,6 +149,8 @@ const JA = {
   // BonusModal
   closeBtn:          '閉じる',
   bonusRewardsTitle: '解放される機能',
+  bonusAdShowing:    '広告表示中',
+  bonusAdWaiting:    'あと{0}秒',
   // ResultCardVisual
   resultCardGame:   '鳴潮 音骸シミュレーター',
   resultMaxedAt:    '+25達成',
@@ -195,7 +197,7 @@ const EN: typeof JA = {
   bonusCardBenefit3: 'One-click max upgrade to +25 unlocked',
   bonusDuration:     '5 min',
   bonusFree:         'FREE',
-  bonusNote:         'No sign-up, completely free. Unlock it as often as you like.',
+  bonusNote:         'No sign-up. Just watch a short 15-second ad to unlock, as often as you like.',
   bonusCTA:          'Unlock Bonus Time',
   saveCTATitle:      'Save This Result?',
   saveCTABtn:        '📋 Add {0} Save Slots',
@@ -248,6 +250,8 @@ const EN: typeof JA = {
   savedSaveBtn:     '💾 Save',
   closeBtn:          'Close',
   bonusRewardsTitle: 'What You Unlock',
+  bonusAdShowing:    'Ad displayed',
+  bonusAdWaiting:    '{0}s left',
   resultCardGame:   'WuWa Echo Simulator',
   resultMaxedAt:    'Reached +25',
   bonusModalTitle:  'Unlock Bonus Time',
