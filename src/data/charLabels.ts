@@ -55,6 +55,7 @@ export const ROLE_EN: Record<string, string> = {
   '耐久・回復、共鳴スキルバフ':           'Survivability, healing & resonance skill buff',
   '耐久・回復、共鳴解放バフ':             'Survivability, healing & resonance liberation buff',
   '継続回復サポート':                     'Sustained healing support',
+  'メインアタッカー（密集協和効果）':     'Main DPS (Tune Strain effect)',
   main:   'Main DPS',
   sub:    'Sub DPS',
   healer: 'Healer',
