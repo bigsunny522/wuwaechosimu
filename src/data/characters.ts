@@ -37,6 +37,7 @@ const SET = {
   GOLDEN:      HS.GILDED_REVELATION,
   NIGHTMARE_SPECTER: HS.NIGHTMARE_SPECTER,
   SONG:        HS.SONG_OF_FEATHERED_TRACE,
+  EVILS_PURGE: HS.HEART_OF_EVILS_PURGE,
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2176,6 +2177,30 @@ export const CHARACTERS: CharacterBuild[] = [
       cost1: { recommended: ['atkPercent'],       acceptable: [] },
     },
     harmonySets: { recommended: [SET.BOUNDLESS], acceptable: [SET.GALE, SET.GLORY_WIND] },
+  },
+
+  {
+    id: 'qingxiao', name: '清宵', nameEn: 'Qingxiao', element: '気動', weapon: '迅刀',
+    role: 'メインアタッカー（密集協和効果）',
+    // v2: 未対応（データ待ち）。2026/8/20実装の新キャラのため、基礎ステータス・
+    // モチーフ武器「雲琅」の実数値が未確定。判明次第 weaponClass/scalingStat/
+    // baseStats90/motifWeaponId/variants を追加すること。
+    substats: {
+      recommended: [
+        { key: 'critRate' },
+        { key: 'critDmg' },
+        { key: 'atkPercent' },
+        { key: 'heavyAttackDmg' },
+      ],
+      preferred:   [{ key: 'energyRegen' }],
+      acceptable:  [{ key: 'resonanceSkillDmg' }],
+    },
+    mainstat: {
+      cost4: { recommended: ['critRate', 'critDmg'], acceptable: ['atkPercent'] },
+      cost3: { recommended: ['AeroDmg'],              acceptable: ['atkPercent'] },
+      cost1: { recommended: ['atkPercent'],           acceptable: [] },
+    },
+    harmonySets: { recommended: [SET.EVILS_PURGE], acceptable: [SET.GALE] },
   },
 
   // ── 4★ キャラクター ────────────────────────────────────────────────────
