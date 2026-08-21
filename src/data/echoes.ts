@@ -206,6 +206,7 @@ export const ECHOES: EchoInfo[] = [
   { id: 'nightmare_smasher',           name: '響き渡る共鳴・ナイトメア・スマッシャー', nameEn: 'Resonating Chord: Nightmare Smasher', cost: 4, sets: [S.NIGHTMARE_SPECTER]                                        },
   { id: 'thousand_puppet_pavilion',    name: '千傀の重楼',                   nameEn: 'Thousand-Puppet Pavilion',           nameCn: '千傀重楼', cost: 4, sets: [S.SONG_OF_FEATHERED_TRACE]                                  },
   { id: 'myriad_snare_rustfire_chassis', name: '万囿の檻・朽躯',             nameEn: 'Myriad Snare: Rustfire Chassis',     nameCn: '万囮牢·朽躯', cost: 4, sets: [S.HEART_OF_EVILS_PURGE, S.LAMP_OF_NETHER_ROAD]              },
+  { id: 'calamity_effigy',             name: '天傀劫殺',                     nameEn: 'Calamity Effigy',                    cost: 4, sets: [S.HEART_OF_EVILS_PURGE, S.LAMP_OF_NETHER_ROAD]                        },
 
   // ── COST 3 ──────────────────────────────────────────────────────────────
   { id: 'cyan_feathered_heron',        name: '青羽サギ',                     nameEn: 'Cyan-Feathered Heron',               cost: 3, sets: [S.SIERRA_GALE, S.CELESTIAL_LIGHT]                                },
