@@ -163,10 +163,13 @@ export default function ScoreFormulaClient() {
           </Link>
         </div>
 
-        {C.sections.map((section) => (
-          <Section key={section.title} title={section.title}>
-            {section.blocks.map(renderBlock)}
-          </Section>
+        {C.sections.map((section, i) => (
+          <div key={section.title}>
+            <Section title={section.title}>
+              {section.blocks.map(renderBlock)}
+            </Section>
+            {i === 3 && <AdBanner />}
+          </div>
         ))}
 
         <AdBanner />

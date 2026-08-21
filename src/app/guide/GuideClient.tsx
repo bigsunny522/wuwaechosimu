@@ -434,6 +434,8 @@ export default function GuideClient() {
           </div>
         </section>
 
+        <AdBanner />
+
         {/* ── Bonus Time ── */}
         <section>
           <SectionLabel>{G.labels.bonus}</SectionLabel>

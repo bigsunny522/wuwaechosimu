@@ -9,6 +9,11 @@ const BANNER_HEIGHT = Number(process.env.NEXT_PUBLIC_ADSTERRA_BANNER_HEIGHT ?? '
  * Adsterra の Banner ユニットは document.write でiframeを注入する実装のため、
  * React側でハイドレーション後に直接scriptタグを差し込むと no-op になる。
  * そのため独立した srcDoc の iframe 内で読み込ませ、本体のDOMから隔離する。
+ *
+ * sandbox 属性が無い srcDoc の iframe は親ページと同一オリジン扱いになり、
+ * 広告スクリプトが window.top を書き換えて画面全体を強制遷移させられてしまう。
+ * allow-same-origin と allow-top-navigation を与えず、
+ * 広告の実行(allow-scripts)とクリック時の新規タブ遷移(allow-popups)のみ許可する。
  */
 export default function AdBanner() {
   if (!BANNER_KEY || !BANNER_SCRIPT_SRC) return null;
@@ -36,6 +41,7 @@ export default function AdBanner() {
         style={{ border: 'none', overflow: 'hidden', maxWidth: '100%' }}
         scrolling="no"
         loading="lazy"
+        sandbox="allow-scripts allow-popups"
       />
     </div>
   );

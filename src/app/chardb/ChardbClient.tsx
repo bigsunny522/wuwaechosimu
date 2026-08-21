@@ -351,6 +351,8 @@ export default function ChardbClient() {
           {C.legendItems.map(item => <span key={item}>{item}</span>)}
         </div>
 
+        <AdBanner />
+
         {/* ── キャラクターグリッド ── */}
         <div style={{
           display: 'grid',
