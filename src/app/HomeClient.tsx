@@ -22,6 +22,7 @@ import EchoIcon from '@/components/EchoIcon';
 import EchoAdvisor from '@/components/EchoAdvisor';
 import ScoreDistributionChart from '@/components/ScoreDistributionChart';
 import AdBanner from '@/components/AdBanner';
+import AdBannerThin from '@/components/AdBannerThin';
 import NativeBanner from '@/components/NativeBanner';
 
 const ACCENT = '#0275fd';
@@ -481,7 +482,7 @@ export default function HomeClient() {
           )}
         </section>
 
-        <AdBanner />
+        <AdBannerThin />
 
         {/* ── 記録フォーム ── */}
         <section className="flex flex-col gap-3 rounded-xl border border-[#e5e7eb] p-4">
