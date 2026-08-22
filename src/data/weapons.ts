@@ -10,6 +10,16 @@ import type { WeaponData } from '@/types/weapon';
 //  未登録のキャラは scorer.ts 側で従来のカテゴリベース採点にフォールバックする。
 // ═══════════════════════════════════════════════════════════════════════════
 export const MOTIF_WEAPONS: Record<string, WeaponData> = {
+  qingxiao: {
+    id: 'qingxiao',
+    name: '雲琅',
+    nameEn: 'Cloud Jasper',
+    class: '迅刀',
+    baseAtk90: 500,
+    substatKey: 'critRate',
+    substatValue90: 36,
+    sourceConfidence: 'low',
+  },
   yangyang_xuanling: {
     id: 'yangyang_xuanling',
     name: "Azure Oath",

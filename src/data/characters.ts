@@ -81,9 +81,34 @@ export const CHARACTERS: CharacterBuild[] = [
   {
     id: 'qingxiao', name: '清宵', nameEn: 'Qingxiao', element: '気動', weapon: '迅刀',
     role: 'メインアタッカー（密集協和効果）',
-    // v2: 未対応（データ待ち）。2026/8/20実装の新キャラのため、基礎ステータス・
-    // モチーフ武器「雲琅」の実数値が未確定。判明次第 weaponClass/scalingStat/
-    // baseStats90/motifWeaponId/variants を追加すること。
+    roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 462, hp: 10300, def: 1112 },
+    motifWeaponId: 'qingxiao',
+    // v2: 2026/8/20実装。基礎ステータスはGame8、攻撃タイプ別ダメージ配分は prydwen.gg の
+    // CalculationsタブにあるLv90ソロ火力シミュレーション(S0)の内訳から算出。
+    // typeShares は Basic/Heavy/Skill/Liberation の実ダメージ内訳を再正規化した値
+    // （Intro/Outro/Echoダメージは対応する攻撃タイプ別ダメ%サブステが存在しないため除外）。
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.EVILS_PURGE], acceptable: [SET.GALE] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'], acceptable: ['atkPercent'] },
+          cost3: { recommended: ['AeroDmg'],              acceptable: ['atkPercent'] },
+          cost1: { recommended: ['atkPercent'],           acceptable: [] },
+        },
+        erRequirement: 1.25,
+        damageProfile: {
+          typeShares: { basic: 0.272, heavy: 0.372, skill: 0.017, lib: 0.339 },
+          selfAtkBuffPercent: 0.15,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.30,
+        },
+      },
+    ],
     substats: {
       recommended: [
         { key: 'critRate' },
