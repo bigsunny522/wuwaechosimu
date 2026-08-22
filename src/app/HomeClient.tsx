@@ -24,12 +24,17 @@ import ScoreDistributionChart from '@/components/ScoreDistributionChart';
 import AdBanner from '@/components/AdBanner';
 import AdBannerThin from '@/components/AdBannerThin';
 import NativeBanner from '@/components/NativeBanner';
+import { Menu, BookOpen, Calculator, Users, Bell, Info, FileText, Mail } from 'lucide-react';
 
 const ACCENT = '#0275fd';
 const COST_OPTIONS: EchoCost[] = [4, 3, 1];
 const ZERO_COST = { shellCoins: 0, tunerBasic: 0, tunerAdvanced: 0, expMaterial: 0 };
 const RUN_MILESTONES = [5, 10, 20, 50];
 const MAX_SUBSTATS = 5;
+
+/** ヘッダーのオーバーフローメニュー1行分の共通スタイル */
+const MENU_ITEM =
+  'flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors';
 
 function getRepresentativeEchoId(cost: EchoCost, harmonySet: string): string {
   const found = ECHOES.find((e) => e.cost === cost && e.sets.includes(harmonySet));
@@ -62,6 +67,7 @@ function getRecommendedHarmonySet(charId: string, cost: EchoCost): string | null
 export default function HomeClient() {
   const { locale, toggleLocale } = useLocale();
   const ja = locale === 'ja';
+  const [menuOpen, setMenuOpen] = useState(false);
 
   /* ── 対象ビルド選択 ─────────────────────────────────────────── */
   const [selectedCharId, setSelectedCharId] = useState('generic');
@@ -426,6 +432,86 @@ export default function HomeClient() {
             >
               {ja ? 'EN' : 'JA'}
             </button>
+
+            {/* Overflow menu */}
+            <div className="relative shrink-0">
+              <button
+                onClick={() => setMenuOpen((v) => !v)}
+                className="flex items-center justify-center w-8 h-8 rounded-lg text-sm transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
+                aria-label={ja ? 'メニュー' : 'Menu'}
+              >
+                <Menu size={16} />
+              </button>
+              {menuOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+                  <div
+                    className="absolute right-0 top-full mt-2 z-50 w-52 rounded-xl bg-white overflow-hidden"
+                    style={{ border: '1px solid #e5e7eb', boxShadow: 'var(--shadow-3)' }}
+                  >
+                    <Link
+                      href={withLang('/guide', locale)}
+                      onClick={() => setMenuOpen(false)}
+                      className={MENU_ITEM}
+                    >
+                      <BookOpen size={14} />
+                      <span>{ja ? '使い方ガイド' : 'How to Use'}</span>
+                    </Link>
+                    <Link
+                      href={withLang('/score-formula', locale)}
+                      onClick={() => setMenuOpen(false)}
+                      className={MENU_ITEM}
+                    >
+                      <Calculator size={14} />
+                      <span>{ja ? 'スコア計算方法' : 'Scoring Method'}</span>
+                    </Link>
+                    <Link
+                      href={withLang('/chardb', locale)}
+                      onClick={() => setMenuOpen(false)}
+                      className={MENU_ITEM}
+                    >
+                      <Users size={14} />
+                      <span>{ja ? 'キャラ別ビルド' : 'Build Data'}</span>
+                    </Link>
+                    <Link
+                      href={withLang('/news', locale)}
+                      onClick={() => setMenuOpen(false)}
+                      className={MENU_ITEM}
+                    >
+                      <Bell size={14} />
+                      <span>{ja ? 'お知らせ' : "What's New"}</span>
+                    </Link>
+
+                    {/* ── サイト情報 ── */}
+                    <Link
+                      href={withLang('/about', locale)}
+                      onClick={() => setMenuOpen(false)}
+                      className={MENU_ITEM}
+                      style={{ borderTop: '1px solid #f3f4f6' }}
+                    >
+                      <Info size={14} />
+                      <span>{ja ? 'このサイトについて' : 'About'}</span>
+                    </Link>
+                    <Link
+                      href={withLang('/privacy', locale)}
+                      onClick={() => setMenuOpen(false)}
+                      className={MENU_ITEM}
+                    >
+                      <FileText size={14} />
+                      <span>{ja ? 'プライバシーポリシー' : 'Privacy Policy'}</span>
+                    </Link>
+                    <Link
+                      href={withLang('/contact', locale)}
+                      onClick={() => setMenuOpen(false)}
+                      className={MENU_ITEM}
+                    >
+                      <Mail size={14} />
+                      <span>{ja ? 'お問い合わせ' : 'Contact'}</span>
+                    </Link>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </header>

@@ -32,7 +32,7 @@ export default function HomeExplainer() {
           <article key={block.heading}>
             <h2
               className="text-lg mb-3"
-              style={{ color: 'var(--home-text)', fontFamily: 'var(--font-display-serif)' }}
+              style={{ color: 'var(--home-text)' }}
             >
               {block.heading}
             </h2>

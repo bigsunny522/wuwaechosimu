@@ -463,8 +463,8 @@ export default function GachaClient() {
           <div className="flex items-center gap-2 shrink-0">
             <EchoIcon size={28} color={ACCENT} />
             <span
-              className="text-base tracking-tight"
-              style={{ color: 'var(--home-text)', fontFamily: 'var(--font-display-serif)' }}
+              className="text-base font-semibold tracking-tight"
+              style={{ color: 'var(--home-text)' }}
             >
               {T.appTitle}
             </span>
