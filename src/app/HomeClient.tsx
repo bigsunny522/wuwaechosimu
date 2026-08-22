@@ -1,239 +1,101 @@
 'use client';
 
-/* Hallmark · design-system: DESIGN.md (blue = STUDIO §1-9, gold = §10) */
-
-import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import type { EchoCost, EchoState, ScoreResult, MainstatInfo } from '@/types/echo';
-import { createEcho, upgradeEcho, upgradeToFull, rerollSubstats } from '@/lib/simulator';
-import { simulateCompletion, clearBaselineCache, type AdvisorResult } from '@/lib/monteCarlo';
-import { scoreEcho } from '@/lib/scorer';
-import { SUBSTAT_COUNT, MAINSTAT_POOLS } from '@/data/mainstats';
-import { ECHOES_BY_COST, ECHOES, DEFAULT_ECHO_ID, HARMONY_SETS, HARMONY_SETS_EN } from '@/data/echoes';
+import type { EchoCost, EchoState, Substat, SubstatKey } from '@/types/echo';
+import { SUBSTAT_DATA, SUBSTAT_MAP } from '@/data/substats';
+import { MAINSTAT_POOLS } from '@/data/mainstats';
+import { ECHOES, ECHOES_BY_COST, DEFAULT_ECHO_ID, HARMONY_SETS, HARMONY_SETS_EN } from '@/data/echoes';
 import { CHARACTER_LIST, CHARACTER_MAP } from '@/data/characters';
-import EchoCard from '@/components/EchoCard';
-import EchoAdvisor from '@/components/EchoAdvisor';
-import ScoreDebugPanel from '@/components/ScoreDebugPanel';
-import BonusModal from '@/components/BonusModal';
-import SavedResultsModal, { type SavedResult } from '@/components/SavedResultsModal';
-import HomeExplainer from '@/components/HomeExplainer';
-import AdBanner from '@/components/AdBanner';
-import UpdateModal from '@/components/UpdateModal';
-import { LATEST_UPDATE_ID } from '@/data/updates';
-import { generateResultCard, buildShareText } from '@/lib/imageGen';
+import { scoreEcho, getSubstatCategory } from '@/lib/scorer';
+import { RANK_COLORS } from '@/lib/scorer';
+import { simulateCompletion } from '@/lib/monteCarlo';
+import {
+  type TrackedEntry, type Threshold, type BaselineStats,
+  loadEntries, saveEntries, computeBaseline, predict, probAtLeastOneWithin,
+  RANK_ORDER,
+} from '@/lib/tracker';
 import { useLocale, withLang } from '@/lib/locale';
-import { TRANSLATIONS, MAINSTAT_LABEL_EN, interpolate } from '@/data/translations';
+import { SUBSTAT_LABEL_EN, MAINSTAT_LABEL_EN } from '@/data/translations';
 import CustomSelect from '@/components/CustomSelect';
 import EchoIcon from '@/components/EchoIcon';
-import SiteThemeSwitcher from '@/components/SiteThemeSwitcher';
-import { useSiteTheme, type SiteTheme } from '@/contexts/SiteThemeContext';
-import {
-  Dices, BarChart3, Sparkles, Gift, History, Menu, BookOpen, Bell,
-  Globe, FileText, Mail, Swords, Clock, Check, Loader2, Calculator, Users, Info,
-} from 'lucide-react';
+import EchoAdvisor from '@/components/EchoAdvisor';
+import ScoreDistributionChart from '@/components/ScoreDistributionChart';
+import AdBanner from '@/components/AdBanner';
+import NativeBanner from '@/components/NativeBanner';
 
+const ACCENT = '#0275fd';
 const COST_OPTIONS: EchoCost[] = [4, 3, 1];
+const ZERO_COST = { shellCoins: 0, tunerBasic: 0, tunerAdvanced: 0, expMaterial: 0 };
+const RUN_MILESTONES = [5, 10, 20, 50];
+const MAX_SUBSTATS = 5;
 
-/** サイトテーマごとのアクセント色(hex)。alpha付き文字列連結(`${ACCENT}44`)で
- *  使われる箇所が多いため、CSS変数ではなく実hexで持つ。 */
-const ACCENT_BY_THEME: Record<SiteTheme, string> = {
-  blue: '#0275fd',
-  gold: '#a8823a',
-};
-/** CTAボタンの実際の塗り(グラデーション含む)に近い単色。SVGのfillはグラデーション文字列を
- *  受け付けないため、EchoIconの「背景に溶け込む」用途にはこちらを使う。 */
-const CTA_SOLID_BY_THEME: Record<SiteTheme, string> = {
-  blue: '#222222',
-  gold: '#8a6a2e',
-};
-interface SelectTheme {
-  charAccent: string; charBg: string; charBorder: string;
-  echoAccent: string; echoBg: string; echoBorder: string;
-  text: string; dropdownBg: string;
+function getRepresentativeEchoId(cost: EchoCost, harmonySet: string): string {
+  const found = ECHOES.find((e) => e.cost === cost && e.sets.includes(harmonySet));
+  return found?.id ?? DEFAULT_ECHO_ID[cost];
 }
-const SELECT_ACCENT_BY_THEME: Record<SiteTheme, SelectTheme> = {
-  blue: {
-    charAccent: '#0275fd', charBg: 'linear-gradient(135deg, #f0f7ff 0%, #fafbff 100%)', charBorder: '#bdd4fb',
-    echoAccent: '#783cf0', echoBg: 'linear-gradient(135deg, #f5f0ff 0%, #fafbff 100%)', echoBorder: '#cdbdfb',
-    text: '#222222', dropdownBg: '#ffffff',
-  },
-  gold: {
-    charAccent: '#a8823a', charBg: 'linear-gradient(135deg, #17140d 0%, #0d0b07 100%)', charBorder: '#2e2412',
-    echoAccent: '#8a6a2e', echoBg: 'linear-gradient(135deg, #17140d 0%, #0d0b07 100%)', echoBorder: '#2e2412',
-    text: '#f3ead2', dropdownBg: '#1a160e',
-  },
-};
 
+// COST4: キャラの推奨/可セットに属する音骸を探す（推奨優先）
 function getRecommendedEchoId(charId: string): string | null {
   if (charId === 'generic') return null;
   const char = CHARACTER_MAP[charId];
   if (!char) return null;
-  // 推奨セットを優先、なければ可セットにフォールバック
   for (const set of [...char.harmonySets.recommended, ...char.harmonySets.acceptable]) {
-    const echo = ECHOES.find(e => e.cost === 4 && e.sets.includes(set));
+    const echo = ECHOES.find((e) => e.cost === 4 && e.sets.includes(set));
     if (echo) return echo.id;
   }
   return null;
 }
 
+// COST3/1: キャラの推奨/可セットのうち、そのコストに実在するものを探す（推奨優先）
 function getRecommendedHarmonySet(charId: string, cost: EchoCost): string | null {
   if (charId === 'generic' || cost === 4) return null;
   const char = CHARACTER_MAP[charId];
   if (!char) return null;
-  const available = new Set(ECHOES.filter(e => e.cost === cost).flatMap(e => e.sets));
-  // 推奨セットを優先、なければ可セットにフォールバック
-  return char.harmonySets.recommended.find(s => available.has(s))
-    ?? char.harmonySets.acceptable.find(s => available.has(s))
+  const available = new Set(ECHOES.filter((e) => e.cost === cost).flatMap((e) => e.sets));
+  return char.harmonySets.recommended.find((s) => available.has(s))
+    ?? char.harmonySets.acceptable.find((s) => available.has(s))
     ?? null;
 }
 
-function getRecommendedMainstatKey(cost: EchoCost, charId: string): string {
-  const char = charId !== 'generic' ? CHARACTER_MAP[charId] : undefined;
-  if (cost === 4) {
-    if (char?.mainstat.cost4.recommended.includes('healingBonus')) return 'healingBonus';
-    return 'critDmg';
-  }
-  if (cost === 1) {
-    if (char?.mainstat.cost1.recommended.includes('hpPercent')) return 'hpPercent';
-    return 'atkPercent';
-  }
-  if (!char) return 'atkPercent';
-  const dmgKey = char.mainstat.cost3.recommended.find(k => k.endsWith('Dmg'));
-  return dmgKey ?? char.mainstat.cost3.recommended[0] ?? 'atkPercent';
-}
-const BONUS_DURATION_MS = 5 * 60 * 1000;
-const MAX_REROLL        = 3;
-const SAVE_PER_UNLOCK   = 10;
-
-const FOOTER_LINKS = [
-  { href: '/guide',         ja: '使い方ガイド',           en: 'How to Use' },
-  { href: '/score-formula', ja: 'スコア計算方法',         en: 'Scoring Method' },
-  { href: '/chardb',        ja: 'キャラ別ビルド',         en: 'Build Data' },
-  { href: '/',              ja: '厳選サポーター',         en: 'Farming Supporter' },
-  { href: '/news',          ja: 'お知らせ',               en: "What's New" },
-  { href: '/about',         ja: 'このサイトについて',     en: 'About' },
-  { href: '/privacy',       ja: 'プライバシーポリシー',   en: 'Privacy Policy' },
-  { href: '/contact',       ja: 'お問い合わせ',           en: 'Contact' },
-] as const;
-
-type BonusKind = 'bonus' | 'saves';
-
-/** ヘッダーのオーバーフローメニュー1行分の共通スタイル */
-const MENU_ITEM =
-  'flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors';
-
-
 export default function HomeClient() {
   const { locale, toggleLocale } = useLocale();
-  const T = TRANSLATIONS[locale];
-  const { theme } = useSiteTheme();
-  const ACCENT = ACCENT_BY_THEME[theme];
-  const CTA_SOLID = CTA_SOLID_BY_THEME[theme];
-  const SEL = SELECT_ACCENT_BY_THEME[theme];
+  const ja = locale === 'ja';
 
-  const [cost, setCost]                       = useState<EchoCost>(4);
-  const [selectedEchoId, setSelectedEchoId]   = useState<string>(DEFAULT_ECHO_ID[4]);
-  const [selectedHarmonySet, setSelectedHarmonySet] = useState<string>('');
-  const [echo, setEcho]                       = useState<EchoState | null>(null);
-  const [score, setScore]                     = useState<ScoreResult | null>(null);
-  const [selectedCharId, setSelectedCharId]   = useState<string>('generic');
-  const [downloading, setDownloading]         = useState(false);
-  const [maxedAt, setMaxedAt]                 = useState<number | null>(null);
-  const echoSectionRef   = useRef<HTMLDivElement>(null);
-  const scrollOnNext     = useRef(false);
+  /* ── 対象ビルド選択 ─────────────────────────────────────────── */
+  const [selectedCharId, setSelectedCharId] = useState('generic');
+  const [cost, setCost] = useState<EchoCost>(4);
+  const [selectedEchoId, setSelectedEchoId] = useState(DEFAULT_ECHO_ID[4]);
+  const [selectedHarmonySet, setSelectedHarmonySet] = useState('');
+  const [draftHarmonySet, setDraftHarmonySet] = useState(''); // cost4で複数セット持ちの音骸用
 
-  /* ── Bonus time ─────────────────────────────────────────────── */
-  const [bonusEndTime, setBonusEndTime]       = useState<number | null>(null);
-  const [bonusModalOpen, setBonusModalOpen]   = useState(false);
-  const [bonusKind, setBonusKind]             = useState<BonusKind>('bonus');
-  const [timeLeft, setTimeLeft]               = useState(0);
-  const [lockedMainstatKey, setLockedMainstatKey] = useState<string>('');
-  const [rerollUsed, setRerollUsed]           = useState(false);
-  const [rerollIndices, setRerollIndices]     = useState<Set<number>>(new Set());
+  /* ── 記録フォーム：判明済みサブステ（+5ごとに1個ずつ追加） ────── */
+  const [draftSubs, setDraftSubs] = useState<Substat[]>([]);
+  const [pendingKey, setPendingKey] = useState('');
+  const [pendingTier, setPendingTier] = useState(0);
 
-  const bonusActive = bonusEndTime !== null && Date.now() < bonusEndTime;
+  const harmonySetOptions = useMemo(() => {
+    if (cost === 4) return [];
+    const available = new Set(ECHOES.filter((e) => e.cost === cost).flatMap((e) => e.sets));
+    return Object.values(HARMONY_SETS).filter((s) => available.has(s));
+  }, [cost]);
 
   useEffect(() => {
-    if (!bonusEndTime) return;
-    const tick = () => {
-      const left = Math.max(0, bonusEndTime - Date.now());
-      setTimeLeft(Math.ceil(left / 1000));
-      if (left === 0) setBonusEndTime(null);
-    };
-    tick();
-    const id = setInterval(tick, 500);
-    return () => clearInterval(id);
-  }, [bonusEndTime]);
-
-  /* ── Update notification ────────────────────────────────────── */
-  useEffect(() => {
-    const seen = localStorage.getItem('lastSeenUpdate');
-    if (seen !== LATEST_UPDATE_ID) {
-      setUpdateModalOpen(true);
-      setHasNewUpdate(true);
-    }
-  }, []);
-
-  /* ── Auto-scroll to echo card on new draw ───────────────────── */
-  // 入手直後はカードが小さいため、上端合わせより中央寄せの方が収まりが良い
-  useEffect(() => {
-    if (!echo || !scrollOnNext.current) return;
-    scrollOnNext.current = false;
-    const timer = setTimeout(() => {
-      echoSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 80);
-    return () => clearTimeout(timer);
-  }, [echo]);
-
-  /* ── Auto-scroll once fully upgraded (PC のみ、スマホはモーダル表示) ── */
-  // 完成した音骸カード（サブステ5個）の上端に合わせる。結果ブロックを対象にすると
-  // カードが画面外へ流れてしまい、何を引いたのかが見えなくなる
-  useEffect(() => {
-    if (!score || echo?.level !== 25) return;
-    if (window.innerWidth < 640) return;
-    const timer = setTimeout(() => {
-      echoSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 80);
-    return () => clearTimeout(timer);
-  }, [score, echo?.level]);
-
-  /* ── Save slots ─────────────────────────────────────────────── */
-  const [saveSlots, setSaveSlots]             = useState(0);
-  const [savedResults, setSavedResults]       = useState<SavedResult[]>([]);
-  const [historyOpen, setHistoryOpen]         = useState(false);
-  const [menuOpen, setMenuOpen]               = useState(false);
-  const [updateModalOpen, setUpdateModalOpen] = useState(false);
-  const [hasNewUpdate, setHasNewUpdate]       = useState(false);
-  const [showResultModal, setShowResultModal] = useState(false);
-  const [advisorResult, setAdvisorResult]     = useState<AdvisorResult | null>(null);
-
-  /* ── Bonus configs (locale-aware) ───────────────────────────── */
-  const bonusConfigs: Record<BonusKind, { title: string; items: string[] }> = useMemo(() => ({
-    bonus: { title: T.bonusModalTitle, items: [T.bonusModalItem1, T.bonusModalItem2] },
-    saves: { title: T.savesModalTitle, items: [interpolate(T.savesModalItem1, [SAVE_PER_UNLOCK]), T.savesModalItem2] },
-  }), [T]);
-
-  /* ── Handlers ───────────────────────────────────────────────── */
-  const handleGrantBonus = useCallback(() => {
-    if (bonusKind === 'bonus') {
-      setBonusEndTime(Date.now() + BONUS_DURATION_MS);
-      setLockedMainstatKey(getRecommendedMainstatKey(cost, selectedCharId));
-      setRerollUsed(false);
-      setRerollIndices(new Set());
+    if (cost === 4) {
+      const recId = getRecommendedEchoId(selectedCharId);
+      setSelectedEchoId(recId ?? DEFAULT_ECHO_ID[4]);
     } else {
-      setSaveSlots((prev) => prev + SAVE_PER_UNLOCK);
+      const recSet = getRecommendedHarmonySet(selectedCharId, cost);
+      setSelectedHarmonySet(recSet ?? (harmonySetOptions[0] ?? ''));
     }
-  }, [bonusKind, cost, selectedCharId]);
-
-  const openBonusModal = useCallback((kind: BonusKind) => {
-    setBonusKind(kind);
-    setBonusModalOpen(true);
-  }, []);
+    setDraftSubs([]);
+    setPendingKey('');
+    setPendingTier(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cost]);
 
   const handleCharacterChange = useCallback((charId: string) => {
     setSelectedCharId(charId);
-    setScore(null);
-    clearBaselineCache();
     if (cost === 4) {
       const recId = getRecommendedEchoId(charId);
       if (recId) setSelectedEchoId(recId);
@@ -241,134 +103,10 @@ export default function HomeClient() {
       const recSet = getRecommendedHarmonySet(charId, cost);
       if (recSet) setSelectedHarmonySet(recSet);
     }
-    setLockedMainstatKey(getRecommendedMainstatKey(cost, charId));
+    setDraftSubs([]);
+    setPendingKey('');
+    setPendingTier(0);
   }, [cost]);
-
-  const harmonySetOptions = useMemo(() => {
-    if (cost === 4) return [];
-    const available = new Set(ECHOES.filter(e => e.cost === cost).flatMap(e => e.sets));
-    return Object.values(HARMONY_SETS).filter(s => available.has(s));
-  }, [cost]);
-
-  const handleCostChange = useCallback((c: EchoCost) => {
-    setCost(c);
-    if (c === 4) {
-      const recId = getRecommendedEchoId(selectedCharId);
-      setSelectedEchoId(recId ?? DEFAULT_ECHO_ID[c]);
-    } else {
-      const recSet = getRecommendedHarmonySet(selectedCharId, c);
-      if (recSet) {
-        setSelectedHarmonySet(recSet);
-      } else {
-        const available = new Set(ECHOES.filter(e => e.cost === c).flatMap(e => e.sets));
-        const first = Object.values(HARMONY_SETS).find(s => available.has(s)) ?? '';
-        setSelectedHarmonySet(first);
-      }
-    }
-    setLockedMainstatKey(getRecommendedMainstatKey(c, selectedCharId));
-    setEcho(null);
-    setScore(null);
-  }, [selectedCharId]);
-
-  const handleStart = useCallback(() => {
-    scrollOnNext.current = true;
-    let echoId = selectedEchoId;
-    if (cost !== 4) {
-      const pool = ECHOES.filter(e => e.cost === cost && e.sets.includes(selectedHarmonySet));
-      if (pool.length === 0) return;
-      echoId = pool[Math.floor(Math.random() * pool.length)].id;
-    }
-    let fixedMain: MainstatInfo | undefined;
-    if (bonusEndTime && Date.now() < bonusEndTime && lockedMainstatKey) {
-      fixedMain = MAINSTAT_POOLS[cost].find(m => m.key === lockedMainstatKey);
-    }
-    const harmonyForEcho = cost !== 4 ? selectedHarmonySet : undefined;
-    setEcho(createEcho(cost, echoId, fixedMain, harmonyForEcho));
-    setScore(null);
-    setMaxedAt(null);
-    setRerollUsed(false);
-    setRerollIndices(new Set());
-    setShowResultModal(false);
-    setAdvisorResult(null);
-  }, [echo, cost, selectedEchoId, selectedHarmonySet, bonusEndTime, lockedMainstatKey]);
-
-  const handleUpgrade = useCallback(() => {
-    if (!echo || echo.level >= 25) return;
-    const next = upgradeEcho(echo);
-    setEcho(next);
-    const build = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
-    setScore(scoreEcho(next, build));
-    if (next.level === 25) {
-      setMaxedAt(Date.now());
-      setAdvisorResult(null);
-      if (window.innerWidth < 640) setShowResultModal(true);
-    } else {
-      setAdvisorResult(simulateCompletion(next, build));
-    }
-  }, [echo, selectedCharId]);
-
-  const handleMaxUpgrade = useCallback(() => {
-    if (!echo || echo.level >= 25) return;
-    const maxed = upgradeToFull(echo);
-    setEcho(maxed);
-    const build = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
-    setScore(scoreEcho(maxed, build));
-    setMaxedAt(Date.now());
-    if (window.innerWidth < 640) setShowResultModal(true);
-  }, [echo, selectedCharId]);
-
-  const handleReset = useCallback(() => {
-    setEcho(null); setScore(null); setMaxedAt(null);
-    setRerollUsed(false); setRerollIndices(new Set());
-    setShowResultModal(false); setAdvisorResult(null);
-  }, []);
-
-  const handleReroll = useCallback(() => {
-    if (!echo || rerollUsed || rerollIndices.size === 0) return;
-    const newEcho = rerollSubstats(echo, Array.from(rerollIndices));
-    setEcho(newEcho);
-    const build = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
-    setScore(scoreEcho(newEcho, build));
-    setRerollUsed(true);
-    setRerollIndices(new Set());
-  }, [echo, rerollUsed, rerollIndices, selectedCharId]);
-
-  const toggleRerollIndex = useCallback((idx: number) => {
-    setRerollIndices(prev => {
-      const next = new Set(prev);
-      if (next.has(idx)) next.delete(idx);
-      else if (next.size < MAX_REROLL) next.add(idx);
-      return next;
-    });
-  }, []);
-
-  const handleSave = useCallback(() => {
-    if (!echo || !score || echo.level < 25 || saveSlots <= 0) return;
-    const ts = maxedAt ?? Date.now();
-    const char = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
-    const charName = char
-      ? (locale === 'en' ? char.nameEn : char.name)
-      : undefined;
-    setSavedResults(prev => [{ id: Date.now(), echo, score, maxedAt: ts, charName }, ...prev]);
-    setSaveSlots(prev => prev - 1);
-  }, [echo, score, saveSlots, maxedAt, selectedCharId, locale]);
-
-  const handleClearSaved = useCallback((id: number) => {
-    setSavedResults(prev => prev.filter(r => r.id !== id));
-  }, []);
-
-  const isMaxLevel  = echo?.level === 25;
-  // スマホ：アドバイザーを下固定バーに表示するフラグ
-  const showAdvisorInBar = !!(advisorResult && echo && echo.level > 0 && echo.level < 25);
-  const echoList    = ECHOES_BY_COST[cost];
-
-  const charOptions = useMemo(() => [
-    { value: 'generic', label: T.charGeneric },
-    ...CHARACTER_LIST.map((c) => ({
-      value: c.id,
-      label: locale === 'en' ? (c.nameEn ?? c.name) : c.name,
-    })),
-  ], [T.charGeneric, locale]);
 
   const echoOptions = useMemo(() => {
     const char = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
@@ -377,21 +115,21 @@ export default function HomeClient() {
     const priority = (b?: 'recommended' | 'acceptable') =>
       b === 'recommended' ? 0 : b === 'acceptable' ? 1 : 2;
 
-    return echoList
+    return ECHOES_BY_COST[cost]
       .map((e) => {
         let badge: 'recommended' | 'acceptable' | undefined;
         if (char) {
-          if (e.sets.some(s => recSets.has(s))) badge = 'recommended';
-          else if (e.sets.some(s => accSets.has(s))) badge = 'acceptable';
+          if (e.sets.some((s) => recSets.has(s))) badge = 'recommended';
+          else if (e.sets.some((s) => accSets.has(s))) badge = 'acceptable';
         }
-        return { value: e.id, label: locale === 'en' ? (e.nameEn ?? e.name) : e.name, badge };
+        return { value: e.id, label: ja ? e.name : (e.nameEn ?? e.name), badge };
       })
       .sort((a, b) => {
         const pd = priority(a.badge) - priority(b.badge);
         if (pd !== 0) return pd;
-        return a.label.localeCompare(b.label, locale === 'en' ? 'en' : 'ja', { sensitivity: 'base' });
+        return a.label.localeCompare(b.label, ja ? 'ja' : 'en');
       });
-  }, [echoList, locale, selectedCharId]);
+  }, [cost, ja, selectedCharId]);
 
   const harmonyOptions = useMemo(() => {
     const char = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
@@ -406,33 +144,72 @@ export default function HomeClient() {
         if (recSets.has(s)) badge = 'recommended';
         else if (accSets.has(s)) badge = 'acceptable';
       }
-      return { value: s, label: locale === 'en' ? (HARMONY_SETS_EN[s] ?? s) : s, badge, _i: i };
+      return { value: s, label: ja ? s : (HARMONY_SETS_EN[s] ?? s), badge, _i: i };
     });
     items.sort((a, b) => {
       const pd = priority(a.badge) - priority(b.badge);
       return pd !== 0 ? pd : a._i - b._i;
     });
     return items.map(({ _i: _, ...opt }) => opt);
-  }, [harmonySetOptions, locale, selectedCharId]);
+  }, [harmonySetOptions, ja, selectedCharId]);
+
+  const charOptions = useMemo(() => [
+    { value: 'generic', label: ja ? '（キャラなし・汎用評価）' : '(No character — generic score)' },
+    ...CHARACTER_LIST.map((c) => ({ value: c.id, label: ja ? c.name : (c.nameEn ?? c.name) })),
+  ], [ja]);
+
+  const currentEchoInfo = useMemo(() => ECHOES.find((e) => e.id === selectedEchoId), [selectedEchoId]);
+  const cost4MultiSet = cost === 4 && (currentEchoInfo?.sets.length ?? 0) > 1;
+
+  useEffect(() => {
+    if (cost4MultiSet) setDraftHarmonySet(currentEchoInfo!.sets[0]);
+  }, [cost4MultiSet, currentEchoInfo]);
+
+  const build = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
+
+  /* ── 理論値（ベースライン、予測計算にのみ使用。表示はしない） ──── */
+  const [baseline, setBaseline] = useState<BaselineStats | null>(null);
+
+  useEffect(() => {
+    const repEchoId = cost === 4 ? selectedEchoId : getRepresentativeEchoId(cost, selectedHarmonySet);
+    const timer = setTimeout(() => {
+      setBaseline(computeBaseline(cost, repEchoId, build));
+    }, 0);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cost, selectedEchoId, selectedHarmonySet, selectedCharId]);
+
+  /* ── 記録一覧（localStorage 永続化） ────────────────────────── */
+  const [entries, setEntries] = useState<TrackedEntry[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  useEffect(() => { setEntries(loadEntries()); setLoaded(true); }, []);
+
+  const filteredEntries = useMemo(
+    () => entries.filter((e) => e.cost === cost && e.charId === selectedCharId),
+    [entries, cost, selectedCharId],
+  );
+
+  /* ── 入力フォーム ───────────────────────────────────────────── */
+  const [draftMainstatKey, setDraftMainstatKey] = useState(MAINSTAT_POOLS[4][0].key);
+  useEffect(() => { setDraftMainstatKey(MAINSTAT_POOLS[cost][0].key); }, [cost]);
 
   const mainstatOptions = useMemo(() => {
-    const char = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
     const costKey = `cost${cost}` as 'cost4' | 'cost3' | 'cost1';
-    const recKeys = char ? new Set(char.mainstat[costKey].recommended) : new Set<string>();
-    const accKeys = char ? new Set(char.mainstat[costKey].acceptable) : new Set<string>();
+    const recKeys = build ? new Set(build.mainstat[costKey].recommended) : new Set<string>();
+    const accKeys = build ? new Set(build.mainstat[costKey].acceptable) : new Set<string>();
     const priority = (b?: 'recommended' | 'acceptable') =>
       b === 'recommended' ? 0 : b === 'acceptable' ? 1 : 2;
 
     return MAINSTAT_POOLS[cost]
       .map((m, i) => {
         let badge: 'recommended' | 'acceptable' | undefined;
-        if (char) {
+        if (build) {
           if (recKeys.has(m.key)) badge = 'recommended';
           else if (accKeys.has(m.key)) badge = 'acceptable';
         }
         return {
           value: m.key,
-          label: `${locale === 'en' ? (MAINSTAT_LABEL_EN[m.key] ?? m.label) : m.label}（+25: ${m.value}${m.unit}）`,
+          label: `${ja ? m.label : (MAINSTAT_LABEL_EN[m.key] ?? m.label)}（+25: ${m.value}${m.unit}）`,
           badge,
           _i: i,
         };
@@ -442,807 +219,533 @@ export default function HomeClient() {
         return pd !== 0 ? pd : a._i - b._i;
       })
       .map(({ _i: _, ...opt }) => opt);
-  }, [cost, locale, selectedCharId]);
-  const showRerollPanel   = bonusActive && echo?.level === 25 && !rerollUsed;
-  const showMainstatLock  = bonusActive;
-  const formatTime  = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  }, [cost, ja, build]);
+
+  // 現在のフォーム選択（メインステ・セット）から音骸のメタ情報を組み立てる
+  const draftMeta = useMemo(() => {
+    const mainstat = MAINSTAT_POOLS[cost].find((m) => m.key === draftMainstatKey)!;
+    const harmonySet = cost === 4
+      ? (cost4MultiSet ? draftHarmonySet : (currentEchoInfo?.sets[0] ?? ''))
+      : selectedHarmonySet;
+    const echoId = cost === 4 ? selectedEchoId : `harmony:${harmonySet}`;
+    const echoName = cost === 4 ? (currentEchoInfo?.name ?? selectedEchoId) : harmonySet;
+    const echoNameEn = cost === 4
+      ? (currentEchoInfo?.nameEn ?? echoName)
+      : (HARMONY_SETS_EN[harmonySet] ?? harmonySet);
+    return { mainstat, harmonySet, echoId, echoName, echoNameEn };
+  }, [cost, draftMainstatKey, cost4MultiSet, draftHarmonySet, currentEchoInfo, selectedHarmonySet, selectedEchoId]);
+
+  const buildDraftEcho = useCallback((subs: Substat[]): EchoState => ({
+    cost,
+    echoId: draftMeta.echoId,
+    echoName: draftMeta.echoName,
+    echoNameEn: draftMeta.echoNameEn,
+    activeHarmonySet: draftMeta.harmonySet,
+    level: subs.length * 5,
+    substats: subs,
+    mainstat: draftMeta.mainstat,
+    totalCost: ZERO_COST,
+  }), [cost, draftMeta]);
+
+  const availableSubstatOptions = useMemo(() => {
+    const used = new Set(draftSubs.map((s) => s.key));
+    const priority = (b?: 'recommended' | 'acceptable') =>
+      b === 'recommended' ? 0 : b === 'acceptable' ? 1 : 2;
+
+    return SUBSTAT_DATA
+      .filter((s) => !used.has(s.key))
+      .map((s, i) => {
+        const cat = getSubstatCategory(s.key, build);
+        const badge: 'recommended' | 'acceptable' | undefined =
+          cat === 'recommended' || cat === 'preferred' ? 'recommended'
+          : cat === 'acceptable' ? 'acceptable'
+          : undefined;
+        return { ...s, badge, _i: i };
+      })
+      .sort((a, b) => {
+        const pd = priority(a.badge) - priority(b.badge);
+        return pd !== 0 ? pd : a._i - b._i;
+      });
+  }, [draftSubs, build]);
+
+  const pendingEntry = pendingKey ? SUBSTAT_MAP[pendingKey as SubstatKey] : null;
+  const pendingTierOptions = pendingEntry
+    ? pendingEntry.values.map((v, idx) => ({ value: String(idx), label: `${v}${pendingEntry.unit}（T${idx}）` }))
+    : [];
+
+  const addSubstat = useCallback(() => {
+    if (!pendingEntry || draftSubs.length >= MAX_SUBSTATS) return;
+    const sub: Substat = {
+      key: pendingEntry.key,
+      label: pendingEntry.label,
+      unit: pendingEntry.unit,
+      value: pendingEntry.values[pendingTier],
+      tier: pendingTier,
+      maxValue: pendingEntry.values[pendingEntry.values.length - 1],
+    };
+    setDraftSubs((prev) => [...prev, sub]);
+    setPendingKey('');
+    setPendingTier(0);
+  }, [pendingEntry, pendingTier, draftSubs.length]);
+
+  const removeSubstat = useCallback((idx: number) => {
+    setDraftSubs((prev) => prev.filter((_, i) => i !== idx));
+  }, []);
+
+  const resetDraft = useCallback(() => {
+    setDraftSubs([]);
+    setPendingKey('');
+    setPendingTier(0);
+  }, []);
+
+  // +5ごとに1個ずつ判明していく過程のライブ予測（EchoAdvisorを流用）
+  const draftAdvisor = useMemo(() => {
+    if (draftSubs.length === 0 || draftSubs.length >= MAX_SUBSTATS) return null;
+    return simulateCompletion(buildDraftEcho(draftSubs), build);
+  }, [draftSubs, buildDraftEcho, build]);
+
+  // 5個そろったら確定スコアを計算
+  const draftFinalScore = useMemo(() => {
+    if (draftSubs.length < MAX_SUBSTATS) return null;
+    return scoreEcho(buildDraftEcho(draftSubs), build);
+  }, [draftSubs, buildDraftEcho, build]);
+
+  const canFinalize = draftSubs.length === MAX_SUBSTATS && (!cost4MultiSet || draftHarmonySet) && (cost === 4 || selectedHarmonySet);
+
+  // 5個そろって確定スコアが出た瞬間、フォームが伸びて画面外に隠れている結果を自動で表示範囲に入れる
+  const resultRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!draftFinalScore) return;
+    const timer = setTimeout(() => {
+      resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+    return () => clearTimeout(timer);
+  }, [draftFinalScore]);
+
+  const handleFinalize = useCallback(() => {
+    if (!canFinalize || !draftFinalScore) return;
+    const entry: TrackedEntry = {
+      id: Date.now(),
+      cost,
+      charId: selectedCharId,
+      echoId: cost === 4 ? selectedEchoId : undefined,
+      harmonySet: draftMeta.harmonySet,
+      mainstat: draftMeta.mainstat,
+      substats: draftSubs,
+      score: draftFinalScore.score,
+      rank: draftFinalScore.rank,
+      createdAt: Date.now(),
+    };
+    setEntries((prev) => {
+      const next = [entry, ...prev];
+      saveEntries(next);
+      return next;
+    });
+    resetDraft();
+  }, [canFinalize, draftFinalScore, cost, selectedCharId, selectedEchoId, draftMeta, draftSubs, resetDraft]);
+
+  const handleDelete = useCallback((id: number) => {
+    setEntries((prev) => {
+      const next = prev.filter((e) => e.id !== id);
+      saveEntries(next);
+      return next;
+    });
+  }, []);
+
+  const handleClearFiltered = useCallback(() => {
+    if (!window.confirm(ja ? 'この条件で記録した音骸をすべて削除しますか？' : 'Delete all recorded echoes for this filter?')) return;
+    setEntries((prev) => {
+      const next = prev.filter((e) => !(e.cost === cost && e.charId === selectedCharId));
+      saveEntries(next);
+      return next;
+    });
+  }, [cost, selectedCharId, ja]);
+
+  /* ── 予測 ───────────────────────────────────────────────────── */
+  const [threshold, setThreshold] = useState<Threshold>('S+');
+  const prediction = useMemo(() => {
+    if (!baseline) return null;
+    return predict(filteredEntries, threshold, baseline.probByThreshold[threshold]);
+  }, [filteredEntries, threshold, baseline]);
+
+  const rankCounts = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const r of RANK_ORDER) map[r] = 0;
+    for (const e of filteredEntries) map[e.rank] = (map[e.rank] ?? 0) + 1;
+    return map;
+  }, [filteredEntries]);
+
+  const LUCK_LABEL: Record<string, { ja: string; en: string; icon: string; color: string }> = {
+    hot:          { ja: '絶好調',       en: 'On fire',       icon: '🔥', color: '#f59e0b' },
+    warm:         { ja: '好調',         en: 'Lucky',         icon: '📈', color: '#10b981' },
+    neutral:      { ja: '平常運',       en: 'Average',       icon: '⚖️', color: '#6b7280' },
+    cool:         { ja: 'やや不調',     en: 'Below average', icon: '📉', color: '#f97316' },
+    cold:         { ja: '絶不調',       en: 'Cold streak',   icon: '🥶', color: '#ef4444' },
+    insufficient: { ja: 'データ不足',   en: 'Not enough data', icon: '❔', color: '#9ca3af' },
+  };
+
+  const fmtPct = (v: number) => `${(v * 100).toFixed(1)}%`;
 
   return (
-    <div
-      className="min-h-screen flex flex-col"
-      style={{ background: 'var(--home-bg)', color: 'var(--home-text)' }}
-    >
-
-      {/* ── Header ────────────────────────────────────────────── */}
-      <header
-        className="sticky top-0 z-30"
-        style={{ background: 'var(--home-bg)', borderBottom: '1px solid var(--home-border)' }}
-      >
+    <div className="min-h-screen flex flex-col bg-white">
+      {/* Header */}
+      <header className="sticky top-0 z-30 bg-white" style={{ borderBottom: '1px solid #e5e7eb' }}>
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
-          {/* Logo */}
           <div className="flex items-center gap-2 shrink-0">
             <EchoIcon size={28} color={ACCENT} />
-            <span
-              className="text-base tracking-tight"
-              style={{ color: 'var(--home-text)', fontFamily: 'var(--font-display-serif)' }}
-            >
-              {T.appTitle}
+            <span className="font-semibold text-[#222222] text-sm tracking-tight">
+              {ja ? '厳選サポーター' : 'Selection Supporter'}
             </span>
           </div>
-
-          {/* Nav buttons — 常時出すのはモード切替と ☰ のみ。
-              テーマ・履歴・ボーナス開放は ☰ に集約している */}
           <div className="flex items-center gap-1.5 shrink-0">
-            {/* Mode switcher: ガチャ（シミュレーター） / 厳選管理（サポーター） */}
+            {/* Mode switcher: シミュレーター / 厳選サポーター */}
             <div
               className="flex items-center rounded-lg p-0.5 shrink-0"
-              style={{ background: 'var(--home-surface)' }}
-              title={locale === 'ja' ? 'ゲーム感覚で理論値を試す' : 'Try theoretical odds, game-style'}
+              style={{ background: '#f3f4f6' }}
             >
+              <Link
+                href={withLang('/gacha', locale)}
+                className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-[#707070] hover:text-[#222222] transition-colors"
+                title={ja ? 'ゲーム感覚で理論値を試す' : 'Try theoretical odds, game-style'}
+              >
+                <span>✦</span>
+                <span className="hidden sm:inline">{ja ? 'ガチャ' : 'Gacha'}</span>
+              </Link>
               <span
                 className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold"
-                style={{ background: 'var(--home-card)', color: ACCENT, boxShadow: '0 1px 2px rgba(0,0,0,0.06)' }}
+                style={{ background: '#ffffff', color: ACCENT, boxShadow: '0 1px 2px rgba(0,0,0,0.06)' }}
               >
-                <Dices size={13} />
-                <span className="hidden sm:inline">{locale === 'ja' ? 'ガチャ' : 'Gacha'}</span>
+                <span>📊</span>
+                <span className="hidden sm:inline">{ja ? '厳選管理' : 'Manage'}</span>
               </span>
-              <Link
-                href={withLang('/', locale)}
-                className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors"
-                style={{ color: 'var(--home-text-sub)' }}
-                title={locale === 'ja' ? '実際の厳選を記録・管理する' : 'Log and manage your real pulls'}
-              >
-                <BarChart3 size={13} />
-                <span className="hidden sm:inline">{locale === 'ja' ? '厳選管理' : 'Manage'}</span>
-              </Link>
             </div>
-
-            {/* ボーナス発動中の残り時間。未発動時は ☰ と本文カードから開放する */}
-            {bonusActive && (
-              <div
-                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium border"
-                style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: 'var(--home-accent-bg)' }}
-              >
-                <Sparkles size={13} className="animate-pulse" />
-                <span style={{ fontFamily: '"IBM Plex Mono", monospace' }}>
-                  {formatTime(timeLeft)}
-                </span>
-              </div>
-            )}
-
-            {/* Overflow menu */}
-            <div className="relative shrink-0">
-              <button
-                onClick={() => setMenuOpen((v) => !v)}
-                className="relative flex items-center justify-center w-8 h-8 rounded-lg text-sm transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
-                aria-label={locale === 'ja' ? 'メニュー' : 'Menu'}
-              >
-                <Menu size={16} />
-                {hasNewUpdate && (
-                  <span
-                    className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-white"
-                    style={{ background: ACCENT }}
-                  />
-                )}
-              </button>
-              {menuOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-                  <div
-                    className="absolute right-0 top-full mt-2 z-50 w-52 rounded-xl bg-white overflow-hidden"
-                    style={{ border: '1px solid #e5e7eb', boxShadow: 'var(--shadow-3)' }}
-                  >
-                    {/* ── 操作 ── */}
-                    {!bonusActive && (
-                      <button
-                        onClick={() => { openBonusModal('bonus'); setMenuOpen(false); }}
-                        className={`${MENU_ITEM} w-full text-left`}
-                        style={{ color: ACCENT }}
-                      >
-                        <Gift size={14} />
-                        <span>{T.bonusBtn}</span>
-                      </button>
-                    )}
-                    <button
-                      onClick={() => { setHistoryOpen(true); setMenuOpen(false); }}
-                      className={`${MENU_ITEM} w-full text-left`}
-                    >
-                      <History size={14} />
-                      <span>{T.historyBtn}</span>
-                      {savedResults.length > 0 && (
-                        <span
-                          className="ml-auto min-w-4 h-4 px-1 rounded-full text-[9px] font-semibold flex items-center justify-center text-white"
-                          style={{ background: ACCENT }}
-                        >
-                          {savedResults.length}
-                        </span>
-                      )}
-                    </button>
-
-                    {/* ── ページ ── */}
-                    <Link
-                      href={withLang('/guide', locale)}
-                      onClick={() => setMenuOpen(false)}
-                      className={MENU_ITEM}
-                      style={{ borderTop: '1px solid #f3f4f6' }}
-                    >
-                      <BookOpen size={14} />
-                      <span>{locale === 'ja' ? '使い方ガイド' : 'How to Use'}</span>
-                    </Link>
-                    <Link
-                      href={withLang('/score-formula', locale)}
-                      onClick={() => setMenuOpen(false)}
-                      className={MENU_ITEM}
-                    >
-                      <Calculator size={14} />
-                      <span>{locale === 'ja' ? 'スコア計算方法' : 'Scoring Method'}</span>
-                    </Link>
-                    <Link
-                      href={withLang('/chardb', locale)}
-                      onClick={() => setMenuOpen(false)}
-                      className={MENU_ITEM}
-                    >
-                      <Users size={14} />
-                      <span>{locale === 'ja' ? 'キャラ別ビルド' : 'Build Data'}</span>
-                    </Link>
-                    <Link
-                      href={withLang('/news', locale)}
-                      onClick={() => setMenuOpen(false)}
-                      className={MENU_ITEM}
-                    >
-                      <Bell size={14} />
-                      <span>{locale === 'ja' ? 'お知らせ' : "What's New"}</span>
-                      {hasNewUpdate && (
-                        <span className="ml-auto w-2 h-2 rounded-full" style={{ background: ACCENT }} />
-                      )}
-                    </Link>
-
-                    {/* ── 表示設定 ── */}
-                    <div style={{ borderTop: '1px solid #f3f4f6' }}>
-                      <SiteThemeSwitcher variant="menu" />
-                    </div>
-                    <button
-                      onClick={() => { toggleLocale(); setMenuOpen(false); }}
-                      className={`${MENU_ITEM} w-full text-left`}
-                    >
-                      <Globe size={14} />
-                      <span>{locale === 'ja' ? 'English に切替' : '日本語に切替'}</span>
-                    </button>
-
-                    {/* ── サイト情報 ── */}
-                    <Link
-                      href={withLang('/about', locale)}
-                      onClick={() => setMenuOpen(false)}
-                      className={MENU_ITEM}
-                      style={{ borderTop: '1px solid #f3f4f6' }}
-                    >
-                      <Info size={14} />
-                      <span>{locale === 'ja' ? 'このサイトについて' : 'About'}</span>
-                    </Link>
-                    <Link
-                      href={withLang('/privacy', locale)}
-                      onClick={() => setMenuOpen(false)}
-                      className={MENU_ITEM}
-                    >
-                      <FileText size={14} />
-                      <span>{locale === 'ja' ? 'プライバシーポリシー' : 'Privacy Policy'}</span>
-                    </Link>
-                    <Link
-                      href={withLang('/contact', locale)}
-                      onClick={() => setMenuOpen(false)}
-                      className={MENU_ITEM}
-                    >
-                      <Mail size={14} />
-                      <span>{locale === 'ja' ? 'お問い合わせ' : 'Contact'}</span>
-                    </Link>
-                  </div>
-                </>
-              )}
-            </div>
+            <button
+              onClick={toggleLocale}
+              className="px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
+            >
+              {ja ? 'EN' : 'JA'}
+            </button>
           </div>
         </div>
       </header>
 
-      <main className={`flex-1 max-w-2xl w-full mx-auto px-4 py-8 flex flex-col gap-8 sm:pb-28 ${showAdvisorInBar ? 'pb-56' : 'pb-28'}`}>
-
-        {/* Character selector */}
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-center gap-1.5">
-            <Swords size={14} />
-            <label
-              className="text-xs font-medium uppercase tracking-wider text-[#9ca3af]"
-              style={{ fontFamily: '"IBM Plex Mono", monospace' }}
-            >
-              {T.charLabel}
-            </label>
-          </div>
-          <CustomSelect
-            value={selectedCharId}
-            onChange={handleCharacterChange}
-            options={charOptions}
-            accentColor={SEL.charAccent}
-            background={SEL.charBg}
-            borderColor={SEL.charBorder}
-            textColor={SEL.text}
-            dropdownBg={SEL.dropdownBg}
-          />
+      <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-6 flex flex-col gap-6 pb-16">
+        {/* Intro */}
+        <div className="text-center flex flex-col gap-1.5">
+          <h1 className="text-lg font-semibold text-[#222222]">
+            {ja ? '音骸スコア厳選サポーター' : 'Echo Score Farming Supporter'}
+          </h1>
+          <p className="text-xs text-[#707070]">
+            {ja ? '鳴潮の音骸を記録してスコアを計算' : 'Log your Wuthering Waves echoes and score them'}
+          </p>
         </div>
 
-        {/* Cost selector */}
-        <div className="flex flex-col gap-2">
-          <label
-            className="text-xs font-medium uppercase tracking-wider text-[#9ca3af] text-center"
-            style={{ fontFamily: '"IBM Plex Mono", monospace' }}
-          >
-            {T.costLabel}
-          </label>
+        {/* ── 対象ビルド ── */}
+        <section className="flex flex-col gap-3 rounded-xl border border-[#e5e7eb] p-4">
+          <div className="text-xs font-medium uppercase tracking-wider text-[#9ca3af]" style={{ fontFamily: '"IBM Plex Mono", monospace' }}>
+            {ja ? '① 対象ビルド' : '① Target build'}
+          </div>
+          <CustomSelect value={selectedCharId} onChange={handleCharacterChange} options={charOptions} />
           <div className="flex gap-2 justify-center">
             {COST_OPTIONS.map((c) => (
               <button
                 key={c}
-                onClick={() => handleCostChange(c)}
-                className="px-6 py-2.5 rounded-[500px] font-medium text-sm transition-all"
-                style={
-                  cost === c
-                    ? { background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }
-                    : { background: 'var(--home-surface)', border: '1px solid var(--home-border)', color: 'var(--home-text-sub)' }
-                }
+                onClick={() => setCost(c)}
+                className="px-5 py-2 rounded-[500px] font-medium text-sm transition-all"
+                style={cost === c
+                  ? { background: '#222222', color: '#f7f7f7' }
+                  : { background: '#f7f7f7', border: '1px solid #e5e7eb', color: '#707070' }}
               >
                 COST {c}
               </button>
             ))}
           </div>
-          <div
-            className="text-center text-xs text-[#9ca3af]"
-            style={{ fontFamily: '"IBM Plex Mono", monospace' }}
-          >
-            {interpolate(T.costSubstats, [SUBSTAT_COUNT[cost]])}
-          </div>
-        </div>
-
-        {/* Main stat lock (bonus only) */}
-        {showMainstatLock && (
-          <div
-            className="flex flex-col gap-2 rounded-xl p-4 border"
-            style={{ borderColor: `${ACCENT}44`, background: 'var(--home-accent-bg)' }}
-          >
-            <div
-              className="text-xs font-medium text-center uppercase tracking-wider"
-              style={{ color: ACCENT, fontFamily: '"IBM Plex Mono", monospace' }}
-            >
-              {T.bonusMainTitle}
-            </div>
-            <CustomSelect
-              value={lockedMainstatKey}
-              onChange={setLockedMainstatKey}
-              options={mainstatOptions}
-              accentColor={ACCENT}
-              background={SEL.dropdownBg}
-              borderColor={`${ACCENT}44`}
-              textColor={SEL.text}
-              dropdownBg={SEL.dropdownBg}
-            />
-            <p className="text-xs text-center" style={{ color: `${ACCENT}99` }}>{T.bonusMainHint}</p>
-          </div>
-        )}
-
-        {/* Echo / Harmony selector */}
-        {cost === 4 ? (
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-center gap-1.5">
-              <EchoIcon size={14} color={ACCENT} />
-              <label
-                className="text-xs font-medium uppercase tracking-wider text-[#9ca3af]"
-                style={{ fontFamily: '"IBM Plex Mono", monospace' }}
-              >
-                {T.echoSelectLabel}
-              </label>
-            </div>
+          {cost === 4 ? (
             <CustomSelect
               value={selectedEchoId}
-              onChange={(v) => { setSelectedEchoId(v); setEcho(null); setScore(null); }}
+              onChange={setSelectedEchoId}
               options={echoOptions}
-              accentColor={SEL.echoAccent}
-              background={SEL.echoBg}
-              borderColor={SEL.echoBorder}
-              textColor={SEL.text}
-              dropdownBg={SEL.dropdownBg}
+              accentColor="#783cf0"
+              background="linear-gradient(135deg, #f5f0ff 0%, #fafbff 100%)"
+              borderColor="#cdbdfb"
             />
-          </div>
-        ) : (
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-center gap-1.5">
-              <EchoIcon size={14} color={ACCENT} />
-              <label
-                className="text-xs font-medium uppercase tracking-wider text-[#9ca3af]"
-                style={{ fontFamily: '"IBM Plex Mono", monospace' }}
-              >
-                {T.harmonySelectLabel}
-              </label>
-            </div>
+          ) : (
             <CustomSelect
               value={selectedHarmonySet}
-              onChange={(v) => { setSelectedHarmonySet(v); setEcho(null); setScore(null); }}
+              onChange={setSelectedHarmonySet}
               options={harmonyOptions}
-              accentColor={SEL.echoAccent}
-              background={SEL.echoBg}
-              borderColor={SEL.echoBorder}
-              textColor={SEL.text}
-              dropdownBg={SEL.dropdownBg}
+              accentColor="#783cf0"
+              background="linear-gradient(135deg, #f5f0ff 0%, #fafbff 100%)"
+              borderColor="#cdbdfb"
             />
-            <div
-              className="text-center text-xs text-[#9ca3af]"
-              style={{ fontFamily: '"IBM Plex Mono", monospace' }}
-            >
-              {interpolate(T.harmonyCount, [ECHOES.filter(e => e.cost === cost && e.sets.includes(selectedHarmonySet)).length])}
-            </div>
+          )}
+        </section>
+
+        <AdBanner />
+
+        {/* ── 記録フォーム ── */}
+        <section className="flex flex-col gap-3 rounded-xl border border-[#e5e7eb] p-4">
+          <div className="text-xs font-medium uppercase tracking-wider text-[#9ca3af]" style={{ fontFamily: '"IBM Plex Mono", monospace' }}>
+            {ja ? '② 実際に出た音骸を記録' : '② Record an echo you actually pulled'}
           </div>
-        )}
 
-        {/* Echo card
-            scroll-my-20: 自動スクロールの基準余白。上下対称にすることで
-            block:'start' では sticky ヘッダー(59px)を避け、
-            block:'center' では上下が相殺されて正確に中央へ来る */}
-        {echo && (
-          <div ref={echoSectionRef} className="flex flex-col items-center gap-4 scroll-my-20">
-            <EchoCard echo={echo} score={score} maxedAt={maxedAt} />
+          <CustomSelect value={draftMainstatKey} onChange={setDraftMainstatKey} options={mainstatOptions} />
 
-            {/* アドバイザー: PC は直下に表示 / スマホは下固定バーに表示（showAdvisorInBar） */}
-            {advisorResult && echo.level > 0 && echo.level < 25 && (
-              <div className="hidden sm:block w-full">
-                <EchoAdvisor result={advisorResult} />
-              </div>
+          {cost4MultiSet && (
+            <CustomSelect
+              value={draftHarmonySet}
+              onChange={setDraftHarmonySet}
+              options={currentEchoInfo!.sets.map((s) => ({ value: s, label: ja ? s : (HARMONY_SETS_EN[s] ?? s) }))}
+            />
+          )}
+
+          {/* 進捗インジケーター（ゲーム内の +5 強化と同じ流れで1個ずつ追加） */}
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-[#707070]">
+              {ja ? `判明済み: ${draftSubs.length} / ${MAX_SUBSTATS} 個` : `Revealed: ${draftSubs.length} / ${MAX_SUBSTATS}`}
+            </span>
+            {draftSubs.length > 0 && (
+              <button onClick={resetDraft} className="text-[10px] text-[#9ca3af] hover:text-[#ef4444] px-1.5 py-0.5 rounded transition-colors">
+                {ja ? 'やり直す' : 'Start over'}
+              </button>
             )}
+          </div>
 
-            {score && isMaxLevel && (
-              <div className="w-full flex flex-col gap-2">
-                <ScoreDebugPanel echo={echo} score={score} />
-
-                {/* ── PC: アクションボタンをインライン表示 ── */}
-                <div className="hidden sm:flex flex-col gap-2 w-full">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={async () => {
-                        if (!echo || !score) return;
-                        setDownloading(true);
-                        try {
-                          const dataUrl = await generateResultCard(echo, score, locale, maxedAt ?? undefined);
-                          const a = document.createElement('a');
-                          a.href = dataUrl;
-                          a.download = `echo-${score.rank}-${score.score}pt.png`;
-                          a.click();
-                        } finally { setDownloading(false); }
-                      }}
-                      disabled={downloading}
-                      className="flex-1 py-2.5 rounded-lg text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors disabled:opacity-50"
-                    >
-                      {downloading ? <Loader2 size={14} className="animate-spin mx-auto" /> : T.imgSave}
-                    </button>
-                    <button
-                      onClick={() => {
-                        const char = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
-                        const charName = char ? (locale === 'en' ? char.nameEn : char.name) : undefined;
-                        const text = buildShareText(echo, score, { locale, charName });
-                        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
-                      }}
-                      className="flex-1 py-2.5 rounded-lg text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors"
-                    >
-                      {T.shareBtn}
-                    </button>
-                    {saveSlots > 0 && (
-                      <button
-                        onClick={handleSave}
-                        className="flex-1 py-2.5 rounded-lg text-sm font-medium border transition-colors"
-                        style={{ borderColor: '#10b98144', background: '#f0fdf4', color: '#059669' }}
-                      >
-                        {T.saveBtn}
-                        <span className="block text-[10px] opacity-70">{interpolate(T.saveSlotsLeft, [saveSlots])}</span>
-                      </button>
-                    )}
-                  </div>
-                  {saveSlots === 0 && (
-                    <button
-                      onClick={() => openBonusModal('saves')}
-                      className="w-full py-2.5 rounded-[500px] text-sm font-medium hover:opacity-80 transition-opacity"
-                      style={{ background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }}
-                    >
-                      {interpolate(T.saveCTABtn, [SAVE_PER_UNLOCK])}
-                    </button>
-                  )}
-                  <Link
-                    href={withLang('/', locale)}
-                    className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-[500px] text-sm font-medium transition-colors"
-                    style={{ background: 'var(--home-accent-bg)', color: ACCENT, border: `1px solid ${ACCENT}33` }}
-                  >
-                    {T.resultTrackerCTA}
-                  </Link>
+          {/* 判明済みサブステ一覧 */}
+          {draftSubs.length > 0 && (
+            <div className="flex flex-col gap-1.5">
+              {draftSubs.map((s, i) => (
+                <div key={i} className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg" style={{ background: '#f7f7f7' }}>
+                  <span className="text-xs text-[#9ca3af] w-4 shrink-0">{i + 1}</span>
+                  <span className="text-sm font-medium text-[#222222] flex-1 min-w-0 truncate">
+                    {ja ? s.label : (SUBSTAT_LABEL_EN[s.key] ?? s.label)}
+                  </span>
+                  <span className="text-sm font-semibold text-[#222222] tabular-nums shrink-0">{s.value}{s.unit}</span>
+                  <button onClick={() => removeSubstat(i)} className="text-[#9ca3af] hover:text-[#ef4444] shrink-0 text-xs px-1">✕</button>
                 </div>
+              ))}
+            </div>
+          )}
 
-                {/* ── スマホ: モーダルを再表示するボタン ── */}
-                {!showResultModal && (
-                  <button
-                    onClick={() => setShowResultModal(true)}
-                    className="sm:hidden w-full py-2.5 rounded-[500px] text-sm font-medium border transition-colors"
-                    style={{ borderColor: `${ACCENT}44`, color: ACCENT }}
-                  >
-                    {T.resultShowBtn}
-                  </button>
-                )}
+          {/* 次の1個を追加するミニフォーム（+5強化のたびに1個ずつ判明する流れを再現） */}
+          {draftSubs.length < MAX_SUBSTATS && (
+            <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+              <div className="min-w-0 sm:flex-1">
+                <CustomSelect
+                  value={pendingKey}
+                  onChange={(v) => { setPendingKey(v); setPendingTier(0); }}
+                  options={[
+                    { value: '', label: ja ? `（${draftSubs.length + 1}個目のステータス）` : `(Substat #${draftSubs.length + 1})` },
+                    ...availableSubstatOptions.map((s) => ({ value: s.key, label: ja ? s.label : (SUBSTAT_LABEL_EN[s.key] ?? s.label), badge: s.badge })),
+                  ]}
+                />
               </div>
-            )}
-
-          </div>
-        )}
-
-        {/* Reroll panel */}
-        {showRerollPanel && echo && (
-          <div
-            className="rounded-xl border p-4 flex flex-col gap-3"
-            style={{ borderColor: `${ACCENT}44`, background: 'var(--home-accent-bg)' }}
-          >
-            <div
-              className="text-xs font-medium text-center uppercase tracking-wider"
-              style={{ color: ACCENT, fontFamily: '"IBM Plex Mono", monospace' }}
-            >
-              {interpolate(T.rerollPanelTitle, [MAX_REROLL])}
+              <div className="flex gap-2 items-center">
+                <div className="flex-1 min-w-0 sm:w-36 sm:flex-none">
+                  <CustomSelect
+                    value={pendingKey ? String(pendingTier) : ''}
+                    onChange={(v) => setPendingTier(Number(v))}
+                    options={pendingTierOptions.length ? pendingTierOptions : [{ value: '', label: '—' }]}
+                  />
+                </div>
+                <button
+                  onClick={addSubstat}
+                  disabled={!pendingKey}
+                  className="shrink-0 px-3 py-2.5 rounded-lg text-sm font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed text-[#f7f7f7]"
+                  style={{ background: pendingKey ? ACCENT : '#9ca3af' }}
+                >
+                  {ja ? '＋追加' : '+ Add'}
+                </button>
+              </div>
             </div>
-            <div className="space-y-1.5">
-              {echo.substats.map((s, i) => {
-                const selected = rerollIndices.has(i);
-                const disabled = !selected && rerollIndices.size >= MAX_REROLL;
-                return (
-                  <button
-                    key={i}
-                    onClick={() => !disabled && toggleRerollIndex(i)}
-                    className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all"
-                    style={{
-                      background: selected ? `${ACCENT}0f` : '#ffffff',
-                      border: selected ? `1px solid ${ACCENT}66` : '1px solid #e5e7eb',
-                      opacity: disabled ? 0.4 : 1,
-                      cursor: disabled ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    <span className="text-[#222222] font-medium">{s.label}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[#707070]">{s.value}{s.unit}</span>
-                      {selected && (
-                        <span
-                          className="text-xs font-medium px-1.5 py-0.5 rounded-full"
-                          style={{ background: `${ACCENT}18`, color: ACCENT }}
-                        >
-                          {T.rerollBadge}
-                        </span>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
+          )}
+
+          {/* 途中経過のライブ予測（EchoAdvisorを流用） */}
+          {draftAdvisor && (
+            <div className="flex flex-col gap-1.5">
+              <div className="text-[10px] text-[#9ca3af] text-center">
+                {ja ? '現時点の情報から見た最終スコア予測' : 'Predicted final outcome based on revealed substats so far'}
+              </div>
+              <EchoAdvisor result={draftAdvisor} />
             </div>
-            <button
-              onClick={handleReroll}
-              disabled={rerollIndices.size === 0}
-              className="w-full py-2.5 rounded-[500px] font-medium text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-              style={{
-                background: rerollIndices.size > 0 ? 'var(--home-cta-bg)' : '#9ca3af',
-                color: rerollIndices.size > 0 ? 'var(--home-cta-text)' : '#f7f7f7',
-                boxShadow: rerollIndices.size > 0 ? 'var(--home-cta-shadow)' : 'none',
-              }}
-            >
-              {rerollIndices.size > 0
-                ? interpolate(T.rerollBtn, [rerollIndices.size])
-                : T.rerollSelect}
-            </button>
-          </div>
-        )}
+          )}
 
-        {bonusActive && echo?.level === 25 && rerollUsed && (
-          <div
-            className="text-center text-xs"
-            style={{ color: `${ACCENT}80` }}
-          >
-            {T.rerollUsed}
-          </div>
-        )}
+          {/* 5個そろったら確定 */}
+          {draftFinalScore && (
+            <div ref={resultRef} className="flex flex-col gap-3 scroll-mt-20">
+              <div className="flex items-center justify-center gap-3 rounded-xl py-3" style={{ background: `${RANK_COLORS[draftFinalScore.rank]}18` }}>
+                <span
+                  className="text-lg font-bold px-3 py-1 rounded-lg"
+                  style={{ background: RANK_COLORS[draftFinalScore.rank], color: '#fff' }}
+                >
+                  {draftFinalScore.rank}
+                </span>
+                <span className="text-xl font-bold" style={{ color: RANK_COLORS[draftFinalScore.rank] }}>
+                  {draftFinalScore.score} <span className="text-xs font-normal text-[#9ca3af]">/ 100</span>
+                </span>
+              </div>
 
-        {/* Empty state */}
-        {!echo && (
-          <div className="flex flex-col items-center gap-6 py-8 text-center">
-            <div>
-              <p className="text-[#707070] text-sm max-w-xs leading-relaxed mx-auto" style={{ lineHeight: 1.7 }}>
-                {T.emptyText}
-              </p>
-            </div>
+              {/* スコア分布図（v2運用バリアント方式が使えるキャラのみ表示） */}
+              {draftFinalScore.distributionCurve && (
+                <ScoreDistributionChart result={draftFinalScore} />
+              )}
 
-            {!bonusActive && (
-              <div
-                className="w-full rounded-2xl overflow-hidden animate-fadeUp"
-                style={{ background: 'var(--home-card)', border: '1px solid var(--home-border)', boxShadow: 'var(--shadow-1)' }}
+              <button
+                onClick={handleFinalize}
+                disabled={!canFinalize}
+                className="w-full py-2.5 rounded-[500px] font-medium text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed text-[#f7f7f7]"
+                style={{ background: canFinalize ? '#222222' : '#9ca3af' }}
               >
-                {/* Top accent stripe */}
-                <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, ${ACCENT}, ${ACCENT}88)` }} />
-                <div className="p-5">
-                  {/* Header */}
-                  <div className="flex items-center justify-center gap-2 mb-4">
-                    <span className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: 'var(--home-card-text)' }}>
-                      <Gift size={15} /> {T.bonusCardTitle}
+                {ja ? '📥 この結果を記録する' : '📥 Log this result'}
+              </button>
+            </div>
+          )}
+        </section>
+
+        <NativeBanner />
+
+        {/* ── 統計 & 予測 ── */}
+        <section className="flex flex-col gap-3 rounded-xl border border-[#e5e7eb] p-4">
+          <div className="flex items-center justify-between">
+            <div className="text-xs font-medium uppercase tracking-wider text-[#9ca3af]" style={{ fontFamily: '"IBM Plex Mono", monospace' }}>
+              {ja ? '③ 進捗と予測' : '③ Progress & prediction'}
+            </div>
+            {filteredEntries.length > 0 && (
+              <button onClick={handleClearFiltered} className="text-[10px] text-[#9ca3af] hover:text-[#ef4444] border border-[#e5e7eb] hover:border-[#ef444466] px-1.5 py-0.5 rounded transition-colors">
+                {ja ? '記録を全削除' : 'Clear all'}
+              </button>
+            )}
+          </div>
+
+          {!loaded ? null : filteredEntries.length === 0 ? (
+            <p className="text-xs text-[#9ca3af] text-center py-4">
+              {ja ? 'このビルドの記録はまだありません。上のフォームから記録してください。' : 'No records yet for this build. Log one above to get started.'}
+            </p>
+          ) : (
+            <>
+              {/* ランク分布 */}
+              <div className="flex flex-wrap gap-1.5">
+                {RANK_ORDER.filter((r) => rankCounts[r] > 0).map((r) => (
+                  <span
+                    key={r}
+                    className="text-[11px] font-semibold px-2 py-1 rounded-full"
+                    style={{ background: `${RANK_COLORS[r as keyof typeof RANK_COLORS]}22`, color: RANK_COLORS[r as keyof typeof RANK_COLORS] }}
+                  >
+                    {r} × {rankCounts[r]}
+                  </span>
+                ))}
+                <span className="text-[11px] text-[#9ca3af] px-2 py-1">
+                  {ja ? `計 ${filteredEntries.length} 個` : `Total: ${filteredEntries.length}`}
+                </span>
+              </div>
+
+              {/* しきい値選択 */}
+              <div className="flex gap-2 justify-center">
+                {(['A', 'S', 'S+'] as Threshold[]).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setThreshold(t)}
+                    className="px-4 py-1.5 rounded-[500px] text-xs font-medium transition-all"
+                    style={threshold === t
+                      ? { background: ACCENT, color: '#fff' }
+                      : { background: '#f7f7f7', border: '1px solid #e5e7eb', color: '#707070' }}
+                  >
+                    {t}{ja ? '以上を狙う' : '+ target'}
+                  </button>
+                ))}
+              </div>
+
+              {prediction && (
+                <div className="flex flex-col gap-3 rounded-lg p-3" style={{ background: '#f7f7f7' }}>
+                  <div className="grid grid-cols-2 gap-2 text-center">
+                    <div>
+                      <div className="text-[10px] text-[#9ca3af]">{ja ? '実測ヒット率' : 'Observed rate'}</div>
+                      <div className="text-sm font-semibold text-[#222222]">
+                        {prediction.observedRate !== null ? fmtPct(prediction.observedRate) : '—'}
+                        <span className="text-[10px] text-[#9ca3af] font-normal"> ({prediction.observedHits}/{prediction.observedN})</span>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-[#9ca3af]">{ja ? '理論確率' : 'Theoretical rate'}</div>
+                      <div className="text-sm font-semibold text-[#222222]">{fmtPct(prediction.theoreticalRate)}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-lg px-3 py-2" style={{ background: `${LUCK_LABEL[prediction.luck].color}18` }}>
+                    <span className="text-xs font-semibold" style={{ color: LUCK_LABEL[prediction.luck].color }}>
+                      {LUCK_LABEL[prediction.luck].icon} {ja ? LUCK_LABEL[prediction.luck].ja : LUCK_LABEL[prediction.luck].en}
                     </span>
-                    <span
-                      className="px-2 py-0.5 rounded-full text-[10px] font-semibold text-white shrink-0"
-                      style={{ background: ACCENT }}
-                    >
-                      {T.bonusFree}
+                    <span className="text-[10px] text-[#9ca3af]">
+                      {prediction.luck === 'insufficient' ? (ja ? '5個以上で判定' : 'Needs 5+ records') : (ja ? '理論値との比較' : 'vs. theoretical rate')}
                     </span>
                   </div>
-                  {/* Benefits */}
-                  <div className="space-y-2.5 mb-4 text-left">
-                    {[T.bonusCardBenefit1, T.bonusCardBenefit2, T.bonusCardBenefit3].map((item, i) => (
-                      <div key={i} className="flex items-start gap-2.5 text-sm">
-                        <span
-                          className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white mt-0.5"
-                          style={{ background: ACCENT }}
-                        >
-                          <Check size={12} strokeWidth={3} />
-                        </span>
-                        <span className="leading-snug" style={{ color: 'var(--home-card-text)' }}>{item}</span>
+
+                  <div className="text-center">
+                    <div className="text-[10px] text-[#9ca3af] mb-0.5">
+                      {ja ? '今後の予測（実測込みの補正確率）' : 'Prediction (rate adjusted with your data)'}
+                    </div>
+                    <div className="text-lg font-bold" style={{ color: ACCENT }}>
+                      {fmtPct(prediction.posteriorRate)}
+                    </div>
+                    <div className="text-xs text-[#707070]">
+                      {ja
+                        ? `平均 ${prediction.expectedRuns.toFixed(1)} 個に1個のペースで ${threshold}以上 が出る見込み`
+                        : `≈ 1 in every ${prediction.expectedRuns.toFixed(1)} echoes reach ${threshold}+`}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-1.5 text-center">
+                    {RUN_MILESTONES.map((n) => (
+                      <div key={n} className="rounded-lg bg-white py-1.5 border border-[#e5e7eb]">
+                        <div className="text-[9px] text-[#9ca3af]">{n}{ja ? '個以内' : ' runs'}</div>
+                        <div className="text-xs font-semibold text-[#222222]">
+                          {fmtPct(probAtLeastOneWithin(prediction.posteriorRate, n))}
+                        </div>
                       </div>
                     ))}
                   </div>
-                  {/* Duration badge */}
-                  <div className="flex items-center gap-1.5 mb-3">
-                    <Clock size={12} className="text-[#9ca3af]" />
-                    <span className="text-xs font-medium" style={{ color: ACCENT }}>{T.bonusValidFor}</span>
-                  </div>
-                  {/* Ad note */}
-                  <p className="text-xs text-[#9ca3af] mb-4">{T.bonusNote}</p>
-                  {/* CTA */}
-                  <button
-                    onClick={() => openBonusModal('bonus')}
-                    className="w-full py-3 rounded-[500px] text-sm font-semibold hover:opacity-80 transition-opacity animate-pulseRing"
-                    style={{ background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }}
-                  >
-                    {T.bonusCTA}
-                  </button>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
+              )}
 
-        <HomeExplainer />
+              {/* 履歴一覧 */}
+              <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
+                {filteredEntries.map((e) => (
+                  <div key={e.id} className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg" style={{ background: '#fafafa' }}>
+                    <span
+                      className="text-[10px] font-semibold px-1.5 py-0.5 rounded shrink-0"
+                      style={{ background: `${RANK_COLORS[e.rank]}22`, color: RANK_COLORS[e.rank] }}
+                    >
+                      {e.rank}
+                    </span>
+                    <span className="text-xs text-[#222222] font-medium tabular-nums shrink-0">{e.score}pt</span>
+                    <span className="text-[10px] text-[#9ca3af] truncate flex-1">
+                      {e.substats.map((s) => ja ? s.label : (SUBSTAT_LABEL_EN[s.key] ?? s.label)).join(' / ')}
+                    </span>
+                    <span className="text-[10px] text-[#9ca3af] shrink-0">
+                      {new Date(e.createdAt).toLocaleDateString(ja ? 'ja-JP' : 'en-US', { month: 'numeric', day: 'numeric' })}
+                    </span>
+                    <button onClick={() => handleDelete(e.id)} className="text-[#9ca3af] hover:text-[#ef4444] shrink-0 text-xs px-1">✕</button>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </section>
+
+        <p className="text-[10px] text-[#9ca3af] text-center leading-relaxed" style={{ lineHeight: 1.6 }}>
+          {ja
+            ? '※ 予測はベイズ推定（理論確率を事前分布とし、実測データで更新）に基づく統計的な目安であり、実際の結果を保証するものではありません。記録データはブラウザ内（localStorage）にのみ保存されます。'
+            : '* Predictions use Bayesian updating (theoretical rate as prior, updated with your logged data) and are a statistical estimate, not a guarantee. Your records are stored locally in your browser only.'}
+        </p>
+
         <AdBanner />
       </main>
 
-      {/* ── Sticky bottom action bar ─────────────────────────────────────────── */}
-      <div
-        className="fixed bottom-0 inset-x-0 z-20 backdrop-blur-sm"
-        style={{
-          background: 'color-mix(in srgb, var(--home-bg) 95%, transparent)',
-          borderTop: '1px solid var(--home-border)',
-          paddingBottom: 'env(safe-area-inset-bottom)',
-        }}
-      >
-        <div className="max-w-2xl mx-auto px-4 pt-2 pb-3">
-          {/* アドバイザー: スマホのみ・コンパクト版（PCはメインコンテンツに表示） */}
-          {showAdvisorInBar && (
-            <div className="sm:hidden mb-2">
-              <EchoAdvisor result={advisorResult!} compact />
-            </div>
-          )}
-
-          {/* Progress hint */}
-          {echo && !isMaxLevel && echo.level > 0 && (
-            <p
-              className="text-[11px] text-[#9ca3af] text-center mb-2"
-              style={{ fontFamily: '"IBM Plex Mono", monospace' }}
-            >
-              {interpolate(T.untilMax, [(25 - echo.level) / 5])}
-            </p>
-          )}
-
-          {!echo ? (
-            /* ── No echo: Get Echo CTA ── */
-            <button
-              onClick={handleStart}
-              className="w-full py-3 rounded-[500px] font-semibold text-sm hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
-              style={{ background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }}
-            >
-              <EchoIcon size={15} color="var(--home-cta-text)" bgColor={CTA_SOLID} />
-              {T.getEcho}
-            </button>
-          ) : !isMaxLevel ? (
-            /* ── Upgrading: level-up controls ── */
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleUpgrade}
-                className="flex-1 py-3 rounded-[500px] font-semibold text-sm hover:opacity-80 transition-opacity"
-                style={{ background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }}
-              >
-                +5 → +{echo.level + 5}
-              </button>
-              {bonusActive && (
-                <button
-                  onClick={handleMaxUpgrade}
-                  className="px-4 py-3 rounded-[500px] font-medium text-sm border hover:opacity-80 transition-opacity shrink-0"
-                  style={{ borderColor: `${ACCENT}66`, color: ACCENT, background: 'var(--home-accent-bg)' }}
-                >
-                  {T.maxUpgrade}
-                </button>
-              )}
-              <button
-                onClick={handleReset}
-                className="px-4 py-3 rounded-[500px] text-sm border hover:opacity-70 transition-colors shrink-0"
-                style={{ color: 'var(--home-text-sub)', borderColor: 'var(--home-border)' }}
-              >
-                {T.resetBtn}
-              </button>
-            </div>
-          ) : (
-            /* ── Maxed: next echo or reset ── */
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleStart}
-                className="flex-1 py-3 rounded-[500px] font-semibold text-sm hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
-                style={{ background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }}
-              >
-                <EchoIcon size={15} color="var(--home-cta-text)" bgColor={CTA_SOLID} />
-                {T.getEcho}
-              </button>
-              <button
-                onClick={handleReset}
-                className="px-4 py-3 rounded-[500px] text-sm border hover:opacity-70 transition-colors shrink-0"
-                style={{ color: 'var(--home-text-sub)', borderColor: 'var(--home-border)' }}
-              >
-                {T.resetBtn}
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <footer
-        className="border-t pt-6 pb-32"
-        style={{ borderColor: 'var(--home-border)' }}
-      >
-        <nav className="max-w-2xl mx-auto px-4 flex flex-wrap justify-center gap-x-4 gap-y-2 mb-4">
-          {FOOTER_LINKS.map(({ href, ja, en }) => (
-            <Link
-              key={href}
-              href={withLang(href, locale)}
-              className="text-xs hover:opacity-70 transition-opacity"
-              style={{ color: 'var(--home-text-sub)' }}
-            >
-              {locale === 'ja' ? ja : en}
-            </Link>
-          ))}
-        </nav>
-        <p className="text-center text-xs" style={{ color: 'var(--home-text-sub)' }}>{T.footer}</p>
+      <footer className="border-t border-[#f3f4f6] py-4">
+        <p className="text-center text-xs text-[#9ca3af]">
+          {ja ? '© 音骸シミュレーター（非公式ファンツール）' : '© Echo Simulator (unofficial fan tool)'}
+        </p>
       </footer>
-
-      {updateModalOpen && (
-        <UpdateModal
-          onClose={() => {
-            localStorage.setItem('lastSeenUpdate', LATEST_UPDATE_ID);
-            setUpdateModalOpen(false);
-            setHasNewUpdate(false);
-          }}
-        />
-      )}
-
-      {bonusModalOpen && (
-        <BonusModal
-          {...bonusConfigs[bonusKind]}
-          onGrantBonus={handleGrantBonus}
-          onClose={() => setBonusModalOpen(false)}
-        />
-      )}
-
-      {historyOpen && (
-        <SavedResultsModal
-          results={savedResults}
-          onClear={handleClearSaved}
-          onClose={() => setHistoryOpen(false)}
-        />
-      )}
-
-      {/* ── Result modal (auto-shows at +25) ─────────────────────── */}
-      {showResultModal && echo && score && isMaxLevel && (
-        <div
-          className="sm:hidden fixed inset-0 z-50 flex items-end justify-center"
-          style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}
-          onClick={() => setShowResultModal(false)}
-        >
-          <div
-            className="w-full rounded-t-3xl bg-white shadow-2xl animate-fadeUp max-h-[88vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Drag handle */}
-            <div className="flex justify-center pt-2.5 pb-1 sticky top-0 bg-white">
-              <div className="w-8 h-1 rounded-full bg-[#e5e7eb]" />
-            </div>
-
-            <div className="px-4 pt-1 pb-2 flex flex-col gap-1.5">
-              {/* Compact card (display only — image export uses hidden full card) */}
-              <EchoCard echo={echo} score={score} maxedAt={maxedAt} compact />
-
-              {/* Action buttons */}
-              <div className="flex gap-2">
-                <button
-                  onClick={async () => {
-                    if (!echo || !score) return;
-                    setDownloading(true);
-                    try {
-                      const dataUrl = await generateResultCard(echo, score, locale, maxedAt ?? undefined);
-                      const a = document.createElement('a');
-                      a.href = dataUrl;
-                      a.download = `echo-${score.rank}-${score.score}pt.png`;
-                      a.click();
-                    } finally {
-                      setDownloading(false);
-                    }
-                  }}
-                  disabled={downloading}
-                  className="flex-1 py-1.5 rounded-lg text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors disabled:opacity-50"
-                >
-                  {downloading ? <Loader2 size={14} className="animate-spin mx-auto" /> : T.imgSave}
-                </button>
-                <button
-                  onClick={() => {
-                    const char = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
-                    const charName = char ? (locale === 'en' ? char.nameEn : char.name) : undefined;
-                    const text = buildShareText(echo, score, { locale, charName });
-                    window.open(
-                      `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
-                      '_blank', 'noopener,noreferrer'
-                    );
-                  }}
-                  className="flex-1 py-1.5 rounded-lg text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors"
-                >
-                  {T.shareBtn}
-                </button>
-                {saveSlots > 0 && (
-                  <button
-                    onClick={() => { handleSave(); setShowResultModal(false); }}
-                    className="flex-1 py-1.5 rounded-lg text-sm font-medium border transition-colors"
-                    style={{ borderColor: '#10b98144', background: '#f0fdf4', color: '#059669' }}
-                  >
-                    {T.saveBtn}
-                    <span className="block text-[10px] opacity-70">{interpolate(T.saveSlotsLeft, [saveSlots])}</span>
-                  </button>
-                )}
-              </div>
-
-              {/* Save CTA — compact single button (no card) */}
-              {saveSlots === 0 && (
-                <button
-                  onClick={() => { openBonusModal('saves'); setShowResultModal(false); }}
-                  className="w-full py-1.5 rounded-[500px] text-sm font-medium hover:opacity-80 transition-opacity"
-                  style={{ background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }}
-                >
-                  {interpolate(T.saveCTABtn, [SAVE_PER_UNLOCK])}
-                </button>
-              )}
-
-              {/* Tracker CTA — bridge from casual simulation to real farming */}
-              <Link
-                href={withLang('/', locale)}
-                onClick={() => setShowResultModal(false)}
-                className="flex items-center justify-center gap-1 w-full py-1.5 rounded-[500px] text-sm font-medium transition-colors"
-                style={{ background: 'var(--home-accent-bg)', color: ACCENT, border: `1px solid ${ACCENT}33` }}
-              >
-                {T.resultTrackerCTA}
-              </Link>
-
-              {/* Close */}
-              <button
-                onClick={() => setShowResultModal(false)}
-                className="w-full py-1.5 rounded-[500px] text-sm text-[#9ca3af] border border-[#e5e7eb] hover:text-[#222222] hover:border-[#d1d5db] transition-colors"
-              >
-                {T.closeBtn}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

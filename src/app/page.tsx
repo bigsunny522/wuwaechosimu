@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import SupporterClient from './supporter/SupporterClient';
+import HomeClient from './HomeClient';
 import { LocaleProvider } from '@/lib/locale';
 import { resolveLocale, resolveExplicitLocale } from '@/lib/locale-utils';
 import { buildMetadata, SITE_URL } from '@/lib/seo';
@@ -47,7 +47,7 @@ export default async function RootPage({ searchParams }: Props) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(appJsonLd) }} />
       <LocaleProvider initialLocale={initialLocale}>
-        <SupporterClient />
+        <HomeClient />
       </LocaleProvider>
     </>
   );

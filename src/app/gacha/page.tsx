@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import HomeClient from '../HomeClient';
+import GachaClient from './GachaClient';
 import { LocaleProvider } from '@/lib/locale';
 import { SiteThemeProvider } from '@/contexts/SiteThemeContext';
 import { resolveLocale, resolveExplicitLocale } from '@/lib/locale-utils';
@@ -41,7 +41,7 @@ export default async function GachaPage({ searchParams }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <LocaleProvider initialLocale={initialLocale}>
         <SiteThemeProvider>
-          <HomeClient />
+          <GachaClient />
         </SiteThemeProvider>
       </LocaleProvider>
     </>
