@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import { useLocale, withLang } from '@/lib/locale';
 import { HOME_EXPLAINER } from '@/data/homeExplainer';
+import NativeBanner from '@/components/NativeBanner';
 
 /**
  * トップページ下部の読み物セクション。シミュレーター本体を触らずに
@@ -105,6 +106,8 @@ export default function HomeExplainer() {
             ))}
           </div>
         </article>
+
+        <NativeBanner />
 
         {/* ── 関連ページ ── */}
         <article>

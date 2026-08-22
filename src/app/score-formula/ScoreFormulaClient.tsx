@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useLocale, withLang } from '@/lib/locale';
 import { SCORE_FORMULA, type Block } from '@/data/scoreFormula';
 import AdBanner from '@/components/AdBanner';
+import NativeBanner from '@/components/NativeBanner';
 
 const ACCENT = '#0275fd';
 
@@ -163,10 +164,13 @@ export default function ScoreFormulaClient() {
           </Link>
         </div>
 
-        {C.sections.map((section) => (
-          <Section key={section.title} title={section.title}>
-            {section.blocks.map(renderBlock)}
-          </Section>
+        {C.sections.map((section, i) => (
+          <div key={section.title}>
+            <Section title={section.title}>
+              {section.blocks.map(renderBlock)}
+            </Section>
+            {i === 1 && <NativeBanner />}
+          </div>
         ))}
 
         <AdBanner />

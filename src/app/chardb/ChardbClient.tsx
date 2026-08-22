@@ -1,5 +1,6 @@
 'use client';
 
+import { Fragment } from 'react';
 import Link from 'next/link';
 import { CHARACTERS } from '@/data/characters';
 import { SUBSTAT_MAP } from '@/data/substats';
@@ -8,6 +9,7 @@ import { SUBSTAT_LABEL_EN, MAINSTAT_LABEL_EN } from '@/data/translations';
 import { ELEMENT_EN, WEAPON_EN, ROLE_EN, localizeLabel } from '@/data/charLabels';
 import { useLocale, withLang, type Locale } from '@/lib/locale';
 import AdBanner from '@/components/AdBanner';
+import NativeBanner from '@/components/NativeBanner';
 import type { CharacterBuild } from '@/types/character';
 import type { SubstatKey } from '@/types/echo';
 
@@ -357,8 +359,11 @@ export default function ChardbClient() {
           gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))',
           gap: 16,
         }}>
-          {CHARACTERS.map(char => (
-            <CharCard key={char.id} char={char} locale={locale} />
+          {CHARACTERS.map((char, i) => (
+            <Fragment key={char.id}>
+              <CharCard char={char} locale={locale} />
+              {i === 5 && <NativeBanner variant="card" />}
+            </Fragment>
           ))}
         </div>
 
