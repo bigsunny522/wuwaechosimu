@@ -38,7 +38,7 @@ const CONTENT: Record<'ja' | 'en', AboutCopy> = {
       },
       {
         h: 'このサイトを作った理由',
-        body: '鳴潮の音骸厳選は、サブステータスの種類が13種類から均等に抽選され、さらにその数値も8段階の幅を持つという二重の抽選構造になっています。そのため「あと何個掘れば目当ての音骸が出るのか」がプレイヤーからは非常に見えづらく、素材を大量に消費してから期待外れに終わることが珍しくありません。\n\n実際に素材を使う前に確率の感触を掴めるようにすること、そしてスコアの根拠を隠さず全て公開することを目的に、このツールを作りました。',
+        body: '鳴潮の音骸厳選は、サブステータスの種類が13種類から均等に抽選され、さらにその数値も8段階の幅を持つという二重の抽選構造になっています。そのため「あと何個掘れば目当ての音骸が出るのか」がプレイヤーからは非常に見えづらく、素材を大量に消費してから期待外れに終わることが珍しくありません。\n\n実際に素材を使う前に確率の感触を掴めること、そしてスコアがどのような考え方で決まるのかを分かりやすく示すことを目的に、このツールを作りました。',
       },
       {
         h: 'データの出典',
@@ -79,7 +79,7 @@ const CONTENT: Record<'ja' | 'en', AboutCopy> = {
       },
       {
         h: 'Why This Exists',
-        body: 'Echo farming in Wuthering Waves runs on a double lottery: the substat type is drawn evenly from 13 options, and then its value is rolled across eight possible steps. That structure makes it very hard for a player to judge how many more echoes they need before the one they want appears, and it is common to burn a large amount of materials only to come up short.\n\nThis tool exists so you can get a feel for those odds before spending anything, and so the reasoning behind every score is published rather than hidden.',
+        body: 'Echo farming in Wuthering Waves runs on a double lottery: the substat type is drawn evenly from 13 options, and then its value is rolled across eight possible steps. That structure makes it very hard for a player to judge how many more echoes they need before the one they want appears, and it is common to burn a large amount of materials only to come up short.\n\nThis tool exists so you can get a feel for those odds before spending anything, and so the reasoning behind every score is easy to understand.',
       },
       {
         h: 'Where the Data Comes From',

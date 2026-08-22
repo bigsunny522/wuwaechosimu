@@ -14,14 +14,14 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     ja: {
       title: '音骸スコアの計算方法 | 音骸シミュレーター',
       description:
-        '当ツールが音骸スコアを算出する仕組みを公開しています。ダメージ式の偏微分から導くサブステータスの重み付け、キャラクターごとの運用バリアント、Tier評価、理論最大値との比によるスコア正規化までを解説します。',
-      ogDescription: '音骸スコアの重み付けと算出ロジックを全て公開している解説ページ。',
+        '当ツールが音骸スコアとランクをどのような考え方で算出しているかを紹介します。キャラクターごとの重み付け、メインステータス・セットとの相性、ランク判定の考え方を解説します。',
+      ogDescription: '音骸スコアの算出方法の考え方を紹介するページ。',
     },
     en: {
       title: 'How Echo Scores Are Calculated | Echo Simulator',
       description:
-        'A full breakdown of how this tool scores echoes: substat weights derived from the partial derivatives of the damage formula, per-character build variants, tier evaluation, and normalization against the theoretical maximum.',
-      ogDescription: 'A complete, open explanation of the echo scoring weights and formula.',
+        'An overview of how this tool calculates echo scores and ranks: per-character weighting, main stat and set matching, and how ranks are determined.',
+      ogDescription: 'An overview of how this tool arrives at echo scores and ranks.',
     },
   });
 }
