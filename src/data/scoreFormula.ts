@@ -31,7 +31,7 @@ export interface FormulaContent {
 const JA: FormulaContent = {
   title: '音骸スコアの計算方法',
   lead: 'このツールが表示するスコアとランクを、どのような考え方で算出しているかを紹介します。',
-  back: '← シミュレーターへ',
+  back: '← ホームへ',
   sections: [
     {
       title: '1. 採点の考え方',
@@ -81,7 +81,7 @@ const JA: FormulaContent = {
 const EN: FormulaContent = {
   title: 'How Echo Scores Are Calculated',
   lead: 'Here is an overview of how this tool arrives at the scores and ranks it displays.',
-  back: '← Back to Simulator',
+  back: '← Back to Home',
   sections: [
     {
       title: '1. How Scoring Works',

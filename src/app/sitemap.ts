@@ -29,14 +29,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       },
     },
     {
-      url: `${SITE_URL}/supporter`,
+      url: `${SITE_URL}/gacha`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
-      priority: 0.8,
+      priority: 0.9,
       alternates: {
         languages: {
-          ja: `${SITE_URL}/supporter`,
-          en: `${SITE_URL}/supporter?lang=en`,
+          ja: `${SITE_URL}/gacha`,
+          en: `${SITE_URL}/gacha?lang=en`,
         },
       },
     },

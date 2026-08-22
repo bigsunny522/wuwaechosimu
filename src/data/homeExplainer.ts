@@ -104,7 +104,7 @@ const JA: ExplainerContent = {
     { href: '/guide', label: '使い方ガイド', desc: '全機能の詳しい操作手順とボーナスタイムの使い方' },
     { href: '/score-formula', label: 'スコア計算方法', desc: '採点の考え方をわかりやすく解説' },
     { href: '/chardb', label: 'キャラ別ビルドデータ', desc: '全キャラクターの推奨セット・メインステ・サブステ優先度' },
-    { href: '/supporter', label: '厳選サポーター', desc: '実際に出た音骸を記録してベイズ推定で残り枠を予測' },
+    { href: '/', label: '厳選サポーター', desc: '実際に出た音骸のスコアを記録してベイズ推定で残り枠を予測' },
   ],
 };
 
@@ -186,7 +186,7 @@ const EN: ExplainerContent = {
     { href: '/guide', label: 'How to Use', desc: 'Full walkthrough of every feature and how bonus time works' },
     { href: '/score-formula', label: 'Scoring Method', desc: 'A clear explanation of how scoring works' },
     { href: '/chardb', label: 'Build Data by Character', desc: 'Recommended sets, main stats, and substat priorities for every character' },
-    { href: '/supporter', label: 'Farming Supporter', desc: 'Log real echoes and predict remaining slots with Bayesian estimation' },
+    { href: '/', label: 'Farming Supporter', desc: 'Log real echoes, score them, and predict remaining slots with Bayesian estimation' },
   ],
 };
 

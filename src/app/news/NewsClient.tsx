@@ -27,7 +27,7 @@ export default function NewsClient() {
               className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
             >
               <span>←</span>
-              <span className="hidden sm:inline">{locale === 'ja' ? 'シミュレーターへ' : 'Back'}</span>
+              <span className="hidden sm:inline">{locale === 'ja' ? 'ホームへ' : 'Home'}</span>
             </Link>
             <button
               onClick={toggleLocale}

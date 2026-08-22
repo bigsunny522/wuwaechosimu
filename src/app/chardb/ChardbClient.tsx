@@ -51,7 +51,7 @@ const COPY = {
     title: 'キャラクター別 音骸ビルドデータ一覧',
     lead: (n: number) =>
       `全 ${n} キャラクターについて、推奨ハーモニーセット・コスト別メインステータス・サブステータスの優先度をまとめています。当ツールのスコア計算にそのまま使用している評価データです。`,
-    back: '← シミュレーターへ',
+    back: '← ホームへ',
     legend: '凡例',
     legendItems: [
       '推奨 = スコア計算で重み大のステータス',
@@ -75,7 +75,7 @@ const COPY = {
     title: 'Echo Build Data by Character',
     lead: (n: number) =>
       `Recommended harmony sets, main stats by cost, and substat priorities for all ${n} characters. This is the evaluation data the score calculator uses directly.`,
-    back: '← Back to Simulator',
+    back: '← Back to Home',
     legend: 'Legend',
     legendItems: [
       'Recommended = weighted heavily in scoring',

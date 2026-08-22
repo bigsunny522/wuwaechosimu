@@ -11,7 +11,7 @@ const ACCENT = '#0275fd';
 // ── Bilingual guide content ──────────────────────────────────────────────────
 const GUIDE = {
   ja: {
-    backBtn: '← シミュレーターへ戻る',
+    backBtn: '← ホームへ戻る',
     hero: {
       tag:   '使い方ガイド',
       title: '音骸シミュレーター\n完全ガイド',
@@ -154,7 +154,7 @@ const GUIDE = {
   },
 
   en: {
-    backBtn: '← Back to Simulator',
+    backBtn: '← Back to Home',
     hero: {
       tag:   'How to Use',
       title: 'Echo Simulator\nComplete Guide',

@@ -16,7 +16,7 @@ type SubmitState = 'idle' | 'submitting' | 'success' | 'error';
 
 const CONTENT = {
   ja: {
-    backBtn: '← シミュレーターへ戻る',
+    backBtn: '← ホームへ戻る',
     tag: 'Contact',
     title: 'お問い合わせ',
     lead: '不具合報告・データの誤り・ご要望などがございましたら、下記フォームよりお気軽にご連絡ください。内容を確認の上、可能な範囲で対応いたします。',
@@ -53,7 +53,7 @@ const CONTENT = {
     privacyLink: 'プライバシーポリシーを見る →',
   },
   en: {
-    backBtn: '← Back to Simulator',
+    backBtn: '← Back to Home',
     tag: 'Contact',
     title: 'Contact Us',
     lead: 'If you find a bug, incorrect data, or have a feature request, feel free to reach out via the form below. We\'ll do our best to respond.',

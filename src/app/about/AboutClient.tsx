@@ -25,7 +25,7 @@ interface AboutCopy {
 
 const CONTENT: Record<'ja' | 'en', AboutCopy> = {
   ja: {
-    backBtn: '← シミュレーターへ戻る',
+    backBtn: '← ホームへ戻る',
     tag: 'About',
     title: 'このサイトについて',
     lead: '音骸シミュレーターは、鳴潮（Wuthering Waves）の音骸厳選を無料でシミュレートできる非公式のファンツールです。',
@@ -66,7 +66,7 @@ const CONTENT: Record<'ja' | 'en', AboutCopy> = {
     footer: '非公式ファンツール / Unofficial fan tool · 鳴潮 Wuthering Waves',
   },
   en: {
-    backBtn: '← Back to Simulator',
+    backBtn: '← Back to Home',
     tag: 'About',
     title: 'About This Site',
     lead: 'Echo Simulator is an unofficial fan tool that lets you simulate Wuthering Waves echo farming for free.',

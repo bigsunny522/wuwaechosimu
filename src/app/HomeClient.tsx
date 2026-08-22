@@ -109,7 +109,7 @@ const FOOTER_LINKS = [
   { href: '/guide',         ja: '使い方ガイド',           en: 'How to Use' },
   { href: '/score-formula', ja: 'スコア計算方法',         en: 'Scoring Method' },
   { href: '/chardb',        ja: 'キャラ別ビルド',         en: 'Build Data' },
-  { href: '/supporter',     ja: '厳選サポーター',         en: 'Farming Supporter' },
+  { href: '/',              ja: '厳選サポーター',         en: 'Farming Supporter' },
   { href: '/news',          ja: 'お知らせ',               en: "What's New" },
   { href: '/about',         ja: 'このサイトについて',     en: 'About' },
   { href: '/privacy',       ja: 'プライバシーポリシー',   en: 'Privacy Policy' },
@@ -487,7 +487,7 @@ export default function HomeClient() {
                 <span className="hidden sm:inline">{locale === 'ja' ? 'ガチャ' : 'Gacha'}</span>
               </span>
               <Link
-                href={withLang('/supporter', locale)}
+                href={withLang('/', locale)}
                 className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors"
                 style={{ color: 'var(--home-text-sub)' }}
                 title={locale === 'ja' ? '実際の厳選を記録・管理する' : 'Log and manage your real pulls'}
@@ -850,7 +850,7 @@ export default function HomeClient() {
                     </button>
                   )}
                   <Link
-                    href={withLang('/supporter', locale)}
+                    href={withLang('/', locale)}
                     className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-[500px] text-sm font-medium transition-colors"
                     style={{ background: 'var(--home-accent-bg)', color: ACCENT, border: `1px solid ${ACCENT}33` }}
                   >
@@ -1224,7 +1224,7 @@ export default function HomeClient() {
 
               {/* Tracker CTA — bridge from casual simulation to real farming */}
               <Link
-                href={withLang('/supporter', locale)}
+                href={withLang('/', locale)}
                 onClick={() => setShowResultModal(false)}
                 className="flex items-center justify-center gap-1 w-full py-1.5 rounded-[500px] text-sm font-medium transition-colors"
                 style={{ background: 'var(--home-accent-bg)', color: ACCENT, border: `1px solid ${ACCENT}33` }}

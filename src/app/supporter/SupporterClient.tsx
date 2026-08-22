@@ -21,6 +21,8 @@ import CustomSelect from '@/components/CustomSelect';
 import EchoIcon from '@/components/EchoIcon';
 import EchoAdvisor from '@/components/EchoAdvisor';
 import ScoreDistributionChart from '@/components/ScoreDistributionChart';
+import AdBanner from '@/components/AdBanner';
+import NativeBanner from '@/components/NativeBanner';
 
 const ACCENT = '#0275fd';
 const COST_OPTIONS: EchoCost[] = [4, 3, 1];
@@ -402,7 +404,7 @@ export default function SupporterClient() {
               style={{ background: '#f3f4f6' }}
             >
               <Link
-                href={withLang('/', locale)}
+                href={withLang('/gacha', locale)}
                 className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-[#707070] hover:text-[#222222] transition-colors"
                 title={ja ? 'ゲーム感覚で理論値を試す' : 'Try theoretical odds, game-style'}
               >
@@ -431,8 +433,11 @@ export default function SupporterClient() {
         {/* Intro */}
         <div className="text-center flex flex-col gap-1.5">
           <h1 className="text-lg font-semibold text-[#222222]">
-            {ja ? '厳選サポーター' : 'Selection Supporter'}
+            {ja ? '音骸スコア厳選サポーター' : 'Echo Score Farming Supporter'}
           </h1>
+          <p className="text-xs text-[#707070]">
+            {ja ? '鳴潮の音骸を記録してスコアを計算' : 'Log your Wuthering Waves echoes and score them'}
+          </p>
         </div>
 
         {/* ── 対象ビルド ── */}
@@ -475,6 +480,8 @@ export default function SupporterClient() {
             />
           )}
         </section>
+
+        <AdBanner />
 
         {/* ── 記録フォーム ── */}
         <section className="flex flex-col gap-3 rounded-xl border border-[#e5e7eb] p-4">
@@ -594,6 +601,8 @@ export default function SupporterClient() {
             </div>
           )}
         </section>
+
+        <NativeBanner />
 
         {/* ── 統計 & 予測 ── */}
         <section className="flex flex-col gap-3 rounded-xl border border-[#e5e7eb] p-4">
@@ -728,6 +737,8 @@ export default function SupporterClient() {
             ? '※ 予測はベイズ推定（理論確率を事前分布とし、実測データで更新）に基づく統計的な目安であり、実際の結果を保証するものではありません。記録データはブラウザ内（localStorage）にのみ保存されます。'
             : '* Predictions use Bayesian updating (theoretical rate as prior, updated with your logged data) and are a statistical estimate, not a guarantee. Your records are stored locally in your browser only.'}
         </p>
+
+        <AdBanner />
       </main>
 
       <footer className="border-t border-[#f3f4f6] py-4">

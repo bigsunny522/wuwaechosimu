@@ -8,7 +8,7 @@ const ACCENT = '#0275fd';
 
 const CONTENT = {
   ja: {
-    backBtn: '← シミュレーターへ戻る',
+    backBtn: '← ホームへ戻る',
     tag: 'Privacy Policy',
     title: 'プライバシーポリシー',
     updated: '最終更新日: 2026年7月12日',
@@ -49,7 +49,7 @@ const CONTENT = {
     ],
   },
   en: {
-    backBtn: '← Back to Simulator',
+    backBtn: '← Back to Home',
     tag: 'Privacy Policy',
     title: 'Privacy Policy',
     updated: 'Last updated: July 12, 2026',
