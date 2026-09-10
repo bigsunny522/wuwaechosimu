@@ -38,6 +38,7 @@ const SET = {
   NIGHTMARE_SPECTER: HS.NIGHTMARE_SPECTER,
   SONG:        HS.SONG_OF_FEATHERED_TRACE,
   EVILS_PURGE: HS.HEART_OF_EVILS_PURGE,
+  LAMP:        HS.LAMP_OF_NETHER_ROAD,
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -77,6 +78,61 @@ const SET = {
 export const CHARACTERS: CharacterBuild[] = [
 
   // ── 5★ キャラクター（実装降順）────────────────────────────────────────
+
+  {
+    id: 'jingran', name: '景燃', nameEn: 'Jingran', element: '焦熱', weapon: '長刃',
+    role: 'メインアタッカー（重撃重視）',
+    roleTemplate: 'DPS',
+    scalingStat: 'hp',
+    baseStats90: { atk: 312, hp: 15375, def: 0 },
+    motifWeaponId: 'jingran',
+    // v2: 2026/9/10実装。基礎ステータスはwikiwiki、攻撃タイプ別ダメージ配分は prydwen.gg の
+    // CalculationsタブにあるLv90ソロ火力シミュレーション(S0)の内訳から算出。
+    // typeShares は Basic/Heavy/Skill/Liberation の実ダメージ内訳を再正規化した値
+    // （Intro/Outro/Echoダメージは対応する攻撃タイプ別ダメ%サブステが存在しないため除外）。
+    // ダメージ倍率は攻撃力参照だが、固有スキルでHP上限1000ごとに攻撃力+36(上限1800、
+    // 2凸で+50/上限2500)、共鳴回路でHP上限1000ごとに焦熱ダメ+1.5%(上限75%)に変換されるため、
+    // カルテジアと同じくHP参照(scalingStat: 'hp')としてモデル化する。
+    // 注意: HP50000で変換バフが頭打ちになる（それ以上のHP%は無価値）点は
+    // 現行モデルでは表現できず、HP%を常に一定の価値で評価している。
+    // selfAtkBuffPercent は既存スケールステ%（ここではHP%）の概算:
+    // 共鳴回路のHP+12% ＋ 冥夜を導く灯2セットのHP+10% = 0.22。
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.LAMP], acceptable: [SET.MOLTEN] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['hpPercent'] },
+          cost3: { recommended: ['FusionDmg', 'hpPercent'], acceptable: [] },
+          cost1: { recommended: ['hpPercent'],              acceptable: ['atkPercent'] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0.008, heavy: 0.951, skill: 0.041, lib: 0 },
+          selfAtkBuffPercent: 0.22,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 3.00,
+        },
+      },
+    ],
+    substats: {
+      recommended: [
+        { key: 'critRate' },
+        { key: 'critDmg' },
+        { key: 'hpPercent' },
+      ],
+      preferred:   [{ key: 'energyRegen' }, { key: 'heavyAttackDmg' }],
+      acceptable:  [{ key: 'atkPercent' }],
+    },
+    mainstat: {
+      cost4: { recommended: ['critRate', 'critDmg'],   acceptable: ['hpPercent'] },
+      cost3: { recommended: ['FusionDmg', 'hpPercent'], acceptable: [] },
+      cost1: { recommended: ['hpPercent'],              acceptable: ['atkPercent'] },
+    },
+    harmonySets: { recommended: [SET.LAMP], acceptable: [SET.MOLTEN] },
+  },
 
   {
     id: 'qingxiao', name: '清宵', nameEn: 'Qingxiao', element: '気動', weapon: '迅刀',
