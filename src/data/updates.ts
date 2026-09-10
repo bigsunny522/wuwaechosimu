@@ -12,6 +12,21 @@ export interface UpdateEntry {
 
 export const UPDATES: UpdateEntry[] = [
   {
+    id: '2026-09-10',
+    date: '2026-09-10',
+    title: { ja: '景燃のビルドデータを追加', en: 'Added Build Data for Jingran' },
+    items: [
+      {
+        ja: '景燃を追加しました',
+        en: 'Added Jingran',
+      },
+    ],
+    link: {
+      href: '/chardb',
+      label: { ja: 'キャラ別ビルドデータを見る', en: 'View the Build Data' },
+    },
+  },
+  {
     id: '2026-08-21',
     date: '2026-08-21',
     title: { ja: '清宵のビルドデータを追加', en: 'Added Build Data for Qingxiao' },

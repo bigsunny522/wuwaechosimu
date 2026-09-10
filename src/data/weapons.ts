@@ -10,6 +10,16 @@ import type { WeaponData } from '@/types/weapon';
 //  未登録のキャラは scorer.ts 側で従来のカテゴリベース採点にフォールバックする。
 // ═══════════════════════════════════════════════════════════════════════════
 export const MOTIF_WEAPONS: Record<string, WeaponData> = {
+  jingran: {
+    id: 'jingran',
+    name: '幾千の導き',
+    nameEn: 'Thousandfold Deliverance',
+    class: '長刃',
+    baseAtk90: 412,
+    substatKey: 'hpPercent',
+    substatValue90: 72.2,
+    sourceConfidence: 'low',
+  },
   qingxiao: {
     id: 'qingxiao',
     name: '雲琅',
