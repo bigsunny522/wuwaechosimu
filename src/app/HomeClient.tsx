@@ -24,6 +24,8 @@ import ScoreDistributionChart from '@/components/ScoreDistributionChart';
 import AdBanner from '@/components/AdBanner';
 import AdBannerThin from '@/components/AdBannerThin';
 import NativeBanner from '@/components/NativeBanner';
+import UpdateModal from '@/components/UpdateModal';
+import { LATEST_UPDATE_ID } from '@/data/updates';
 import { Menu, BookOpen, Calculator, Users, Bell, Info, FileText, Mail } from 'lucide-react';
 
 const ACCENT = '#0275fd';
@@ -68,6 +70,17 @@ export default function HomeClient() {
   const { locale, toggleLocale } = useLocale();
   const ja = locale === 'ja';
   const [menuOpen, setMenuOpen] = useState(false);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [hasNewUpdate, setHasNewUpdate]       = useState(false);
+
+  /* ── Update notification ────────────────────────────────────── */
+  useEffect(() => {
+    const seen = localStorage.getItem('lastSeenUpdate');
+    if (seen !== LATEST_UPDATE_ID) {
+      setUpdateModalOpen(true);
+      setHasNewUpdate(true);
+    }
+  }, []);
 
   /* ── 対象ビルド選択 ─────────────────────────────────────────── */
   const [selectedCharId, setSelectedCharId] = useState('generic');
@@ -437,10 +450,16 @@ export default function HomeClient() {
             <div className="relative shrink-0">
               <button
                 onClick={() => setMenuOpen((v) => !v)}
-                className="flex items-center justify-center w-8 h-8 rounded-lg text-sm transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
+                className="relative flex items-center justify-center w-8 h-8 rounded-lg text-sm transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
                 aria-label={ja ? 'メニュー' : 'Menu'}
               >
                 <Menu size={16} />
+                {hasNewUpdate && (
+                  <span
+                    className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-white"
+                    style={{ background: ACCENT }}
+                  />
+                )}
               </button>
               {menuOpen && (
                 <>
@@ -480,6 +499,9 @@ export default function HomeClient() {
                     >
                       <Bell size={14} />
                       <span>{ja ? 'お知らせ' : "What's New"}</span>
+                      {hasNewUpdate && (
+                        <span className="ml-auto w-2 h-2 rounded-full" style={{ background: ACCENT }} />
+                      )}
                     </Link>
 
                     {/* ── サイト情報 ── */}
@@ -833,6 +855,15 @@ export default function HomeClient() {
           {ja ? '© 音骸シミュレーター（非公式ファンツール）' : '© Echo Simulator (unofficial fan tool)'}
         </p>
       </footer>
+      {updateModalOpen && (
+        <UpdateModal
+          onClose={() => {
+            localStorage.setItem('lastSeenUpdate', LATEST_UPDATE_ID);
+            setUpdateModalOpen(false);
+            setHasNewUpdate(false);
+          }}
+        />
+      )}
     </div>
   );
 }
