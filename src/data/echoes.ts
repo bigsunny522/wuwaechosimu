@@ -70,6 +70,10 @@ export const HARMONY_SETS = {
   SONG_OF_FEATHERED_TRACE: '羽舞う塵世の歌',
   HEART_OF_EVILS_PURGE:    '煞を祓う浄心',
   LAMP_OF_NETHER_ROAD:     '冥夜を導く灯',
+  // ── 追加セット (Ver 3.7) ────────────────────────────────────────────────
+  HEART_OF_SWORN_VIGIL:         '銜夢照世の心',
+  FLASH_OF_ELECTRIC_REFLECTION: '鏡影流電の閃',
+  FLOWER_OF_TINGED_YEARNING:    'フラワー・レミニセンス',
 } as const;
 
 // ── 英語ハーモニーセット名（英語UI対応用） ──────────────────────────────────
@@ -109,6 +113,9 @@ export const HARMONY_SETS_EN: Record<string, string> = {
   '羽舞う塵世の歌':         'Song of Feathered Trace',
   '煞を祓う浄心':           "Heart of Evil's Purge",
   '冥夜を導く灯':           'Lamp of Nether Road',
+  '銜夢照世の心':           'Heart of Sworn Vigil',
+  '鏡影流電の閃':           'Flash of Electric Reflection',
+  'フラワー・レミニセンス': 'Flower of Tinged Yearning',
 };
 
 // ── ハーモニーセット別バッジカラー（属性区分） ────────────────────────────
@@ -125,6 +132,8 @@ export const HARMONY_SET_COLORS: Record<string, { bg: string; text: string }> = 
   'アストロ・ロード':          { bg: '#fff3e0', text: '#ea580c' },
   // 電導 (Electro)
   '空を切り裂く冥雷':          { bg: '#f3e8ff', text: '#9333ea' },
+  '銜夢照世の心':              { bg: '#f3e8ff', text: '#9333ea' },
+  '鏡影流電の閃':              { bg: '#f3e8ff', text: '#9333ea' },
   // 気動 (Aero)
   '谷を突き抜ける長風':        { bg: '#dcfce7', text: '#16a34a' },
   'バウンドレス・スカイ':      { bg: '#dcfce7', text: '#16a34a' },
@@ -207,6 +216,7 @@ export const ECHOES: EchoInfo[] = [
   { id: 'thousand_puppet_pavilion',    name: '千傀の重楼',                   nameEn: 'Thousand-Puppet Pavilion',           nameCn: '千傀重楼', cost: 4, sets: [S.SONG_OF_FEATHERED_TRACE]                                  },
   { id: 'myriad_snare_rustfire_chassis', name: '万囿の檻・朽躯',             nameEn: 'Myriad Snare: Rustfire Chassis',     nameCn: '万囮牢·朽躯', cost: 4, sets: [S.HEART_OF_EVILS_PURGE, S.LAMP_OF_NETHER_ROAD]              },
   { id: 'calamity_effigy',             name: '天傀劫殺',                     nameEn: 'Calamity Effigy',                    cost: 4, sets: [S.HEART_OF_EVILS_PURGE, S.LAMP_OF_NETHER_ROAD]                        },
+  { id: 'reminiscence_suhsin',         name: '響き渡る共鳴・天演溯心',       nameEn: 'Reminiscence: Suhsin the Inevitable', cost: 4, sets: [S.HEART_OF_SWORN_VIGIL, S.FLASH_OF_ELECTRIC_REFLECTION] },
 
   // ── COST 3 ──────────────────────────────────────────────────────────────
   { id: 'cyan_feathered_heron',        name: '青羽サギ',                     nameEn: 'Cyan-Feathered Heron',               cost: 3, sets: [S.SIERRA_GALE, S.CELESTIAL_LIGHT]                                },
@@ -262,6 +272,9 @@ export const ECHOES: EchoInfo[] = [
   { id: 'nm_tambourinist',             name: 'ナイトメア・金鈴の楽手',       nameEn: 'Nightmare: Tambourinist',            cost: 3, sets: [S.LOST_DREAM]                                                     },
   { id: 'fog_lionarch',                name: '霜息の獣尊',                   nameEn: 'Fog Lionarch',                       nameCn: '霁息兽尊', cost: 3, sets: [S.SONG_OF_FEATHERED_TRACE, S.HEART_OF_EVILS_PURGE, S.LAMP_OF_NETHER_ROAD] },
   { id: 'forbidden_bastion',           name: '封庭の械囲',                   nameEn: 'Forbidden Bastion',                  nameCn: '封庭械囿', cost: 3, sets: [S.SONG_OF_FEATHERED_TRACE, S.HEART_OF_EVILS_PURGE, S.LAMP_OF_NETHER_ROAD] },
+  { id: 'skywatch_lancer',             name: '霄巡りの槍衛',                 nameEn: 'Skywatch Lancer',                     cost: 3, sets: [S.FLASH_OF_ELECTRIC_REFLECTION, S.FLOWER_OF_TINGED_YEARNING] },
+  { id: 'formrender',                  name: '形解きの悪鬼',                 nameEn: 'Formrender',                          cost: 3, sets: [S.HEART_OF_SWORN_VIGIL, S.FLOWER_OF_TINGED_YEARNING] },
+  { id: 'soulfrayer',                  name: '息絶えの亡霊',                 nameEn: 'Soulfrayer',                          cost: 3, sets: [S.HEART_OF_SWORN_VIGIL, S.FLASH_OF_ELECTRIC_REFLECTION] },
 
   // ── COST 1 ──────────────────────────────────────────────────────────────
   { id: 'whiff_whaff',                 name: 'フシュシュ',                   nameEn: 'Whiff Whaff',                        cost: 1, sets: [S.SIERRA_GALE, S.MOONLIT_CLOUDS, S.REJUVENATING_GLOW]           },
@@ -349,6 +362,8 @@ export const ECHOES: EchoInfo[] = [
   { id: 'stone_picket',                name: '石の庭候',                     nameEn: 'Stone Picket',                       nameCn: '石庭候', cost: 1, sets: [S.LAMP_OF_NETHER_ROAD]                                     },
   { id: 'kernel_puppet_grief',         name: '心傀・悲',                     nameEn: 'Kernel Puppet: Grief',               nameCn: '心傀·悲', cost: 1, sets: [S.LAMP_OF_NETHER_ROAD]                                    },
   { id: 'kernel_puppet_fright',        name: '心傀・恐',                     nameEn: 'Kernel Puppet: Fright',              nameCn: '心傀·恐', cost: 1, sets: [S.LAMP_OF_NETHER_ROAD]                                    },
+  { id: 'jade_nether_serpent',         name: '機玉の冥蛇',                   nameEn: 'Jade Nether Serpent',                 cost: 1, sets: [S.HEART_OF_SWORN_VIGIL] },
+  { id: 'bloomburst_puppet',           name: '花咲かの奇傀',                 nameEn: 'Bloomburst Puppet',                   cost: 1, sets: [S.HEART_OF_SWORN_VIGIL] },
 ];
 
 // ── ヘルパー ─────────────────────────────────────────────────────────────
