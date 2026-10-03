@@ -12,6 +12,25 @@ export interface UpdateEntry {
 
 export const UPDATES: UpdateEntry[] = [
   {
+    id: '2026-10-03',
+    date: '2026-10-03',
+    title: { ja: '心のビルドデータと Ver3.7 の新音骸を追加', en: 'Added Build Data for Hsin and Version 3.7 Echoes' },
+    items: [
+      {
+        ja: '心を追加しました',
+        en: 'Added Hsin',
+      },
+      {
+        ja: 'Ver3.7の新音骸6体と新ハーモニー3種（銜夢照世の心・鏡影流電の閃・フラワー・レミニセンス）を追加しました',
+        en: 'Added 6 new Echoes and 3 new Sonata Effects from Version 3.7 (Heart of Sworn Vigil, Flash of Electric Reflection, Flower of Tinged Yearning)',
+      },
+    ],
+    link: {
+      href: '/chardb',
+      label: { ja: 'キャラ別ビルドデータを見る', en: 'View the Build Data' },
+    },
+  },
+  {
     id: '2026-09-10',
     date: '2026-09-10',
     title: { ja: '景燃のビルドデータを追加', en: 'Added Build Data for Jingran' },

@@ -39,6 +39,7 @@ const SET = {
   SONG:        HS.SONG_OF_FEATHERED_TRACE,
   EVILS_PURGE: HS.HEART_OF_EVILS_PURGE,
   LAMP:        HS.LAMP_OF_NETHER_ROAD,
+  SWORN_VIGIL: HS.HEART_OF_SWORN_VIGIL,
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -78,6 +79,60 @@ const SET = {
 export const CHARACTERS: CharacterBuild[] = [
 
   // ── 5★ キャラクター（実装降順）────────────────────────────────────────
+
+  {
+    id: 'hsin', name: '心', nameEn: 'Hsin', element: '電導', weapon: '増幅器',
+    role: 'メインアタッカー（共鳴スキル重視）',
+    roleTemplate: 'DPS',
+    scalingStat: 'atk',
+    baseStats90: { atk: 462, hp: 10300, def: 1112 },
+    motifWeaponId: 'hsin',
+    // v2: 2026/9/30実装。基礎ステータスはGame8、攻撃タイプ別ダメージ配分は prydwen.gg の
+    // CalculationsタブにあるLv90ソロ火力シミュレーション(S0・電磁効果ローテ)の内訳から算出。
+    // typeShares は Basic/Heavy/Skill/Liberation の実ダメージ内訳を再正規化した値
+    // （Intro/Outro/Echo/電磁効果ダメージは対応する攻撃タイプ別ダメ%サブステが存在しないため除外。
+    // 電磁効果ダメージはクリティカルもしない）。
+    // 「同奏」運用と「電磁効果」運用の2モードがあるが、推奨ハーモニー・メインステ・
+    // サブステ優先が共通で、同奏ローテの内訳(basic 0.096/skill 0.877/lib 0.027)とも
+    // ほぼ一致するため、バリアントは1つにまとめている。
+    // selfAtkBuffPercent は固有スキル(小ステ)の攻撃力+12%。
+    variants: [
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.SWORN_VIGIL], acceptable: [] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'], acceptable: ['atkPercent'] },
+          cost3: { recommended: ['ElectroDmg'],           acceptable: ['atkPercent'] },
+          cost1: { recommended: ['atkPercent'],           acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0.105, heavy: 0, skill: 0.865, lib: 0.030 },
+          selfAtkBuffPercent: 0.12,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.50,
+        },
+      },
+    ],
+    substats: {
+      recommended: [
+        { key: 'critRate' },
+        { key: 'critDmg' },
+        { key: 'atkPercent' },
+        { key: 'resonanceSkillDmg' },
+      ],
+      preferred:   [{ key: 'energyRegen' }],
+      acceptable:  [{ key: 'atkFlat' }],
+    },
+    mainstat: {
+      cost4: { recommended: ['critRate', 'critDmg'], acceptable: ['atkPercent'] },
+      cost3: { recommended: ['ElectroDmg'],           acceptable: ['atkPercent'] },
+      cost1: { recommended: ['atkPercent'],           acceptable: [] },
+    },
+    harmonySets: { recommended: [SET.SWORN_VIGIL], acceptable: [] },
+  },
 
   {
     id: 'jingran', name: '景燃', nameEn: 'Jingran', element: '焦熱', weapon: '長刃',

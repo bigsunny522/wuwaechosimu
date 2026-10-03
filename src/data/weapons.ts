@@ -10,6 +10,16 @@ import type { WeaponData } from '@/types/weapon';
 //  未登録のキャラは scorer.ts 側で従来のカテゴリベース採点にフォールバックする。
 // ═══════════════════════════════════════════════════════════════════════════
 export const MOTIF_WEAPONS: Record<string, WeaponData> = {
+  hsin: {
+    id: 'hsin',
+    name: '玉殿に咲き満ちる玄華',
+    nameEn: 'Blooming Jadehaven',
+    class: '増幅器',
+    baseAtk90: 587,
+    substatKey: 'critRate',
+    substatValue90: 24.3,
+    sourceConfidence: 'low',
+  },
   jingran: {
     id: 'jingran',
     name: '幾千の導き',
