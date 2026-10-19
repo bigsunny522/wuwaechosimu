@@ -35,15 +35,15 @@ export interface SubstatWeightRow {
   key: SubstatKey;
   /** 最大値を100とした相対値（1ロール最大値あたりの相対的な価値。スコアの点数ではない） */
   relative: number;
-  /** 重みが小さい順に 未ラベル / acceptable / preferred / recommended。null は区分なし */
-  category: SubstatWeightCategory | null;
+  /** 区分ラベル（推奨 / 優先 / 可）。表に出すのはラベルが付く行だけなので常に値が入る */
+  category: SubstatWeightCategory;
 }
 
 export interface CharacterVariantPageData {
   id: string;
   label: string;
   thresholds: RankThresholds;
-  /** totalMainStat が null（データ不足）の場合は null。null のときはこのブロックを出さない */
+  /** totalMainStat が null（データ不足）の場合は null。null のときはサブステの価値と要点カード1行目を出さない */
   substatWeights: SubstatWeightRow[] | null;
 }
 
@@ -75,10 +75,12 @@ function buildSubstatWeights(
     const raw = weights[key];
     if (raw <= 0) continue;
     const rel = raw / maxWeight;
-    let category: SubstatWeightCategory | null = null;
+    // 表に出すのはラベルが付く行（相対値が15以上）だけ。それ未満の行は出さない
+    let category: SubstatWeightCategory;
     if (rel >= WEIGHT_RECOMMENDED) category = 'recommended';
     else if (rel >= WEIGHT_PREFERRED) category = 'preferred';
     else if (rel >= WEIGHT_ACCEPTABLE) category = 'acceptable';
+    else continue;
     rows.push({ key, relative: Math.round(rel * 100), category });
   }
   rows.sort((a, b) => b.relative - a.relative);

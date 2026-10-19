@@ -7,6 +7,7 @@ import { SUBSTAT_MAP } from '@/data/substats';
 import { SUBSTAT_LABEL_EN, MAINSTAT_LABEL_EN } from '@/data/translations';
 import { ELEMENT_EN, WEAPON_EN, ROLE_EN, localizeLabel } from '@/data/charLabels';
 import type { CharacterPageData } from '@/lib/characterPages';
+import type { SubstatKey } from '@/types/echo';
 import CharDistributionChart from '@/components/CharDistributionChart';
 import AdBanner from '@/components/AdBanner';
 import NativeBanner from '@/components/NativeBanner';
@@ -66,15 +67,17 @@ const RANK_ROWS: { key: 'god' | 'sPlus' | 's' | 'a' | 'b' | 'c'; label: string; 
 const COPY = {
   ja: {
     h1: (name: string) => `${name}の音骸スコア目安`,
-    lead: 'サブステだけをランダムに引いたとき(メインステ・ハーモニーは推奨で固定)のスコア分布を、50万回シミュレーションして出した数字です。',
+    lead: 'サブステだけをランダムに引いたとき(メインステ・ハーモニーは推奨で固定)を、50万回シミュレーションして出した数字です。',
+    targetLine: (list: string) => `狙うサブステ: ${list}`,
+    goodEnoughLine: (s: number) => `妥協ライン: ${s}点(上位5%)を超えたら次の部位へ`,
     thresholdsTitle: '妥協ライン表',
     rankHeader: 'ランク',
     scoreHeader: '必要スコア',
     pctHeader: '上位%',
     topPct: (pct: number) => `上位${pct}%`,
-    stopLine: (s: number) => `${s}点(S)を超えたら、厳選をやめて次の部位に移ってよい目安です。`,
-    distTitle: 'スコア分布',
+    distTitle: 'スコア分布(シミュレーション)',
     distAxis: 'スコア',
+    distNote: 'サブステをランダムに50万回引いたときのスコアの散らばりです。プレイヤーの実績データではありません。',
     distS: (s: number) => `S: ${s}点`,
     distSPlus: (sPlus: number) => `S+: ${sPlus}点`,
     substatTitle: 'サブステの価値',
@@ -94,14 +97,16 @@ const COPY = {
   en: {
     h1: (name: string) => `${name} Echo Score Benchmarks`,
     lead: 'These figures come from 500,000 simulations of randomly rolled substats (main stats and harmony sets fixed to the recommended setup).',
+    targetLine: (list: string) => `Target substats: ${list}`,
+    goodEnoughLine: (s: number) => `Good enough: ${s}+ pts (top 5%) — move on to the next slot`,
     thresholdsTitle: 'Score Thresholds by Rank',
     rankHeader: 'Rank',
     scoreHeader: 'Score',
     pctHeader: 'Top %',
     topPct: (pct: number) => `Top ${pct}%`,
-    stopLine: (s: number) => `${s}+ pts (S) is a good point to stop farming this echo and move to the next slot.`,
-    distTitle: 'Score Distribution',
+    distTitle: 'Score Distribution (Simulated)',
     distAxis: 'Score',
+    distNote: 'How scores spread across 500,000 simulated substat rolls. Not player data.',
     distS: (s: number) => `S: ${s} pts`,
     distSPlus: (sPlus: number) => `S+: ${sPlus} pts`,
     substatTitle: 'Substat Value',
@@ -119,6 +124,10 @@ const COPY = {
     relatedFormula: 'Scoring Method',
   },
 } as const;
+
+function substatLabel(key: SubstatKey, locale: Locale): string {
+  return locale === 'en' ? SUBSTAT_LABEL_EN[key] : SUBSTAT_MAP[key].label;
+}
 
 function Badge({
   label, bg = '#f3f4f6', color = '#374151',
@@ -201,7 +210,7 @@ export default function CharacterDetailClient({ data }: { data: CharacterPageDat
   const displayName = locale === 'en' ? data.name : data.nameEn;
   const elColor = ELEMENT_COLORS[data.element] ?? { bg: '#f3f4f6', text: '#6b7280' };
   const multiVariant = data.variants.length > 1;
-  const firstThresholds = data.variants[0]?.thresholds;
+  const variantName = (label: string) => localizeLabel(VARIANT_LABEL_EN, label, locale);
 
   return (
     <div style={{ minHeight: '100vh', background: '#f3f4f6', padding: '28px 16px 48px' }}>
@@ -227,77 +236,60 @@ export default function CharacterDetailClient({ data }: { data: CharacterPageDat
           </div>
         </div>
 
-        {/* ── 2〜4. 運用ごとのブロック ── */}
-        {data.variants.map((variant, vi) => {
-          const weights = variant.substatWeights;
-          return (
+        {/* ── 2. 要点カード ── */}
+        <div style={{
+          background: '#eff6ff',
+          border: '1px solid #bfdbfe',
+          borderRadius: 12,
+          padding: '16px 20px',
+          marginBottom: 16,
+          display: 'flex',
+          flexDirection: 'column' as const,
+          gap: multiVariant ? 14 : 6,
+        }}>
+          {data.variants.map((variant) => (
             <div key={variant.id}>
               {multiVariant && (
-                <Card>
-                  <SectionHeading level={2}>
-                    {localizeLabel(VARIANT_LABEL_EN, variant.label, locale)}
-                  </SectionHeading>
-
-                  <ThresholdTable thresholds={variant.thresholds} C={C} />
-                  <p style={{ fontSize: 12, color: '#6b7280', margin: '8px 0 0', lineHeight: 1.7 }}>
-                    {C.stopLine(variant.thresholds.s)}
-                  </p>
-
-                  <div style={{ marginTop: 16 }}>
-                    <SectionHeading level={3}>{C.distTitle}</SectionHeading>
-                    <CharDistributionChart
-                      thresholds={variant.thresholds}
-                      sLabel={C.distS(variant.thresholds.s)}
-                      sPlusLabel={C.distSPlus(variant.thresholds.sPlus)}
-                      axisLabel={C.distAxis}
-                    />
-                  </div>
-
-                  {weights !== null && weights.length > 0 && (
-                    <div style={{ marginTop: 16 }}>
-                      <SectionHeading level={3}>{C.substatTitle}</SectionHeading>
-                      <SubstatWeightBars weights={weights} locale={locale} C={C} />
-                    </div>
-                  )}
-                </Card>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#1d4ed8', marginBottom: 4 }}>
+                  {variantName(variant.label)}
+                </div>
               )}
-
-              {!multiVariant && (
-                <>
-                  <Card>
-                    <SectionHeading level={2}>{C.thresholdsTitle}</SectionHeading>
-                    <ThresholdTable thresholds={variant.thresholds} C={C} />
-                    <p style={{ fontSize: 12, color: '#6b7280', margin: '8px 0 0', lineHeight: 1.7 }}>
-                      {C.stopLine(variant.thresholds.s)}
-                    </p>
-                  </Card>
-
-                  <Card>
-                    <SectionHeading level={2}>{C.distTitle}</SectionHeading>
-                    <CharDistributionChart
-                      thresholds={variant.thresholds}
-                      sLabel={C.distS(variant.thresholds.s)}
-                      sPlusLabel={C.distSPlus(variant.thresholds.sPlus)}
-                      axisLabel={C.distAxis}
-                    />
-                  </Card>
-
-                  {weights !== null && weights.length > 0 && (
-                    <Card>
-                      <SectionHeading level={2}>{C.substatTitle}</SectionHeading>
-                      <SubstatWeightBars weights={weights} locale={locale} C={C} />
-                    </Card>
+              {variant.substatWeights !== null && variant.substatWeights.length > 0 && (
+                <p style={{ fontSize: 14, color: '#374151', margin: '0 0 4px', lineHeight: 1.7 }}>
+                  {C.targetLine(
+                    variant.substatWeights
+                      .slice(0, 3)
+                      .map((row) => substatLabel(row.key, locale))
+                      .join(' > '),
                   )}
-                </>
+                </p>
               )}
-
-              {/* 広告: 本文の途中に1つ（/chardb と同じく NativeBanner） */}
-              {vi === 0 && <NativeBanner />}
+              <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: 0, lineHeight: 1.7 }}>
+                {C.goodEnoughLine(variant.thresholds.s)}
+              </p>
             </div>
+          ))}
+        </div>
+
+        {/* ── 3. サブステの価値 ── */}
+        {data.variants.map((variant) => {
+          const weights = variant.substatWeights;
+          if (weights === null || weights.length === 0) return null;
+          return multiVariant ? (
+            <Card key={variant.id}>
+              <SectionHeading level={2}>{variantName(variant.label)}</SectionHeading>
+              <SectionHeading level={3}>{C.substatTitle}</SectionHeading>
+              <SubstatWeightBars weights={weights} locale={locale} C={C} />
+            </Card>
+          ) : (
+            <Card key={variant.id}>
+              <SectionHeading level={2}>{C.substatTitle}</SectionHeading>
+              <SubstatWeightBars weights={weights} locale={locale} C={C} />
+            </Card>
           );
         })}
 
-        {/* ── 5. 判定ツールへの導線 ── */}
+        {/* ── 4. 判定ツールへの導線 ── */}
         <div style={{
           background: '#fff',
           border: '1px solid #e5e7eb',
@@ -322,6 +314,25 @@ export default function CharacterDetailClient({ data }: { data: CharacterPageDat
             {C.cta(name)}
           </Link>
         </div>
+
+        {/* 広告: 本文の途中に1つ（4の判定ボタンと5の妥協ライン表の間） */}
+        <NativeBanner />
+
+        {/* ── 5. 妥協ライン表 ── */}
+        {data.variants.map((variant) => (
+          multiVariant ? (
+            <Card key={variant.id}>
+              <SectionHeading level={2}>{variantName(variant.label)}</SectionHeading>
+              <SectionHeading level={3}>{C.thresholdsTitle}</SectionHeading>
+              <ThresholdTable thresholds={variant.thresholds} C={C} />
+            </Card>
+          ) : (
+            <Card key={variant.id}>
+              <SectionHeading level={2}>{C.thresholdsTitle}</SectionHeading>
+              <ThresholdTable thresholds={variant.thresholds} C={C} />
+            </Card>
+          )
+        ))}
 
         {/* ── 6. 推奨ハーモニー・メインステ ── */}
         <Card>
@@ -370,7 +381,39 @@ export default function CharacterDetailClient({ data }: { data: CharacterPageDat
           </div>
         </Card>
 
-        {/* ── 7. 関連リンク ── */}
+        {/* ── 7. スコア分布グラフ ── */}
+        {data.variants.map((variant) => (
+          multiVariant ? (
+            <Card key={variant.id}>
+              <SectionHeading level={2}>{variantName(variant.label)}</SectionHeading>
+              <SectionHeading level={3}>{C.distTitle}</SectionHeading>
+              <p style={{ fontSize: 12, color: '#6b7280', margin: '0 0 10px', lineHeight: 1.7 }}>
+                {C.distNote}
+              </p>
+              <CharDistributionChart
+                thresholds={variant.thresholds}
+                sLabel={C.distS(variant.thresholds.s)}
+                sPlusLabel={C.distSPlus(variant.thresholds.sPlus)}
+                axisLabel={C.distAxis}
+              />
+            </Card>
+          ) : (
+            <Card key={variant.id}>
+              <SectionHeading level={2}>{C.distTitle}</SectionHeading>
+              <p style={{ fontSize: 12, color: '#6b7280', margin: '0 0 10px', lineHeight: 1.7 }}>
+                {C.distNote}
+              </p>
+              <CharDistributionChart
+                thresholds={variant.thresholds}
+                sLabel={C.distS(variant.thresholds.s)}
+                sPlusLabel={C.distSPlus(variant.thresholds.sPlus)}
+                axisLabel={C.distAxis}
+              />
+            </Card>
+          )
+        ))}
+
+        {/* ── 8. 関連リンク ── */}
         <Card>
           <SectionHeading level={2}>{C.relatedTitle}</SectionHeading>
           <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column' as const, gap: 6 }}>
@@ -449,39 +492,31 @@ function SubstatWeightBars({
     <div>
       <p style={{ fontSize: 11, color: '#9ca3af', margin: '0 0 10px' }}>{C.substatNote}</p>
       <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 6 }}>
-        {weights.map((row) => {
-          const label = locale === 'en'
-            ? SUBSTAT_LABEL_EN[row.key]
-            : SUBSTAT_MAP[row.key].label;
-          const color = row.category ? CATEGORY_COLORS[row.category] : '#93c5fd';
-          return (
-            <div key={row.key} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 12, color: '#374151', width: 104, flexShrink: 0 }}>
-                {label}
-              </span>
-              <div style={{ flex: 1, background: '#f3f4f6', borderRadius: 4, height: 14, minWidth: 60 }}>
-                <div style={{
-                  width: `${row.relative}%`,
-                  height: '100%',
-                  borderRadius: 4,
-                  background: color,
-                }} />
-              </div>
-              <span style={{ fontSize: 11, color: '#6b7280', width: 30, textAlign: 'right' as const, flexShrink: 0 }}>
-                {row.relative}
-              </span>
-              <span style={{ width: 40, flexShrink: 0 }}>
-                {row.category && (
-                  <Badge
-                    label={categoryLabel[row.category]}
-                    bg={row.category === 'recommended' ? '#f5f3ff' : row.category === 'preferred' ? '#f0fdf4' : '#eff6ff'}
-                    color={CATEGORY_COLORS[row.category]}
-                  />
-                )}
-              </span>
+        {weights.map((row) => (
+          <div key={row.key} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 12, color: '#374151', width: 104, flexShrink: 0 }}>
+              {substatLabel(row.key, locale)}
+            </span>
+            <div style={{ flex: 1, background: '#f3f4f6', borderRadius: 4, height: 14, minWidth: 60 }}>
+              <div style={{
+                width: `${row.relative}%`,
+                height: '100%',
+                borderRadius: 4,
+                background: CATEGORY_COLORS[row.category],
+              }} />
             </div>
-          );
-        })}
+            <span style={{ fontSize: 11, color: '#6b7280', width: 30, textAlign: 'right' as const, flexShrink: 0 }}>
+              {row.relative}
+            </span>
+            <span style={{ width: 40, flexShrink: 0 }}>
+              <Badge
+                label={categoryLabel[row.category]}
+                bg={row.category === 'recommended' ? '#f5f3ff' : row.category === 'preferred' ? '#f0fdf4' : '#eff6ff'}
+                color={CATEGORY_COLORS[row.category]}
+              />
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );
