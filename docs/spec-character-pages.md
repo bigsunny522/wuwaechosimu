@@ -35,7 +35,8 @@
 ### 1. ルーティング
 
 - `/chardb/[id]`。Next.js 16 では `params` が Promise になる。書く前に `node_modules/next/dist/docs/01-app/` の動的ルートと `generateStaticParams` のガイドを読むこと
-- `generateStaticParams` は `CHARACTER_PAGE_IDS` を返す。`export const dynamicParams = false` で、それ以外の id は 404 にする
+- 言語切り替えで `searchParams` を読むため、このページは動的レンダリング(ビルドログの `ƒ`)になる。既存のページと同じなので、それでよい
+- `CHARACTER_PAGE_IDS` に含まれない id は、ページ本体と `generateMetadata` の両方で `notFound()` を呼んで 404 にする。`generateStaticParams` / `dynamicParams` は使わなくてよい
 - 言語は他のページと同じく `?lang=en` で切り替える(`resolveLocale` / `resolveExplicitLocale` / `LocaleProvider` を `src/app/chardb/page.tsx` と同じ形で使う)
 
 ### 2. メタデータ(`buildMetadata` を使う。`path` は `/chardb/<id>`)
@@ -86,7 +87,7 @@
 ## 受け入れ条件
 
 - [ ] `npx tsc --noEmit` が通る
-- [ ] `npm run build` が通る。ビルドのログで `/chardb/[id]` の3ページが生成されている
+- [ ] `npm run build` が通る。ビルドのログのルート一覧に `/chardb/[id]` が出ている(`ƒ` の動的ルートでよい)
 - [ ] `npm run dev` で次を確かめる
   - `/chardb/hsin` / `/chardb/jingran` / `/chardb/phoebe` が表示される。妥協ライン表の S と S+ の値が `rankThresholds.ts` の `s` / `sPlus` と一致している(例: `hsin:main` なら S=69、S+=80)
   - `/chardb/phoebe` では main と sub の2運用分のブロックが出る
@@ -108,7 +109,7 @@
 ## 想定される落とし穴
 
 - `src/app/chardb/page.tsx` があるので、`src/app/chardb/[id]/page.tsx` を足しても衝突はしない。ただし `/chardb` のレイアウトを共有するファイルがあれば影響を確かめる
-- `searchParams` を読むページは動的レンダリングになる。既存のページも同じ作りなので、それで構わない。`generateStaticParams` と一緒に使ったときにビルドでエラーや警告が出たら、止めて報告する
+- `searchParams` を読むページは動的レンダリングになる(2026-10-20 に実装担当が確認)。静的生成は今回は狙わない
 - `deriveSubstatWeights` の重みは「1ロール最大値あたり」の値で、スコアの点数そのものではない。画面では「相対的な価値」と書き、「◯点」とは書かない
 - `HomeClient.tsx` は約870行ある。`initialCharId` の追加以外の部分を書き換えない
 - 穂穂(suisui)の分布は形が特殊だが、今回の対象には入れない

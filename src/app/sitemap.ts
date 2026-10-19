@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next';
+import { CHARACTER_PAGE_IDS } from '@/lib/characterPages';
 
 const SITE_URL = 'https://wuwaechotools.com';
 
@@ -64,6 +65,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
         },
       },
     },
+    ...CHARACTER_PAGE_IDS.map((id): MetadataRoute.Sitemap[number] => ({
+      url: `${SITE_URL}/chardb/${id}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+      alternates: {
+        languages: {
+          ja: `${SITE_URL}/chardb/${id}`,
+          en: `${SITE_URL}/chardb/${id}?lang=en`,
+        },
+      },
+    })),
     {
       url: `${SITE_URL}/about`,
       lastModified: new Date(),

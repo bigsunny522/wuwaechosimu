@@ -66,7 +66,7 @@ function getRecommendedHarmonySet(charId: string, cost: EchoCost): string | null
     ?? null;
 }
 
-export default function HomeClient() {
+export default function HomeClient({ initialCharId }: { initialCharId?: string }) {
   const { locale, toggleLocale } = useLocale();
   const ja = locale === 'ja';
   const [menuOpen, setMenuOpen] = useState(false);
@@ -83,7 +83,9 @@ export default function HomeClient() {
   }, []);
 
   /* ── 対象ビルド選択 ─────────────────────────────────────────── */
-  const [selectedCharId, setSelectedCharId] = useState('generic');
+  const [selectedCharId, setSelectedCharId] = useState(
+    initialCharId && CHARACTER_MAP[initialCharId] ? initialCharId : 'generic',
+  );
   const [cost, setCost] = useState<EchoCost>(4);
   const [selectedEchoId, setSelectedEchoId] = useState(DEFAULT_ECHO_ID[4]);
   const [selectedHarmonySet, setSelectedHarmonySet] = useState('');
@@ -127,6 +129,14 @@ export default function HomeClient() {
     setPendingKey('');
     setPendingTier(0);
   }, [cost]);
+
+  // ?char=<id> で開いた場合は、初回マウント時に推奨音骸・推奨セットの自動設定も含めて反映する
+  useEffect(() => {
+    if (initialCharId && CHARACTER_MAP[initialCharId]) {
+      handleCharacterChange(initialCharId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const echoOptions = useMemo(() => {
     const char = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;

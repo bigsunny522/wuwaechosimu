@@ -3,8 +3,9 @@ import HomeClient from './HomeClient';
 import { LocaleProvider } from '@/lib/locale';
 import { resolveLocale, resolveExplicitLocale } from '@/lib/locale-utils';
 import { buildMetadata, SITE_URL } from '@/lib/seo';
+import { CHARACTER_MAP } from '@/data/characters';
 
-type Props = { searchParams: Promise<{ lang?: string }> };
+type Props = { searchParams: Promise<{ lang?: string; char?: string }> };
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const locale = resolveLocale(await searchParams);
@@ -30,6 +31,8 @@ export default async function RootPage({ searchParams }: Props) {
   const sp = await searchParams;
   const locale = resolveLocale(sp);
   const initialLocale = resolveExplicitLocale(sp);
+  // ?char=<id> が有効なキャラなら選択状態で開く。無効な id は無視して従来通り generic で開く
+  const initialCharId = sp.char && CHARACTER_MAP[sp.char] ? sp.char : undefined;
   const appJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
@@ -47,7 +50,7 @@ export default async function RootPage({ searchParams }: Props) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(appJsonLd) }} />
       <LocaleProvider initialLocale={initialLocale}>
-        <HomeClient />
+        <HomeClient initialCharId={initialCharId} />
       </LocaleProvider>
     </>
   );

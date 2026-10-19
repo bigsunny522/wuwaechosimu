@@ -8,6 +8,7 @@ import { getHarmonyBadgeColor, HARMONY_SETS_EN } from '@/data/echoes';
 import { SUBSTAT_LABEL_EN, MAINSTAT_LABEL_EN } from '@/data/translations';
 import { ELEMENT_EN, WEAPON_EN, ROLE_EN, localizeLabel } from '@/data/charLabels';
 import { useLocale, withLang, type Locale } from '@/lib/locale';
+import { isCharacterPageId } from '@/lib/characterPages';
 import AdBanner from '@/components/AdBanner';
 import NativeBanner from '@/components/NativeBanner';
 import type { CharacterBuild } from '@/types/character';
@@ -289,6 +290,18 @@ function CharCard({ char, locale }: { char: CharacterBuild; locale: Locale }) {
           )}
         </div>
       </div>
+
+      {/* キャラ別ページがあるキャラのみ「スコアの目安」ページへのリンクを出す */}
+      {isCharacterPageId(char.id) && (
+        <div style={{ padding: '0 16px 12px' }}>
+          <Link
+            href={withLang(`/chardb/${char.id}`, locale)}
+            style={{ fontSize: 12, fontWeight: 600, color: ACCENT, textDecoration: 'none' }}
+          >
+            {locale === 'en' ? 'See score benchmarks →' : 'スコアの目安を見る →'}
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
