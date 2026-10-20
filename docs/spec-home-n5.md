@@ -228,12 +228,13 @@ props: `ja`, `open`, `onClose`, `selectedCharId`, `onSelect(id: string)`。キ�
 
 1. 記録の行(`HomeClient.tsx` の「これまで…記録を見る」ボタン)を隠す条件を `[@media(max-height:820px)]:hidden` にする
 2. 低い画面用の指定 `[@media(max-height:700px)]:` を、ホームの全ファイル(`HomeClient.tsx` / `BuildBar.tsx` / `ForecastStrip.tsx` / `InputDock.tsx` / `SlotList.tsx` などで見つかったもの全部)で `[@media(max-height:780px)]:` に置き換える。入力欄(InputDock)の高さもこれに合わせて 780px 以下で 216px になる
-3. 真ん中のエリアの子要素(メイン行・SlotList・ForecastStrip・記録の行)は縮ませない(`flex: none` か `shrink-0`)
+3. SlotList は行の高さが 28〜44px で伸び縮みする作り(`gridTemplateRows: repeat(5, minmax(28px, 44px))`)なので、縮むこと自体は残す。直すのは `SlotList.tsx` の `minHeight: 0` を消すことだけ(最小の高さ 5×28+4×4=156px より小さくならないようにする)。`HomeClient.tsx` で SlotList を包んだ `<div style={{ flex: 'none' }}>` は外して元に戻す
+   - (訂正 2026-10-20)最初の版は「縮ませない」と書いていたが、それだと行が常に 44px になり、667px でも 67px はみ出してスクロールが出た。上の書き方が正しい
 4. 真ん中のエリアの `overflow-hidden` を `overflow-y-auto` に変える。660px より低い画面(iPhone SE の Safari など)では、重ねる代わりにこのエリアの中だけがスクロールする。入力欄は固定のまま動かない
 
 ### 変更対象
 
-`src/app/HomeClient.tsx`、`src/components/home/` の中で `max-height:700px` を使っているファイル。それ以外は触らない。
+`src/app/HomeClient.tsx`、`src/components/home/SlotList.tsx`、`src/components/home/` の中で `max-height:700px` を使っていたファイル。それ以外は触らない。
 
 ### 受け入れ条件
 
