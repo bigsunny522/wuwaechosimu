@@ -16,6 +16,9 @@ interface InputDockProps {
   finalScore: ScoreResult | null;
   canFinalize: boolean;
   onFinalize: () => void;
+  onSaveImage: () => void;
+  onShare: () => void;
+  savingImage: boolean;
   build?: CharacterBuild;
 }
 
@@ -33,6 +36,9 @@ export default function InputDock({
   finalScore,
   canFinalize,
   onFinalize,
+  onSaveImage,
+  onShare,
+  savingImage,
   build,
 }: InputDockProps) {
   const [chartOpen, setChartOpen] = useState(false);
@@ -69,16 +75,39 @@ export default function InputDock({
                 </strong>
               </div>
             </div>
-            {finalScore.distributionCurve && (
-              <button
-                type="button"
-                onClick={() => setChartOpen(true)}
-                className="self-start text-[12px] font-bold"
-                style={{ color: 'var(--hd-accent)' }}
-              >
-                {ja ? 'スコア分布を見る' : 'See score distribution'}
-              </button>
-            )}
+            <div className="flex items-center">
+              {finalScore.distributionCurve && (
+                <button
+                  type="button"
+                  onClick={() => setChartOpen(true)}
+                  className="text-[12px] font-bold"
+                  style={{ color: 'var(--hd-accent)' }}
+                >
+                  {ja ? 'スコア分布を見る' : 'See score distribution'}
+                </button>
+              )}
+              <div className="flex items-center gap-[8px] ml-auto shrink-0">
+                <button
+                  type="button"
+                  onClick={onSaveImage}
+                  disabled={savingImage}
+                  className="h-[32px] px-[12px] rounded-[16px] text-[12px] font-bold whitespace-nowrap"
+                  style={{ background: 'var(--hd-raise)', color: 'var(--hd-fg)' }}
+                >
+                  {savingImage
+                    ? (ja ? '作成中…' : 'Saving…')
+                    : (ja ? '画像を保存' : 'Save image')}
+                </button>
+                <button
+                  type="button"
+                  onClick={onShare}
+                  className="h-[32px] px-[12px] rounded-[16px] text-[12px] font-bold whitespace-nowrap"
+                  style={{ background: 'var(--hd-raise)', color: 'var(--hd-fg)' }}
+                >
+                  {ja ? '𝕏 でシェア' : 'Share on 𝕏'}
+                </button>
+              </div>
+            </div>
           </div>
           <button
             type="button"

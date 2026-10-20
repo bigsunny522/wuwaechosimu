@@ -10,6 +10,7 @@ import { ECHOES, ECHOES_BY_COST, DEFAULT_ECHO_ID, HARMONY_SETS, HARMONY_SETS_EN 
 import { CHARACTER_MAP } from '@/data/characters';
 import { scoreEcho } from '@/lib/scorer';
 import { simulateCompletion } from '@/lib/monteCarlo';
+import { generateResultCard, buildShareText } from '@/lib/imageGen';
 import {
   type TrackedEntry, type Threshold, type BaselineStats,
   loadEntries, saveEntries, computeBaseline, predict,
@@ -109,6 +110,7 @@ export default function HomeClient() {
   const [draftSubs, setDraftSubs] = useState<Substat[]>([]);
   const [pendingKey, setPendingKey] = useState('');
   const [pendingTier, setPendingTier] = useState(0);
+  const [savingImage, setSavingImage] = useState(false);
 
   const harmonySetOptions = useMemo(() => {
     if (cost === 4) return [];
@@ -319,6 +321,36 @@ export default function HomeClient() {
     });
     resetDraft();
   }, [canFinalize, draftFinalScore, cost, selectedCharId, selectedEchoId, draftMeta, draftSubs, resetDraft]);
+
+  const handleSaveImage = useCallback(async () => {
+    if (!draftFinalScore) return;
+    setSavingImage(true);
+    try {
+      const dataUrl = await generateResultCard(buildDraftEcho(draftSubs), draftFinalScore, locale);
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `echo-${draftFinalScore.rank}-${draftFinalScore.score}pt.png`;
+      a.click();
+    } finally {
+      setSavingImage(false);
+    }
+  }, [draftFinalScore, buildDraftEcho, draftSubs, locale]);
+
+  const handleShare = useCallback(() => {
+    if (!draftFinalScore) return;
+    const shareCharName = build
+      ? (ja ? build.name : (build.nameEn ?? build.name))
+      : undefined;
+    const text = buildShareText(buildDraftEcho(draftSubs), draftFinalScore, {
+      locale,
+      charName: shareCharName,
+    });
+    window.open(
+      `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
+      '_blank',
+      'noopener,noreferrer',
+    );
+  }, [draftFinalScore, buildDraftEcho, draftSubs, build, ja, locale]);
 
   const handleDelete = useCallback((id: number) => {
     setEntries((prev) => {
@@ -702,6 +734,9 @@ export default function HomeClient() {
             finalScore={draftFinalScore}
             canFinalize={canFinalize}
             onFinalize={handleFinalize}
+            onSaveImage={handleSaveImage}
+            onShare={handleShare}
+            savingImage={savingImage}
             build={build}
           />
 
