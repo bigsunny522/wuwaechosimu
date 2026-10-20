@@ -13,7 +13,7 @@ const RECOMMENDATION: Record<
   { ja: string; en: string; color: string }
 > = {
   great: { ja: '強く継続推奨', en: 'Strong Continue', color: '#7FD6A4' },
-  good: { ja: '継続推奨', en: 'Continue', color: '#A98BFF' },
+  good: { ja: '継続推奨', en: 'Continue', color: 'var(--hd-accent)' },
   borderline: { ja: '様子見', en: 'Borderline', color: '#F0B35A' },
   scrap: { ja: '破棄推奨', en: 'Consider Scrap', color: '#FF8A8A' },
 };

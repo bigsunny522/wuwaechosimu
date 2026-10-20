@@ -3,28 +3,16 @@ import CustomSelect, { type SelectOption } from '@/components/CustomSelect';
 
 const COST_OPTIONS: EchoCost[] = [4, 3, 1];
 
-const SELECT_STYLE = {
-  textColor: 'var(--hd-fg)',
-  background: 'var(--hd-raise)',
-  borderColor: 'var(--hd-line)',
-  accentColor: '#A98BFF',
-  dropdownBg: 'var(--hd-raise)',
-};
-
 interface BuildBarProps {
   ja: boolean;
+  accent: string;
   charName: string;
-  charNameEn: string;
+  charElement: string;
   cost: EchoCost;
-  echoName: string;
-  echoNameEn: string;
-  open: boolean;
-  onOpen: () => void;
-  onClose: () => void;
-  selectedCharId: string;
-  onCharChange: (id: string) => void;
-  charOptions: SelectOption[];
   onCostChange: (c: EchoCost) => void;
+  onOpenPicker: () => void;
+  open: boolean;
+  onClose: () => void;
   selectedEchoId: string;
   onEchoChange: (id: string) => void;
   echoOptions: SelectOption[];
@@ -42,18 +30,14 @@ interface BuildBarProps {
 
 export default function BuildBar({
   ja,
+  accent,
   charName,
-  charNameEn,
+  charElement,
   cost,
-  echoName,
-  echoNameEn,
-  open,
-  onOpen,
-  onClose,
-  selectedCharId,
-  onCharChange,
-  charOptions,
   onCostChange,
+  onOpenPicker,
+  open,
+  onClose,
   selectedEchoId,
   onEchoChange,
   echoOptions,
@@ -68,43 +52,88 @@ export default function BuildBar({
   draftHarmonySet,
   onDraftHarmonySetChange,
 }: BuildBarProps) {
-  const name = ja ? charName : charNameEn;
-  const initial = name.charAt(0);
-  const chipStyle = { background: 'var(--hd-raise)' };
+  const selectStyle = {
+    textColor: 'var(--hd-fg)',
+    background: 'var(--hd-raise)',
+    borderColor: 'var(--hd-line)',
+    accentColor: accent,
+    dropdownBg: 'var(--hd-raise)',
+  };
 
   return (
     <>
-      <div className="flex gap-[6px] px-[16px] pt-[8px] overflow-hidden" style={{ flex: 'none' }}>
+      <div className="flex gap-[6px] px-[16px] pt-[8px]" style={{ flex: 'none' }}>
         <button
           type="button"
-          onClick={onOpen}
-          className="flex items-center gap-[6px] h-[34px] pl-[3px] pr-[12px] rounded-[17px] text-[13px] font-bold whitespace-nowrap shrink-0"
-          style={chipStyle}
+          onClick={onOpenPicker}
+          className="flex-1 min-w-0 h-[48px] [@media(max-height:700px)]:h-[44px] rounded-[10px] overflow-hidden grid items-center gap-[12px] pr-[12px] text-left"
+          style={{ background: 'var(--hd-plate)', gridTemplateColumns: '4px minmax(0,1fr) auto' }}
         >
-          <span
-            className="grid place-items-center w-[28px] h-[28px] rounded-full text-[12px] shrink-0"
-            style={{ border: '2px solid var(--hd-accent)', color: 'var(--hd-accent)' }}
-          >
-            {initial}
+          <span className="self-stretch" style={{ background: 'var(--hd-accent)' }} />
+          <span className="min-w-0">
+            <small className="block text-[11px] leading-[1.2]" style={{ color: 'var(--hd-sub)' }}>
+              {ja ? 'キャラ' : 'Character'}
+            </small>
+            <span className="flex items-baseline">
+              <strong className="flex-1 min-w-0 truncate text-[16px] leading-[1.25] font-bold">
+                {charName}
+              </strong>
+              <span
+                className="shrink-0 ml-[8px] text-[12px] font-bold"
+                style={{ color: 'var(--hd-accent)' }}
+              >
+                {charElement}
+              </span>
+            </span>
           </span>
-          {name}
+          <span
+            className="flex items-center gap-[4px] whitespace-nowrap text-[12px]"
+            style={{ color: 'var(--hd-sub)' }}
+          >
+            {ja ? '変更' : 'Change'}
+            <span
+              aria-hidden
+              className="shrink-0"
+              style={{
+                width: 7,
+                height: 7,
+                borderRight: '2px solid currentColor',
+                borderBottom: '2px solid currentColor',
+                transform: 'rotate(-45deg)',
+              }}
+            />
+          </span>
         </button>
-        <button
-          type="button"
-          onClick={onOpen}
-          className="hd-num flex items-center h-[34px] px-[12px] rounded-[17px] text-[13px] whitespace-nowrap shrink-0"
-          style={chipStyle}
+
+        <div
+          className="flex items-center gap-[2px] px-[6px] rounded-[10px] shrink-0"
+          style={{ background: 'var(--hd-plate)' }}
         >
-          COST {cost}
-        </button>
-        <button
-          type="button"
-          onClick={onOpen}
-          className="flex items-center h-[34px] px-[12px] rounded-[17px] text-[13px] whitespace-nowrap shrink-0"
-          style={chipStyle}
-        >
-          {ja ? echoName : echoNameEn}
-        </button>
+          <small
+            className="mr-[2px] text-[10px]"
+            style={{ color: 'var(--hd-sub)', writingMode: 'vertical-rl', letterSpacing: '0.05em' }}
+          >
+            COST
+          </small>
+          {COST_OPTIONS.map((c) => (
+            <button
+              type="button"
+              key={c}
+              aria-pressed={cost === c}
+              onClick={() => onCostChange(c)}
+              className={`hd-num grid place-items-center h-[32px] [@media(max-height:700px)]:h-[28px] min-w-[30px] text-[13px] rounded-[6px] ${
+                cost === c ? 'font-bold' : ''
+              }`}
+              style={
+                cost === c
+                  ? { background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }
+                  : { color: 'var(--hd-sub)' }
+              }
+            >
+              {c}
+            </button>
+          ))}
+        </div>
       </div>
 
       {open && (
@@ -118,60 +147,36 @@ export default function BuildBar({
             className="fixed bottom-0 left-1/2 -translate-x-1/2 z-50 w-full max-w-[480px] rounded-t-[16px] p-[16px] flex flex-col gap-[12px]"
             style={{ background: 'var(--hd-plate)' }}
           >
-            <CustomSelect
-              value={selectedCharId}
-              onChange={onCharChange}
-              options={charOptions}
-              {...SELECT_STYLE}
-            />
-            <div className="flex gap-[8px] justify-center">
-              {COST_OPTIONS.map((c) => (
-                <button
-                  type="button"
-                  key={c}
-                  onClick={() => onCostChange(c)}
-                  className="hd-num px-[20px] py-[8px] rounded-[500px] text-[14px] font-medium"
-                  style={
-                    cost === c
-                      ? { background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }
-                      : {
-                          background: 'var(--hd-raise)',
-                          border: '1px solid var(--hd-line)',
-                          color: 'var(--hd-sub)',
-                        }
-                  }
-                >
-                  COST {c}
-                </button>
-              ))}
-            </div>
+            <h2 className="text-[16px] font-bold">
+              {ja ? '音骸とメインステータス' : 'Echo & main stat'}
+            </h2>
             {cost === 4 ? (
               <CustomSelect
                 value={selectedEchoId}
                 onChange={onEchoChange}
                 options={echoOptions}
-                {...SELECT_STYLE}
+                {...selectStyle}
               />
             ) : (
               <CustomSelect
                 value={selectedHarmonySet}
                 onChange={onHarmonyChange}
                 options={harmonyOptions}
-                {...SELECT_STYLE}
+                {...selectStyle}
               />
             )}
             <CustomSelect
               value={draftMainstatKey}
               onChange={onMainstatChange}
               options={mainstatOptions}
-              {...SELECT_STYLE}
+              {...selectStyle}
             />
             {cost4MultiSet && (
               <CustomSelect
                 value={draftHarmonySet}
                 onChange={onDraftHarmonySetChange}
                 options={multiSetOptions}
-                {...SELECT_STYLE}
+                {...selectStyle}
               />
             )}
             <button

@@ -7,7 +7,7 @@ import type { EchoCost, EchoState, Substat, SubstatKey } from '@/types/echo';
 import { SUBSTAT_MAP } from '@/data/substats';
 import { MAINSTAT_POOLS } from '@/data/mainstats';
 import { ECHOES, ECHOES_BY_COST, DEFAULT_ECHO_ID, HARMONY_SETS, HARMONY_SETS_EN } from '@/data/echoes';
-import { CHARACTER_LIST, CHARACTER_MAP } from '@/data/characters';
+import { CHARACTER_MAP } from '@/data/characters';
 import { scoreEcho } from '@/lib/scorer';
 import { simulateCompletion } from '@/lib/monteCarlo';
 import {
@@ -29,6 +29,8 @@ import SlotList from '@/components/home/SlotList';
 import ForecastStrip from '@/components/home/ForecastStrip';
 import InputDock from '@/components/home/InputDock';
 import RecordsPanel from '@/components/home/RecordsPanel';
+import CharacterPicker from '@/components/home/CharacterPicker';
+import { ACCENT_INK, ELEMENT_THEME, elementKeyOf } from '@/components/home/elementTheme';
 
 const bodyFont = Noto_Sans_JP({
   weight: ['400', '700', '900'],
@@ -88,6 +90,7 @@ export default function HomeClient() {
   const [hasNewUpdate, setHasNewUpdate]       = useState(false);
   const [tab, setTab] = useState<'tune' | 'records'>('tune');
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   useEffect(() => {
     const seen = localStorage.getItem('lastSeenUpdate');
@@ -185,11 +188,6 @@ export default function HomeClient() {
     });
     return items.map(({ _i: _, ...opt }) => opt);
   }, [harmonySetOptions, ja, selectedCharId]);
-
-  const charOptions = useMemo(() => [
-    { value: 'generic', label: ja ? '（キャラなし・汎用評価）' : '(No character — generic score)' },
-    ...CHARACTER_LIST.map((c) => ({ value: c.id, label: ja ? c.name : (c.nameEn ?? c.name) })),
-  ], [ja]);
 
   const currentEchoInfo = useMemo(() => ECHOES.find((e) => e.id === selectedEchoId), [selectedEchoId]);
   const cost4MultiSet = cost === 4 && (currentEchoInfo?.sets.length ?? 0) > 1;
@@ -380,8 +378,12 @@ export default function HomeClient() {
     [cost4MultiSet, currentEchoInfo, ja],
   );
 
-  const charChipName = build ? build.name : ja ? '汎用' : 'Generic';
-  const charChipNameEn = build ? (build.nameEn ?? build.name) : 'Generic';
+  const elementKey = elementKeyOf(build?.element);
+  const theme = ELEMENT_THEME[elementKey];
+  const charName = build
+    ? (ja ? build.name : (build.nameEn ?? build.name))
+    : (ja ? 'キャラなし' : 'No character');
+  const charElement = !build ? '' : ja ? theme.ja : theme.en;
 
   const header = (
     <header
@@ -389,7 +391,7 @@ export default function HomeClient() {
       style={{ flex: 'none' }}
     >
       <div className="flex items-center gap-[6px] mr-auto min-w-0">
-        <EchoIcon size={28} color="#A98BFF" bgColor="#101318" />
+        <EchoIcon size={28} color={theme.accent} bgColor="#101318" />
         <span className="text-[15px] font-bold whitespace-nowrap truncate min-w-0">
           {ja ? '厳選サポーター' : 'Selection Supporter'}
         </span>
@@ -530,7 +532,12 @@ export default function HomeClient() {
   return (
     <div
       className={`home-dark ${bodyFont.variable} ${numFont.variable} min-h-dvh`}
-      style={{ background: 'var(--hd-bg)' }}
+      style={{
+        background: 'var(--hd-bg)',
+        ['--hd-accent' as string]: theme.accent,
+        ['--hd-accent-ink' as string]: ACCENT_INK,
+        ['--hd-accent-soft' as string]: `color-mix(in srgb, ${theme.accent} 16%, transparent)`,
+      } as React.CSSProperties}
     >
       <h1 className="sr-only">
         {ja ? '音骸スコア厳選サポーター' : 'Echo Score Farming Supporter'}
@@ -542,26 +549,30 @@ export default function HomeClient() {
         >
           {header}
 
-          {HAS_THIN_AD ? (
-            <div className="-my-6 flex justify-center" style={{ flex: 'none' }}>
-              <AdBannerThin />
-            </div>
-          ) : null}
+          <div
+            className="overflow-hidden flex items-center justify-center"
+            style={{ flex: 'none', height: 50 }}
+          >
+            {HAS_THIN_AD ? (
+              <div className="-my-6">
+                <AdBannerThin />
+              </div>
+            ) : null}
+          </div>
 
           <BuildBar
             ja={ja}
-            charName={charChipName}
-            charNameEn={charChipNameEn}
+            accent={theme.accent}
+            charName={charName}
+            charElement={charElement}
             cost={cost}
-            echoName={draftMeta.echoName}
-            echoNameEn={draftMeta.echoNameEn}
+            onCostChange={(c) => { setCost(c); setDraftMainstatKey(MAINSTAT_POOLS[c][0].key); }}
+            onOpenPicker={() => {
+              setSettingsOpen(false);
+              setPickerOpen(true);
+            }}
             open={settingsOpen}
-            onOpen={() => setSettingsOpen(true)}
             onClose={() => setSettingsOpen(false)}
-            selectedCharId={selectedCharId}
-            onCharChange={handleCharacterChange}
-            charOptions={charOptions}
-            onCostChange={setCost}
             selectedEchoId={selectedEchoId}
             onEchoChange={setSelectedEchoId}
             echoOptions={echoOptions}
@@ -582,25 +593,31 @@ export default function HomeClient() {
           >
             <button
               type="button"
-              onClick={() => setSettingsOpen(true)}
-              className="flex items-baseline justify-between text-[13px] text-left w-full"
+              onClick={() => {
+                setPickerOpen(false);
+                setSettingsOpen(true);
+              }}
+              className="flex items-baseline gap-[10px] text-[13px] text-left w-full"
               style={{ flex: 'none', color: 'var(--hd-sub)' }}
             >
-              <span>
-                {ja ? 'メイン' : 'Main'}
-                <b className="text-[14px] ml-[6px]" style={{ color: 'var(--hd-fg)' }}>
-                  {ja
-                    ? draftMeta.mainstat.label
-                    : (MAINSTAT_LABEL_EN[draftMeta.mainstat.key] ?? draftMeta.mainstat.label)}
-                </b>
-              </span>
               <span
-                className="hd-num text-[16px] font-semibold"
-                style={{ color: 'var(--hd-fg)' }}
+                className="min-w-0 truncate"
+                style={{ color: 'var(--hd-fg)', flex: '1 1 0' }}
               >
-                {draftMeta.mainstat.unit === '%'
-                  ? `${draftMeta.mainstat.value.toFixed(1)}${draftMeta.mainstat.unit}`
-                  : `${draftMeta.mainstat.value}${draftMeta.mainstat.unit}`}
+                {ja ? draftMeta.echoName : draftMeta.echoNameEn}
+              </span>
+              <span className="whitespace-nowrap" style={{ flex: 'none' }}>
+                {ja
+                  ? draftMeta.mainstat.label
+                  : (MAINSTAT_LABEL_EN[draftMeta.mainstat.key] ?? draftMeta.mainstat.label)}
+                <b
+                  className="hd-num text-[16px] font-semibold ml-[6px]"
+                  style={{ color: 'var(--hd-fg)' }}
+                >
+                  {draftMeta.mainstat.unit === '%'
+                    ? `${draftMeta.mainstat.value.toFixed(1)}${draftMeta.mainstat.unit}`
+                    : `${draftMeta.mainstat.value}${draftMeta.mainstat.unit}`}
+                </b>
               </span>
             </button>
 
@@ -659,6 +676,14 @@ export default function HomeClient() {
             onFinalize={handleFinalize}
             build={build}
           />
+
+          <CharacterPicker
+            ja={ja}
+            open={pickerOpen}
+            onClose={() => setPickerOpen(false)}
+            selectedCharId={selectedCharId}
+            onSelect={handleCharacterChange}
+          />
         </div>
       ) : (
         <div className="mx-auto w-full max-w-[480px]">
@@ -675,7 +700,7 @@ export default function HomeClient() {
               onDelete={handleDelete}
               onClearAll={handleClearFiltered}
             />
-            <p className="text-[10px] text-[#9ca3af] text-center leading-relaxed" style={{ lineHeight: 1.6 }}>
+            <p className="text-[10px] text-center leading-relaxed" style={{ lineHeight: 1.6, color: 'var(--hd-sub)' }}>
               {ja
                 ? '※ 予測はベイズ推定（理論確率を事前分布とし、実測データで更新）に基づく統計的な目安であり、実際の結果を保証するものではありません。記録データはブラウザ内（localStorage）にのみ保存されます。'
                 : '* Predictions use Bayesian updating (theoretical rate as prior, updated with your logged data) and are a statistical estimate, not a guarantee. Your records are stored locally in your browser only.'}
@@ -683,8 +708,8 @@ export default function HomeClient() {
             <NativeBanner />
             <AdBanner />
           </div>
-          <footer className="border-t border-[#f3f4f6] py-4">
-            <p className="text-center text-xs text-[#9ca3af]">
+          <footer className="border-t py-4" style={{ borderColor: 'var(--hd-line)' }}>
+            <p className="text-center text-xs" style={{ color: 'var(--hd-sub)' }}>
               {ja ? '© 音骸シミュレーター（非公式ファンツール）' : '© Echo Simulator (unofficial fan tool)'}
             </p>
           </footer>

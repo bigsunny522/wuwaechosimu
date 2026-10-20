@@ -135,7 +135,7 @@ props: `ja`, `open`, `onClose`, `selectedCharId`, `onSelect(id: string)`。キ�
   - 選択中は背景 `var(--hd-fg)`・文字 `var(--hd-bg)`・太字。それ以外は背景 `var(--hd-raise)`・文字 `var(--hd-sub)`
   - 絞り込みの状態は CharacterPicker の中の state。開くたびに「すべて」に戻す
   - 「すべて」以外を選ぶと、その属性のキャラだけを出す。element が表にないキャラ(`'none'`)は「すべて」のときだけ出る
-  - EN 表示でボタンに収まらないときは文字を 11px に下げてよい。それでも収まらないときは止めて質問する
+  - EN 表示のときだけ、丸を外して文字を 11px にする(実測で、丸付きでは 375px 幅の列に Spectro が収まらないため)。JA 表示は丸付き 12px のまま
 - 一覧(`flex: 1; min-height: 0; overflow-y: auto`、3列の等幅グリッド、間隔 6px、左右と下 16px)
   - 先頭に「キャラなし(汎用の評価)」/ "No character (generic score)" のタイル。3列ぶち抜き、高さ 44px。帯の色は `ELEMENT_THEME.none.accent`。絞り込みが「すべて」のときだけ出す
   - キャラのタイル: 高さ 52px、背景 `var(--hd-raise)`、角丸 8px、`overflow: hidden`。2列のグリッド `4px minmax(0,1fr)`、間隔 8px、右の余白 6px
@@ -164,7 +164,7 @@ props: `ja`, `open`, `onClose`, `selectedCharId`, `onSelect(id: string)`。キ�
 | 一覧の行の背景 `#fafafa` | `var(--hd-raise)` |
 | 「記録を全削除」の枠 `#e5e7eb` | `var(--hd-line)`(hover の赤はそのまま) |
 
-- ランクの色(`RANK_COLORS`)、運勢の色(`LUCK_LABEL`)、✕ の hover の赤はそのまま
+- ランクの色(`RANK_COLORS`)、運勢の色(`LUCK_LABEL`)、✕ の hover の赤はそのまま。ただし `LUCK_LABEL.insufficient.color` の `'#9ca3af'` だけは `'#A3ADBA'`(`--hd-sub` と同じ値の hex)に変える。`${color}18` で透明度を連結しているので var() にはしない
 - 文言の「上のフォームから記録してください」は「強化中タブで5個そろえて記録してください」/ "Fill all five on the Tuning tab and record it." に変える(フォームはもうないため)
 
 `HomeClient.tsx` の記録タブ部分:
