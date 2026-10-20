@@ -221,32 +221,16 @@ export default function HomeClient() {
   const [draftMainstatKey, setDraftMainstatKey] = useState(MAINSTAT_POOLS[4][0].key);
   useEffect(() => { setDraftMainstatKey(MAINSTAT_POOLS[cost][0].key); }, [cost]);
 
-  const mainstatOptions = useMemo(() => {
+  const mainstatChoices = useMemo(() => {
     const costKey = `cost${cost}` as 'cost4' | 'cost3' | 'cost1';
     const recKeys = build ? new Set(build.mainstat[costKey].recommended) : new Set<string>();
-    const accKeys = build ? new Set(build.mainstat[costKey].acceptable) : new Set<string>();
-    const priority = (b?: 'recommended' | 'acceptable') =>
-      b === 'recommended' ? 0 : b === 'acceptable' ? 1 : 2;
 
-    return MAINSTAT_POOLS[cost]
-      .map((m, i) => {
-        let badge: 'recommended' | 'acceptable' | undefined;
-        if (build) {
-          if (recKeys.has(m.key)) badge = 'recommended';
-          else if (accKeys.has(m.key)) badge = 'acceptable';
-        }
-        return {
-          value: m.key,
-          label: `${ja ? m.label : (MAINSTAT_LABEL_EN[m.key] ?? m.label)}（+25: ${m.value}${m.unit}）`,
-          badge,
-          _i: i,
-        };
-      })
-      .sort((a, b) => {
-        const pd = priority(a.badge) - priority(b.badge);
-        return pd !== 0 ? pd : a._i - b._i;
-      })
-      .map(({ _i: _, ...opt }) => opt);
+    return MAINSTAT_POOLS[cost].map((m) => ({
+      key: m.key,
+      name: ja ? m.label : (MAINSTAT_LABEL_EN[m.key] ?? m.label),
+      valueText: m.unit === '%' ? `${m.value.toFixed(1)}${m.unit}` : `${m.value}${m.unit}`,
+      recommended: recKeys.has(m.key),
+    }));
   }, [cost, ja, build]);
 
   const draftMeta = useMemo(() => {
@@ -383,7 +367,12 @@ export default function HomeClient() {
   const charName = build
     ? (ja ? build.name : (build.nameEn ?? build.name))
     : (ja ? 'キャラなし' : 'No character');
+  const recommendFor = build ? charName : '';
   const charElement = !build ? '' : ja ? theme.ja : theme.en;
+
+  const plateLabelTop = cost === 4 ? (ja ? '音骸' : 'Echo') : (ja ? 'ハーモニー' : 'Set');
+  const plateLabelMain = ja ? 'メイン' : 'Main';
+  const plateLabelMin = `${Math.max(plateLabelTop.length, plateLabelMain.length)}em`;
 
   const header = (
     <header
@@ -565,6 +554,7 @@ export default function HomeClient() {
             accent={theme.accent}
             charName={charName}
             charElement={charElement}
+            recommendFor={recommendFor}
             cost={cost}
             onCostChange={(c) => { setCost(c); setDraftMainstatKey(MAINSTAT_POOLS[c][0].key); }}
             onOpenPicker={() => {
@@ -581,7 +571,7 @@ export default function HomeClient() {
             harmonyOptions={harmonyOptions}
             draftMainstatKey={draftMainstatKey}
             onMainstatChange={setDraftMainstatKey}
-            mainstatOptions={mainstatOptions}
+            mainstatChoices={mainstatChoices}
             cost4MultiSet={cost4MultiSet}
             multiSetOptions={multiSetOptions}
             draftHarmonySet={draftHarmonySet}
@@ -597,27 +587,65 @@ export default function HomeClient() {
                 setPickerOpen(false);
                 setSettingsOpen(true);
               }}
-              className="flex items-baseline gap-[10px] text-[13px] text-left w-full"
-              style={{ flex: 'none', color: 'var(--hd-sub)' }}
+              className="flex items-center gap-[12px] w-full h-[44px] rounded-[10px] px-[12px] text-left [@media(max-height:780px)]:h-[36px]"
+              style={{ flex: 'none', background: 'var(--hd-plate)' }}
             >
-              <span
-                className="min-w-0 truncate"
-                style={{ color: 'var(--hd-fg)', flex: '1 1 0' }}
-              >
-                {ja ? draftMeta.echoName : draftMeta.echoNameEn}
+              <span className="min-w-0 flex-1 flex flex-col justify-center">
+                <span className="flex items-baseline gap-[8px]">
+                  <small
+                    className="flex-none text-[11px] leading-[1.2] [@media(max-height:780px)]:text-[10px]"
+                    style={{ color: 'var(--hd-sub)', minWidth: plateLabelMin }}
+                  >
+                    {plateLabelTop}
+                  </small>
+                  <span
+                    className="min-w-0 truncate text-[13px] leading-[1.25] [@media(max-height:780px)]:text-[12px]"
+                    style={{ color: 'var(--hd-fg)' }}
+                  >
+                    {ja ? draftMeta.echoName : draftMeta.echoNameEn}
+                  </span>
+                </span>
+                <span className="flex items-baseline gap-[8px]">
+                  <small
+                    className="flex-none text-[11px] leading-[1.2] [@media(max-height:780px)]:text-[10px]"
+                    style={{ color: 'var(--hd-sub)', minWidth: plateLabelMin }}
+                  >
+                    {plateLabelMain}
+                  </small>
+                  <span
+                    className="min-w-0 truncate text-[13px] leading-[1.25] [@media(max-height:780px)]:text-[12px]"
+                    style={{ color: 'var(--hd-fg)' }}
+                  >
+                    {ja
+                      ? draftMeta.mainstat.label
+                      : (MAINSTAT_LABEL_EN[draftMeta.mainstat.key] ?? draftMeta.mainstat.label)}
+                  </span>
+                  <b
+                    className="hd-num shrink-0 font-bold text-[13px] leading-[1.25] [@media(max-height:780px)]:text-[12px]"
+                    style={{ color: 'var(--hd-fg)' }}
+                  >
+                    {draftMeta.mainstat.unit === '%'
+                      ? `${draftMeta.mainstat.value.toFixed(1)}${draftMeta.mainstat.unit}`
+                      : `${draftMeta.mainstat.value}${draftMeta.mainstat.unit}`}
+                  </b>
+                </span>
               </span>
-              <span className="whitespace-nowrap" style={{ flex: 'none' }}>
-                {ja
-                  ? draftMeta.mainstat.label
-                  : (MAINSTAT_LABEL_EN[draftMeta.mainstat.key] ?? draftMeta.mainstat.label)}
-                <b
-                  className="hd-num text-[16px] font-semibold ml-[6px]"
-                  style={{ color: 'var(--hd-fg)' }}
-                >
-                  {draftMeta.mainstat.unit === '%'
-                    ? `${draftMeta.mainstat.value.toFixed(1)}${draftMeta.mainstat.unit}`
-                    : `${draftMeta.mainstat.value}${draftMeta.mainstat.unit}`}
-                </b>
+              <span
+                className="flex items-center gap-[4px] whitespace-nowrap text-[12px] shrink-0"
+                style={{ color: 'var(--hd-sub)' }}
+              >
+                {ja ? '変更' : 'Change'}
+                <span
+                  aria-hidden
+                  className="shrink-0"
+                  style={{
+                    width: 7,
+                    height: 7,
+                    borderRight: '2px solid currentColor',
+                    borderBottom: '2px solid currentColor',
+                    transform: 'rotate(-45deg)',
+                  }}
+                />
               </span>
             </button>
 

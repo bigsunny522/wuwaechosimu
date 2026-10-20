@@ -1,13 +1,22 @@
+import { Fragment } from 'react';
 import type { EchoCost } from '@/types/echo';
 import CustomSelect, { type SelectOption } from '@/components/CustomSelect';
 
 const COST_OPTIONS: EchoCost[] = [4, 3, 1];
+
+export interface MainstatChoice {
+  key: string;
+  name: string;
+  valueText: string;
+  recommended: boolean;
+}
 
 interface BuildBarProps {
   ja: boolean;
   accent: string;
   charName: string;
   charElement: string;
+  recommendFor: string;
   cost: EchoCost;
   onCostChange: (c: EchoCost) => void;
   onOpenPicker: () => void;
@@ -21,7 +30,7 @@ interface BuildBarProps {
   harmonyOptions: SelectOption[];
   draftMainstatKey: string;
   onMainstatChange: (key: string) => void;
-  mainstatOptions: SelectOption[];
+  mainstatChoices: MainstatChoice[];
   cost4MultiSet: boolean;
   multiSetOptions: SelectOption[];
   draftHarmonySet: string;
@@ -33,6 +42,7 @@ export default function BuildBar({
   accent,
   charName,
   charElement,
+  recommendFor,
   cost,
   onCostChange,
   onOpenPicker,
@@ -46,7 +56,7 @@ export default function BuildBar({
   harmonyOptions,
   draftMainstatKey,
   onMainstatChange,
-  mainstatOptions,
+  mainstatChoices,
   cost4MultiSet,
   multiSetOptions,
   draftHarmonySet,
@@ -150,6 +160,49 @@ export default function BuildBar({
             <h2 className="text-[16px] font-bold">
               {ja ? '音骸とメインステータス' : 'Echo & main stat'}
             </h2>
+            <h3 className="text-[12px] font-bold" style={{ color: 'var(--hd-sub)' }}>
+              {ja ? 'メインステータス(+25 の値)' : 'Main stat (value at +25)'}
+            </h3>
+            <div className="grid grid-cols-3 gap-[8px]">
+              {mainstatChoices.map((c) => {
+                const selected = c.key === draftMainstatKey;
+                return (
+                  <button
+                    key={c.key}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => onMainstatChange(c.key)}
+                    className="flex flex-col items-center justify-center gap-[2px] h-[56px] rounded-[8px] px-[6px] text-center"
+                    style={
+                      selected
+                        ? { background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }
+                        : { background: 'var(--hd-raise)', color: 'var(--hd-fg)' }
+                    }
+                  >
+                    {/* 改行は「ダメージ」「アップ」の手前だけで起こす(「アッ/プ」のような割れ方を防ぐ) */}
+                    <span className="w-full text-[12px] leading-[1.25] line-clamp-2 [word-break:keep-all]">
+                      {c.name.split(/(?=ダメージ|アップ)/).map((part, i) => (
+                        <Fragment key={i}>{i > 0 && <wbr />}{part}</Fragment>
+                      ))}
+                    </span>
+                    <span className="hd-num text-[13px] font-bold">
+                      {c.recommended && (
+                        <span className="mr-[2px]" style={{ color: selected ? undefined : 'var(--hd-accent)' }}>★</span>
+                      )}
+                      {c.valueText}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            {recommendFor && (
+              <p className="text-[11px]" style={{ color: 'var(--hd-sub)' }}>
+                {ja ? `★ は ${recommendFor} のおすすめ` : `★ = recommended for ${recommendFor}`}
+              </p>
+            )}
+            <h3 className="text-[12px] font-bold" style={{ color: 'var(--hd-sub)' }}>
+              {cost === 4 ? (ja ? '音骸' : 'Echo') : (ja ? 'ハーモニー' : 'Set')}
+            </h3>
             {cost === 4 ? (
               <CustomSelect
                 value={selectedEchoId}
@@ -165,19 +218,18 @@ export default function BuildBar({
                 {...selectStyle}
               />
             )}
-            <CustomSelect
-              value={draftMainstatKey}
-              onChange={onMainstatChange}
-              options={mainstatOptions}
-              {...selectStyle}
-            />
             {cost4MultiSet && (
-              <CustomSelect
-                value={draftHarmonySet}
-                onChange={onDraftHarmonySetChange}
-                options={multiSetOptions}
-                {...selectStyle}
-              />
+              <>
+                <h3 className="text-[12px] font-bold" style={{ color: 'var(--hd-sub)' }}>
+                  {ja ? 'ハーモニー' : 'Set'}
+                </h3>
+                <CustomSelect
+                  value={draftHarmonySet}
+                  onChange={onDraftHarmonySetChange}
+                  options={multiSetOptions}
+                  {...selectStyle}
+                />
+              </>
             )}
             <button
               type="button"
