@@ -68,8 +68,8 @@ const COPY = {
   ja: {
     h1: (name: string) => `${name}の音骸スコア目安`,
     lead: 'サブステだけをランダムに引いたとき(メインステ・ハーモニーは推奨で固定)を、50万回シミュレーションして出した数字です。',
-    targetLine: (list: string) => `狙うサブステ: ${list}`,
-    goodEnoughLine: (s: number) => `妥協ライン: ${s}点(上位5%)を超えたら次の部位へ`,
+    targetHeading: '狙うサブステ',
+    goodEnoughLine: (s: number) => `妥協ライン(上位5%):${s}点`,
     thresholdsTitle: '妥協ライン表',
     rankHeader: 'ランク',
     scoreHeader: '必要スコア',
@@ -97,8 +97,8 @@ const COPY = {
   en: {
     h1: (name: string) => `${name} Echo Score Benchmarks`,
     lead: 'These figures come from 500,000 simulations of randomly rolled substats (main stats and harmony sets fixed to the recommended setup).',
-    targetLine: (list: string) => `Target substats: ${list}`,
-    goodEnoughLine: (s: number) => `Good enough: ${s}+ pts (top 5%) — move on to the next slot`,
+    targetHeading: 'Target substats',
+    goodEnoughLine: (s: number) => `Good enough (top 5%): ${s} pts`,
     thresholdsTitle: 'Score Thresholds by Rank',
     rankHeader: 'Rank',
     scoreHeader: 'Score',
@@ -245,24 +245,40 @@ export default function CharacterDetailClient({ data }: { data: CharacterPageDat
           marginBottom: 16,
           display: 'flex',
           flexDirection: 'column' as const,
-          gap: multiVariant ? 14 : 6,
+          gap: multiVariant ? 14 : 10,
         }}>
           {data.variants.map((variant) => (
             <div key={variant.id}>
               {multiVariant && (
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#1d4ed8', marginBottom: 4 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#1d4ed8', marginBottom: 6 }}>
                   {variantName(variant.label)}
                 </div>
               )}
               {variant.substatWeights !== null && variant.substatWeights.length > 0 && (
-                <p style={{ fontSize: 14, color: '#374151', margin: '0 0 4px', lineHeight: 1.7 }}>
-                  {C.targetLine(
-                    variant.substatWeights
-                      .slice(0, 3)
-                      .map((row) => substatLabel(row.key, locale))
-                      .join(' > '),
-                  )}
-                </p>
+                <div style={{ marginBottom: 8 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#1e3a8a', margin: '0 0 6px' }}>
+                    {C.targetHeading}
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 6 }}>
+                    {variant.substatWeights.slice(0, 3).map((row, i) => (
+                      <span
+                        key={row.key}
+                        style={{
+                          whiteSpace: 'nowrap' as const,
+                          background: '#fff',
+                          border: '1px solid #bfdbfe',
+                          color: '#1e40af',
+                          fontSize: 13,
+                          fontWeight: 600,
+                          padding: '3px 10px',
+                          borderRadius: 99,
+                        }}
+                      >
+                        {i + 1} {substatLabel(row.key, locale)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               )}
               <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: 0, lineHeight: 1.7 }}>
                 {C.goodEnoughLine(variant.thresholds.s)}
