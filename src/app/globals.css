@@ -161,3 +161,32 @@ button:focus-visible {
 ::-webkit-scrollbar-track { background: #f7f7f7; }
 ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+.home-dark,
+html:has(.home-dark) {
+  --hd-bg: #101318;
+  --hd-plate: #181C23;
+  --hd-raise: #222833;
+  --hd-line: #333B47;
+  --hd-fg: #ECEFF3;
+  --hd-sub: #A3ADBA;
+  --hd-accent: #A98BFF;
+  --hd-accent-ink: #17102E;
+  --hd-accent-soft: rgba(169, 139, 255, .16);
+  --hd-go: #7FD6A4;
+}
+
+.home-dark {
+  background: var(--hd-bg);
+  color: var(--hd-fg);
+  font-family: var(--font-home-body, 'Noto Sans JP', sans-serif);
+}
+
+.home-dark .hd-num {
+  font-family: var(--font-home-num, 'Chakra Petch', sans-serif);
+  font-variant-numeric: tabular-nums;
+}
+
+html:has(.home-dark) {
+  background: var(--hd-bg);
+}
