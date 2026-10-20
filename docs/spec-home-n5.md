@@ -207,3 +207,40 @@ props: `ja`, `open`, `onClose`, `selectedCharId`, `onSelect(id: string)`。キ�
 - `78dvh` は古いブラウザで効かない。`h-[78vh] [@supports(height:100dvh)]:h-[78dvh]` のように今の画面の高さと同じ書き方にする
 - 広告枠は常に 50px 取るので、真ん中のエリアが案4より 50px 狭くなる。375×667 で 5枠目と予測の帯が重ならないか確かめる(見本 n5.html では、COST を上段に移し音骸名をメイン行にまとめたことで収まっている)
 - 低い画面用の指定は今と同じ `[@media(max-height:700px)]:` の書き方にそろえる
+
+## 追加修正 7: 中間の高さで内容が重なる(2026-10-20)
+
+### 事象
+
+390 幅で画面の高さが 701〜819px のとき、強化中タブのサブステ枠(SlotList)が押しつぶされ、+20 / +25 の行が予測の帯(ForecastStrip)の下にもぐる。スマホの Safari の表示領域(およそ 660〜750px)がちょうどこの範囲に入る。
+
+### 原因(実測)
+
+| レイアウト | 収まるのに要る画面の高さ |
+|---|---|
+| 通常サイズ + 記録の行あり | 約 820px |
+| 通常サイズ + 記録の行なし | 約 772px |
+| 低い画面用(`max-height:700px` の指定) | 約 659px |
+
+低い画面用の指定に切り替わるのが 700px 以下なので、701〜819px では通常サイズのまま入りきらない。真ん中のエリアの子要素は縮んでよい設定になっているため、SlotList の高さが 156px → 109px に縮み、中身があふれて重なる。
+
+### 直し方
+
+1. 記録の行(`HomeClient.tsx` の「これまで…記録を見る」ボタン)を隠す条件を `[@media(max-height:820px)]:hidden` にする
+2. 低い画面用の指定 `[@media(max-height:700px)]:` を、ホームの全ファイル(`HomeClient.tsx` / `BuildBar.tsx` / `ForecastStrip.tsx` / `InputDock.tsx` / `SlotList.tsx` などで見つかったもの全部)で `[@media(max-height:780px)]:` に置き換える。入力欄(InputDock)の高さもこれに合わせて 780px 以下で 216px になる
+3. 真ん中のエリアの子要素(メイン行・SlotList・ForecastStrip・記録の行)は縮ませない(`flex: none` か `shrink-0`)
+4. 真ん中のエリアの `overflow-hidden` を `overflow-y-auto` に変える。660px より低い画面(iPhone SE の Safari など)では、重ねる代わりにこのエリアの中だけがスクロールする。入力欄は固定のまま動かない
+
+### 変更対象
+
+`src/app/HomeClient.tsx`、`src/components/home/` の中で `max-height:700px` を使っているファイル。それ以外は触らない。
+
+### 受け入れ条件
+
+- `grep -rn "max-height:700px" src/app/HomeClient.tsx src/components/home/` が0件
+- `npx tsc --noEmit` と `npm run build` が通る
+- 幅 390 と 375 で、高さ 844 / 820 / 800 / 780 / 760 / 740 / 720 / 700 / 667 のそれぞれについて、サブステ 0 / 2 / 5 個の状態で次を満たす(確認は Claude Code がブラウザで行う)
+  - 真ん中のエリアの子要素どうしが重ならない(各要素の下端 ≤ 次の要素の上端)
+  - 真ん中のエリアがスクロールしない(`scrollHeight <= clientHeight`)
+  - 同じ高さのなかで、サブステの個数によって入力欄の上端が変わらない
+- 高さ 600 では重ならず、真ん中のエリアの中だけがスクロールする
