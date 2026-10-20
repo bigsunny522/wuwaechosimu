@@ -66,7 +66,7 @@ export default function BuildBar({
         <button
           type="button"
           onClick={onOpenPicker}
-          className="flex-1 min-w-0 h-[48px] [@media(max-height:700px)]:h-[44px] rounded-[10px] overflow-hidden grid items-center gap-[12px] pr-[12px] text-left"
+          className="flex-1 min-w-0 h-[48px] [@media(max-height:780px)]:h-[44px] rounded-[10px] overflow-hidden grid items-center gap-[12px] pr-[12px] text-left"
           style={{ background: 'var(--hd-plate)', gridTemplateColumns: '4px minmax(0,1fr) auto' }}
         >
           <span className="self-stretch" style={{ background: 'var(--hd-accent)' }} />
@@ -121,7 +121,7 @@ export default function BuildBar({
               key={c}
               aria-pressed={cost === c}
               onClick={() => onCostChange(c)}
-              className={`hd-num grid place-items-center h-[32px] [@media(max-height:700px)]:h-[28px] min-w-[30px] text-[13px] rounded-[6px] ${
+              className={`hd-num grid place-items-center h-[32px] [@media(max-height:780px)]:h-[28px] min-w-[30px] text-[13px] rounded-[6px] ${
                 cost === c ? 'font-bold' : ''
               }`}
               style={

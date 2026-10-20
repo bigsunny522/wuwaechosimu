@@ -18,7 +18,7 @@ export default function SlotList({ ja, substats, build, onRemove }: SlotListProp
       className="grid gap-[4px]"
       style={{
         flex: '0 1 auto',
-        minHeight: 0,
+        minHeight: 156, // 5 rows x 28px + 4 gaps x 4px
         gridTemplateRows: 'repeat(5, minmax(28px, 44px))',
         alignContent: 'start',
       }}

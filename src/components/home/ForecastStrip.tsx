@@ -27,14 +27,14 @@ const PROB_ROWS = [
 export default function ForecastStrip({ ja, advisor, finalScore }: ForecastStripProps) {
   return (
     <div
-      className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-[12px] px-[12px] py-[10px] rounded-[10px] overflow-hidden h-[88px] [@media(max-height:700px)]:h-[84px] [@media(max-height:700px)]:py-[8px]"
+      className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-[12px] px-[12px] py-[10px] rounded-[10px] overflow-hidden h-[88px] [@media(max-height:780px)]:h-[84px] [@media(max-height:780px)]:py-[8px]"
       style={{ background: 'var(--hd-plate)', flex: 'none', lineHeight: 1.45 }}
     >
       <div className="text-center pr-[12px]" style={{ borderRight: '1px solid var(--hd-line)' }}>
         {finalScore ? (
           <>
             <span
-              className="hd-num block text-[34px] leading-none font-bold [@media(max-height:700px)]:text-[28px]"
+              className="hd-num block text-[34px] leading-none font-bold [@media(max-height:780px)]:text-[28px]"
               style={{ color: 'var(--hd-accent)' }}
             >
               {finalScore.score}
@@ -46,7 +46,7 @@ export default function ForecastStrip({ ja, advisor, finalScore }: ForecastStrip
         ) : advisor ? (
           <>
             <span
-              className="hd-num block text-[34px] leading-none font-bold [@media(max-height:700px)]:text-[28px]"
+              className="hd-num block text-[34px] leading-none font-bold [@media(max-height:780px)]:text-[28px]"
               style={{ color: 'var(--hd-accent)' }}
             >
               {Math.round(advisor.expectedScore)}
@@ -57,7 +57,7 @@ export default function ForecastStrip({ ja, advisor, finalScore }: ForecastStrip
           </>
         ) : (
           <span
-            className="hd-num block text-[34px] leading-none font-bold [@media(max-height:700px)]:text-[28px]"
+            className="hd-num block text-[34px] leading-none font-bold [@media(max-height:780px)]:text-[28px]"
             style={{ color: 'var(--hd-accent)' }}
           >
             —

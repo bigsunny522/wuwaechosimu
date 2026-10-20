@@ -228,7 +228,7 @@ props: `ja`, `open`, `onClose`, `selectedCharId`, `onSelect(id: string)`。キ�
 
 1. 記録の行(`HomeClient.tsx` の「これまで…記録を見る」ボタン)を隠す条件を `[@media(max-height:820px)]:hidden` にする
 2. 低い画面用の指定 `[@media(max-height:700px)]:` を、ホームの全ファイル(`HomeClient.tsx` / `BuildBar.tsx` / `ForecastStrip.tsx` / `InputDock.tsx` / `SlotList.tsx` などで見つかったもの全部)で `[@media(max-height:780px)]:` に置き換える。入力欄(InputDock)の高さもこれに合わせて 780px 以下で 216px になる
-3. SlotList は行の高さが 28〜44px で伸び縮みする作り(`gridTemplateRows: repeat(5, minmax(28px, 44px))`)なので、縮むこと自体は残す。直すのは `SlotList.tsx` の `minHeight: 0` を消すことだけ(最小の高さ 5×28+4×4=156px より小さくならないようにする)。`HomeClient.tsx` で SlotList を包んだ `<div style={{ flex: 'none' }}>` は外して元に戻す
+3. SlotList は行の高さが 28〜44px で伸び縮みする作り(`gridTemplateRows: repeat(5, minmax(28px, 44px))`)なので、縮むこと自体は残す。直すのは `SlotList.tsx` の `minHeight: 0` を `minHeight: 156`(5×28+4×4)にすることだけ。`minHeight` を消すだけだと、ブラウザが 44px の行を最小とみなして縮まない(2026-10-20 実測)。`HomeClient.tsx` で SlotList を包んだ `<div style={{ flex: 'none' }}>` は外して元に戻す
    - (訂正 2026-10-20)最初の版は「縮ませない」と書いていたが、それだと行が常に 44px になり、667px でも 67px はみ出してスクロールが出た。上の書き方が正しい
 4. 真ん中のエリアの `overflow-hidden` を `overflow-y-auto` に変える。660px より低い画面(iPhone SE の Safari など)では、重ねる代わりにこのエリアの中だけがスクロールする。入力欄は固定のまま動かない
 

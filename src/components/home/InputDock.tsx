@@ -42,7 +42,7 @@ export default function InputDock({
 
   return (
     <section
-      className="flex flex-col h-[calc(248px_+_env(safe-area-inset-bottom,0px))] gap-[8px] pt-[12px] px-[16px] rounded-t-[16px] [@media(max-height:700px)]:h-[calc(216px_+_env(safe-area-inset-bottom,0px))] [@media(max-height:700px)]:gap-[6px] [@media(max-height:700px)]:pt-[10px]"
+      className="flex flex-col h-[calc(248px_+_env(safe-area-inset-bottom,0px))] gap-[8px] pt-[12px] px-[16px] rounded-t-[16px] [@media(max-height:780px)]:h-[calc(216px_+_env(safe-area-inset-bottom,0px))] [@media(max-height:780px)]:gap-[6px] [@media(max-height:780px)]:pt-[10px]"
       style={{
         background: 'var(--hd-plate)',
         paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
@@ -89,7 +89,7 @@ export default function InputDock({
           >
             {ja ? 'この結果を記録する' : 'Record this result'}
           </button>
-          <div className="flex items-center justify-center h-[17px] shrink-0 [@media(max-height:700px)]:h-[13px]">
+          <div className="flex items-center justify-center h-[17px] shrink-0 [@media(max-height:780px)]:h-[13px]">
             <button
               type="button"
               onClick={onReset}
@@ -102,7 +102,7 @@ export default function InputDock({
         </>
       ) : (
         <>
-          <div className="flex flex-col gap-[8px] min-h-0 flex-1 [@media(max-height:700px)]:gap-[6px]">
+          <div className="flex flex-col gap-[8px] min-h-0 flex-1 [@media(max-height:780px)]:gap-[6px]">
             <div className="flex items-center justify-between h-[19px]">
               <span className="text-[13px] font-bold">
                 {ja
@@ -132,7 +132,7 @@ export default function InputDock({
                     key={s.key}
                     disabled={used}
                     onClick={() => onPendingKeyChange(s.key)}
-                    className="relative grid place-items-center text-center h-[34px] px-[2px] rounded-[8px] text-[11px] leading-[1.2] disabled:cursor-not-allowed [@media(max-height:700px)]:h-[30px]"
+                    className="relative grid place-items-center text-center h-[34px] px-[2px] rounded-[8px] text-[11px] leading-[1.2] disabled:cursor-not-allowed [@media(max-height:780px)]:h-[30px]"
                     style={{
                       background: selected ? 'var(--hd-accent)' : 'var(--hd-raise)',
                       color: selected ? 'var(--hd-accent-ink)' : 'var(--hd-fg)',
@@ -169,7 +169,7 @@ export default function InputDock({
                   type="button"
                   key={idx}
                   onClick={() => onAdd(pendingEntry.key, idx)}
-                  className="flex flex-col items-center justify-center h-[52px] rounded-[8px] [@media(max-height:700px)]:h-[44px]"
+                  className="flex flex-col items-center justify-center h-[52px] rounded-[8px] [@media(max-height:780px)]:h-[44px]"
                   style={{ border: '1px solid var(--hd-line)' }}
                 >
                   <span className="hd-num text-[10px]" style={{ color: 'var(--hd-sub)' }}>
@@ -182,14 +182,14 @@ export default function InputDock({
               ))}
             </div>
           ) : (
-            <div className="flex items-center justify-center h-[52px] shrink-0 [@media(max-height:700px)]:h-[44px]">
+            <div className="flex items-center justify-center h-[52px] shrink-0 [@media(max-height:780px)]:h-[44px]">
               <span className="text-[12px]" style={{ color: 'var(--hd-sub)' }}>
                 {ja ? '出た数値をタップすると追加' : 'Tap the value you rolled to add it'}
               </span>
             </div>
           )}
 
-          <div className="h-[17px] shrink-0 [@media(max-height:700px)]:h-[13px]" />
+          <div className="h-[17px] shrink-0 [@media(max-height:780px)]:h-[13px]" />
         </>
       )}
 

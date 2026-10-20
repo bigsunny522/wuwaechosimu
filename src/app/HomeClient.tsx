@@ -589,7 +589,7 @@ export default function HomeClient() {
           />
 
           <div
-            className="flex flex-col gap-[8px] px-[16px] py-[8px] min-h-0 flex-1 overflow-hidden [@media(max-height:700px)]:gap-[6px] [@media(max-height:700px)]:pt-[6px]"
+            className="flex flex-col gap-[8px] px-[16px] py-[8px] min-h-0 flex-1 overflow-y-auto [@media(max-height:780px)]:gap-[6px] [@media(max-height:780px)]:pt-[6px]"
           >
             <button
               type="button"
@@ -637,7 +637,7 @@ export default function HomeClient() {
             <button
               type="button"
               onClick={() => setTab('records')}
-              className="flex items-center gap-[14px] px-[12px] py-[8px] rounded-[10px] text-[12px] w-full text-left [@media(max-height:700px)]:hidden"
+              className="flex items-center gap-[14px] px-[12px] py-[8px] rounded-[10px] text-[12px] w-full text-left [@media(max-height:820px)]:hidden"
               style={{
                 flex: 'none',
                 boxShadow: 'inset 0 0 0 1px var(--hd-line)',
