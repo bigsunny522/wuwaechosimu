@@ -418,8 +418,9 @@ interface Props {
   ```
   grep -rn "useSiteTheme\|SiteThemeSwitcher\|SiteThemeProvider\|data-theme\|wuwa-site-theme" src
   grep -rn "var(--home-\|var(--accent)\|var(--text\|var(--surface)\|var(--border)\|var(--background)\|var(--shadow" src
-  grep -rnE "#0275fd|IBM Plex" src/app src/components
+  grep -rnE "#0275fd|IBM Plex" src/app src/components --exclude=icon.svg
   ```
+  - `src/app/icon.svg`(ファビコン)は属性色に追従できないので青のまま残す(2026-10-21 決定)。`CustomSelect` の `accentColor` の既定値は `#A9B6C8`(属性なしの色)にした
 - [ ] Claude Code がブラウザで確かめる: `/gacha` をダーク/ライトで、キャラ選択・強化・ボーナス・履歴・お知らせのモーダルが読める。ガチャでキャラを変えてホームに戻ると、そのキャラと色になっている
 
 ---

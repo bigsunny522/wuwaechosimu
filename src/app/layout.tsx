@@ -106,10 +106,6 @@ const jsonLd = {
 const SITE_THEME_SCRIPT = `
 (function () {
   try {
-    var t = localStorage.getItem('wuwa-site-theme');
-    if (t === 'blue' || t === 'gold') {
-      document.documentElement.dataset.theme = t;
-    }
     var m = localStorage.getItem('wuwa-site-mode');
     if (m === 'dark' || m === 'light') {
       document.documentElement.dataset.mode = m;
@@ -127,13 +123,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="ja"
       className={`h-full ${bodyFont.variable} ${numFont.variable}`}
-      data-theme="blue"
       data-mode="dark"
       data-element="none"
       suppressHydrationWarning
     >
       <head>
-        {/* サイトテーマ(Homeページ)・ライト/ダーク・属性色 — hydration前に反映してFOUCを防ぐ */}
+        {/* ライト/ダーク・属性色 — hydration前に反映してFOUCを防ぐ */}
         <script dangerouslySetInnerHTML={{ __html: SITE_THEME_SCRIPT }} />
         {/* JSON-LD 構造化データ */}
         <script
