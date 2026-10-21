@@ -59,7 +59,7 @@ export default function SlotList({ ja, substats, build, onRemove }: SlotListProp
                 : isNext
                   ? 'inset 0 0 0 2px var(--hd-accent)'
                   : 'inset 0 0 0 1px var(--hd-line)',
-              color: sub ? 'var(--hd-fg)' : isNext ? 'var(--hd-accent)' : 'var(--hd-sub)',
+              color: sub ? 'var(--hd-fg)' : isNext ? 'var(--hd-accent-text)' : 'var(--hd-sub)',
             }}
           >
             <span className="hd-num" style={{ fontSize: 12, color: 'var(--hd-sub)' }}>
@@ -92,7 +92,7 @@ export default function SlotList({ ja, substats, build, onRemove }: SlotListProp
               style={{
                 fontSize: 12,
                 textAlign: 'right',
-                color: tierHot ? 'var(--hd-accent)' : 'var(--hd-sub)',
+                color: tierHot ? 'var(--hd-accent-text)' : 'var(--hd-sub)',
                 fontWeight: tierHot ? 700 : 400,
               }}
             >

@@ -57,7 +57,7 @@ const VERDICT: Record<
   { ja: string; en: string; color: string }
 > = {
   great: { ja: '強く継続', en: 'Strong', color: '#7FD6A4' },
-  good: { ja: '継続', en: 'Continue', color: 'var(--hd-accent)' },
+  good: { ja: '継続', en: 'Continue', color: 'var(--hd-accent-text)' },
   borderline: { ja: '様子見', en: 'Wait', color: '#F0B35A' },
   scrap: { ja: '破棄推奨', en: 'Scrap', color: '#FF8A8A' },
 };
@@ -314,7 +314,7 @@ export default function ResultCard({
                 fontSize: 12,
                 fontWeight: 700,
                 whiteSpace: 'nowrap',
-                color: 'var(--hd-accent)',
+                color: 'var(--hd-accent-text)',
               }}
             >
               {charName}
@@ -742,6 +742,7 @@ export default function ResultCard({
 
   return (
     <div
+      className="hd-force-dark"
       style={{
         flex: '1 1 0',
         minHeight: 282,

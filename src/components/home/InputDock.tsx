@@ -105,7 +105,7 @@ export default function InputDock({
             onClick={onFinalize}
             disabled={!canFinalize}
             className="w-full h-[46px] shrink-0 rounded-[23px] text-[14px] font-bold disabled:opacity-30 disabled:cursor-not-allowed [@media(max-height:780px)]:h-[40px]"
-            style={{ background: 'var(--hd-raise)', color: 'var(--hd-accent)' }}
+            style={{ background: 'var(--hd-raise)', color: 'var(--hd-accent-text)' }}
           >
             {ja ? 'この結果を記録する' : 'Record this result'}
           </button>

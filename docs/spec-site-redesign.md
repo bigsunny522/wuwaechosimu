@@ -141,7 +141,7 @@
   /* … ほかの属性も … */
   ```
   - ダークでは `--hd-accent-text: var(--hd-accent)`。`:root[data-mode="dark"]` 側に書いてもよい。詳細度で負けないよう、最後に確かめる
-- `.hd-force-dark`: 中だけダークの値に戻すクラス。ダークの表の値をすべて入れ、`--hd-accent-text: var(--hd-accent)` と `color-scheme: dark` も入れる。属性の `--hd-accent` は `:root` から継承されるので書かない
+- `.hd-force-dark`: 中だけダークの値に戻すクラス。ダークの表の値をすべて入れ、`--hd-accent-text: var(--hd-accent)`・`color: var(--hd-fg)`(色を指定していない文字がライトの本文色を継承しないように)・`color-scheme: dark` も入れる。属性の `--hd-accent` は `:root` から継承されるので書かない
 - `body`: `background: var(--hd-bg); color: var(--hd-fg); font-family: (上のフォント)`。今の `background: var(--background); color: var(--text)` を置き換える
 - `html` の背景も `var(--hd-bg)` にする(iOS の引っぱりで地の色が見えるため)。今の `html:has(.home-dark)` の指定は消してよい
 - `.home-dark .hd-num` を `.hd-num` に(どのページでも使えるように)。`.home-dark` の `background` / `color` / `font-family` は body と重なるので消してよい。クラス名 `home-dark` 自体は HomeClient に残してよい

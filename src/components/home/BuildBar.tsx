@@ -90,7 +90,7 @@ export default function BuildBar({
               </strong>
               <span
                 className="shrink-0 ml-[8px] text-[12px] font-bold"
-                style={{ color: 'var(--hd-accent)' }}
+                style={{ color: 'var(--hd-accent-text)' }}
               >
                 {charElement}
               </span>
@@ -187,7 +187,7 @@ export default function BuildBar({
                     </span>
                     <span className="hd-num text-[13px] font-bold">
                       {c.recommended && (
-                        <span className="mr-[2px]" style={{ color: selected ? undefined : 'var(--hd-accent)' }}>★</span>
+                        <span className="mr-[2px]" style={{ color: selected ? undefined : 'var(--hd-accent-text)' }}>★</span>
                       )}
                       {c.valueText}
                     </span>

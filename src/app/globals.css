@@ -67,11 +67,101 @@
   --home-border:    #2e2412;
 }
 
+/* ── サイト全体の配色(--hd-*)。ライト / ダークは data-mode、属性色は data-element ── */
+
+:root,
+:root[data-mode="dark"] {
+  --hd-bg:      #101318;
+  --hd-plate:   #181C23;
+  --hd-raise:   #222833;
+  --hd-line:    #333B47;
+  --hd-fg:      #ECEFF3;
+  --hd-sub:     #A3ADBA;
+  --hd-go:      #7FD6A4;
+  --hd-great:   #7FD6A4;
+  --hd-borderline: #F0B35A;
+  --hd-scrap:   #FF8A8A;
+  --hd-accent-ink: #11141A;
+  --hd-accent-text: var(--hd-accent);
+  color-scheme: dark;
+}
+
+:root[data-mode="light"] {
+  --hd-bg:      #F3F5F8;
+  --hd-plate:   #FFFFFF;
+  --hd-raise:   #E9EDF2;
+  --hd-line:    #D3D9E1;
+  --hd-fg:      #161A21;
+  --hd-sub:     #596374;
+  --hd-go:      #1E7F4C;
+  --hd-great:   #1E7F4C;
+  --hd-borderline: #9A6200;
+  --hd-scrap:   #C43C3C;
+  color-scheme: light;
+}
+
+/* 属性色(塗り・線・アイコンは --hd-accent、地の上の文字は --hd-accent-text) */
+:root,
+:root[data-element="none"] { --hd-accent: #A9B6C8; }
+:root[data-element="fusion"]  { --hd-accent: #FF8A5B; }
+:root[data-element="glacio"]  { --hd-accent: #6CC8F0; }
+:root[data-element="electro"] { --hd-accent: #B18CFF; }
+:root[data-element="aero"]    { --hd-accent: #5FD8A8; }
+:root[data-element="spectro"] { --hd-accent: #F2D16B; }
+:root[data-element="havoc"]   { --hd-accent: #E86AA8; }
+
+:root { --hd-accent-soft: color-mix(in srgb, var(--hd-accent) 16%, transparent); }
+
+/* ライトの --hd-accent-text は濃い色。ダークは var(--hd-accent) のまま */
+:root[data-mode="light"] { --hd-accent-text: #56627A; }
+:root[data-mode="light"][data-element="none"]    { --hd-accent-text: #56627A; }
+:root[data-mode="light"][data-element="fusion"]  { --hd-accent-text: #B4481B; }
+:root[data-mode="light"][data-element="glacio"]  { --hd-accent-text: #0E6A94; }
+:root[data-mode="light"][data-element="electro"] { --hd-accent-text: #6A42D0; }
+:root[data-mode="light"][data-element="aero"]    { --hd-accent-text: #11744F; }
+:root[data-mode="light"][data-element="spectro"] { --hd-accent-text: #806200; }
+:root[data-mode="light"][data-element="havoc"]   { --hd-accent-text: #A3306A; }
+
+/* 中だけダークの値に戻す(結果カードなど。ライトでも暗いまま)。--hd-accent は :root から継承 */
+.hd-force-dark {
+  --hd-bg:      #101318;
+  --hd-plate:   #181C23;
+  --hd-raise:   #222833;
+  --hd-line:    #333B47;
+  --hd-fg:      #ECEFF3;
+  --hd-sub:     #A3ADBA;
+  --hd-go:      #7FD6A4;
+  --hd-great:   #7FD6A4;
+  --hd-borderline: #F0B35A;
+  --hd-scrap:   #FF8A8A;
+  --hd-accent-text: var(--hd-accent);
+  color: var(--hd-fg);
+  color-scheme: dark;
+}
+
+.hd-card {
+  background: var(--hd-plate);
+  border-radius: 10px;
+}
+
+:root[data-mode="light"] .hd-card {
+  border: 1px solid var(--hd-line);
+}
+
+html {
+  background: var(--hd-bg);
+}
+
 body {
-  background: var(--background);
-  color: var(--text);
-  font-family: Inter, 'Noto Sans JP', ui-sans-serif, system-ui, sans-serif;
+  background: var(--hd-bg);
+  color: var(--hd-fg);
+  font-family: var(--font-home-body), 'Noto Sans JP', sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+.hd-num {
+  font-family: var(--font-home-num, 'Chakra Petch', sans-serif);
+  font-variant-numeric: tabular-nums;
 }
 
 @keyframes fadeSlideIn {
@@ -158,35 +248,6 @@ button:focus-visible {
 }
 
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #f7f7f7; }
-::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
-
-.home-dark,
-html:has(.home-dark) {
-  --hd-bg: #101318;
-  --hd-plate: #181C23;
-  --hd-raise: #222833;
-  --hd-line: #333B47;
-  --hd-fg: #ECEFF3;
-  --hd-sub: #A3ADBA;
-  --hd-accent: #A98BFF;
-  --hd-accent-ink: #17102E;
-  --hd-accent-soft: rgba(169, 139, 255, .16);
-  --hd-go: #7FD6A4;
-}
-
-.home-dark {
-  background: var(--hd-bg);
-  color: var(--hd-fg);
-  font-family: var(--font-home-body, 'Noto Sans JP', sans-serif);
-}
-
-.home-dark .hd-num {
-  font-family: var(--font-home-num, 'Chakra Petch', sans-serif);
-  font-variant-numeric: tabular-nums;
-}
-
-html:has(.home-dark) {
-  background: var(--hd-bg);
-}
+::-webkit-scrollbar-track { background: var(--hd-bg); }
+::-webkit-scrollbar-thumb { background: var(--hd-line); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--hd-sub); }

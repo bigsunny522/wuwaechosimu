@@ -1,6 +1,7 @@
 import type { AdvisorResult } from '@/lib/monteCarlo';
 import type { ScoreResult } from '@/types/echo';
-import { RANK_COLORS } from '@/lib/scorer';
+import { rankTextColor } from './elementTheme';
+import { useSiteAppearance } from '@/contexts/SiteAppearanceContext';
 
 interface ForecastStripProps {
   ja: boolean;
@@ -12,10 +13,10 @@ const RECOMMENDATION: Record<
   AdvisorResult['recommendation'],
   { ja: string; en: string; color: string }
 > = {
-  great: { ja: '強く継続推奨', en: 'Strong Continue', color: '#7FD6A4' },
-  good: { ja: '継続推奨', en: 'Continue', color: 'var(--hd-accent)' },
-  borderline: { ja: '様子見', en: 'Borderline', color: '#F0B35A' },
-  scrap: { ja: '破棄推奨', en: 'Consider Scrap', color: '#FF8A8A' },
+  great: { ja: '強く継続推奨', en: 'Strong Continue', color: 'var(--hd-great)' },
+  good: { ja: '継続推奨', en: 'Continue', color: 'var(--hd-accent-text)' },
+  borderline: { ja: '様子見', en: 'Borderline', color: 'var(--hd-borderline)' },
+  scrap: { ja: '破棄推奨', en: 'Consider Scrap', color: 'var(--hd-scrap)' },
 };
 
 const PROB_ROWS = [
@@ -25,6 +26,7 @@ const PROB_ROWS = [
 ] as const;
 
 export default function ForecastStrip({ ja, advisor, finalScore }: ForecastStripProps) {
+  const { mode } = useSiteAppearance();
   return (
     <div
       className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-[12px] px-[12px] py-[10px] rounded-[10px] overflow-hidden h-[88px] [@media(max-height:780px)]:h-[84px] [@media(max-height:780px)]:py-[8px]"
@@ -35,7 +37,7 @@ export default function ForecastStrip({ ja, advisor, finalScore }: ForecastStrip
           <>
             <span
               className="hd-num block text-[34px] leading-none font-bold [@media(max-height:780px)]:text-[28px]"
-              style={{ color: 'var(--hd-accent)' }}
+              style={{ color: 'var(--hd-accent-text)' }}
             >
               {finalScore.score}
             </span>
@@ -47,7 +49,7 @@ export default function ForecastStrip({ ja, advisor, finalScore }: ForecastStrip
           <>
             <span
               className="hd-num block text-[34px] leading-none font-bold [@media(max-height:780px)]:text-[28px]"
-              style={{ color: 'var(--hd-accent)' }}
+              style={{ color: 'var(--hd-accent-text)' }}
             >
               {Math.round(advisor.expectedScore)}
             </span>
@@ -58,7 +60,7 @@ export default function ForecastStrip({ ja, advisor, finalScore }: ForecastStrip
         ) : (
           <span
             className="hd-num block text-[34px] leading-none font-bold [@media(max-height:780px)]:text-[28px]"
-            style={{ color: 'var(--hd-accent)' }}
+            style={{ color: 'var(--hd-accent-text)' }}
           >
             —
           </span>
@@ -69,7 +71,7 @@ export default function ForecastStrip({ ja, advisor, finalScore }: ForecastStrip
         <div className="flex items-baseline gap-[6px] min-w-0">
           <span
             className="text-[22px] leading-none font-bold"
-            style={{ color: RANK_COLORS[finalScore.rank] }}
+            style={{ color: rankTextColor(finalScore.rank, mode) }}
           >
             {finalScore.rank}
           </span>

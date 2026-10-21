@@ -1,13 +1,11 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import Link from 'next/link';
-import { Noto_Sans_JP, Chakra_Petch } from 'next/font/google';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import type { EchoCost, EchoState, Substat, SubstatKey } from '@/types/echo';
 import { SUBSTAT_MAP } from '@/data/substats';
 import { MAINSTAT_POOLS } from '@/data/mainstats';
 import { ECHOES, ECHOES_BY_COST, DEFAULT_ECHO_ID, HARMONY_SETS, HARMONY_SETS_EN } from '@/data/echoes';
-import { CHARACTER_MAP } from '@/data/characters';
+import { CHARACTER_LIST, CHARACTER_MAP } from '@/data/characters';
 import { scoreEcho } from '@/lib/scorer';
 import { simulateCompletion } from '@/lib/monteCarlo';
 import { generateResultCard, buildShareText } from '@/lib/imageGen';
@@ -16,15 +14,13 @@ import {
   loadEntries, saveEntries, computeBaseline, predict,
   RANK_ORDER,
 } from '@/lib/tracker';
-import { useLocale, withLang } from '@/lib/locale';
+import { useLocale } from '@/lib/locale';
 import { MAINSTAT_LABEL_EN } from '@/data/translations';
-import EchoIcon from '@/components/EchoIcon';
 import AdBanner from '@/components/AdBanner';
 import AdBannerThin from '@/components/AdBannerThin';
 import NativeBanner from '@/components/NativeBanner';
 import UpdateModal from '@/components/UpdateModal';
 import { LATEST_UPDATE_ID } from '@/data/updates';
-import { Menu, BookOpen, Calculator, Users, Bell, Info, FileText, Mail } from 'lucide-react';
 import BuildBar from '@/components/home/BuildBar';
 import SlotList from '@/components/home/SlotList';
 import ForecastStrip from '@/components/home/ForecastStrip';
@@ -32,21 +28,10 @@ import ResultCard, { type Journey, type JourneyStep } from '@/components/home/Re
 import InputDock from '@/components/home/InputDock';
 import RecordsPanel from '@/components/home/RecordsPanel';
 import CharacterPicker from '@/components/home/CharacterPicker';
-import { ACCENT_INK, ELEMENT_THEME, elementKeyOf } from '@/components/home/elementTheme';
-
-const bodyFont = Noto_Sans_JP({
-  weight: ['400', '700', '900'],
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-home-body',
-});
-
-const numFont = Chakra_Petch({
-  weight: ['500', '600', '700'],
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-home-num',
-});
+import { ELEMENT_THEME, elementKeyOf } from '@/components/home/elementTheme';
+import SiteHeader from '@/components/site/SiteHeader';
+import SiteFooter from '@/components/site/SiteFooter';
+import { useSiteAppearance } from '@/contexts/SiteAppearanceContext';
 
 const ZERO_COST = { shellCoins: 0, tunerBasic: 0, tunerAdvanced: 0, expMaterial: 0 };
 const MAX_SUBSTATS = 5;
@@ -54,9 +39,6 @@ const HAS_THIN_AD = Boolean(
   process.env.NEXT_PUBLIC_ADSTERRA_BANNER_THIN_KEY &&
   process.env.NEXT_PUBLIC_ADSTERRA_BANNER_THIN_SCRIPT_SRC,
 );
-
-const MENU_ITEM =
-  'flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors';
 
 function getRepresentativeEchoId(cost: EchoCost, harmonySet: string): string {
   const found = ECHOES.find((e) => e.cost === cost && e.sets.includes(harmonySet));
@@ -85,9 +67,9 @@ function getRecommendedHarmonySet(charId: string, cost: EchoCost): string | null
 }
 
 export default function HomeClient() {
-  const { locale, toggleLocale } = useLocale();
+  const { locale } = useLocale();
   const ja = locale === 'ja';
-  const [menuOpen, setMenuOpen] = useState(false);
+  const { setCharacter, savedCharId, accentHex } = useSiteAppearance();
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [hasNewUpdate, setHasNewUpdate]       = useState(false);
   const [tab, setTab] = useState<'tune' | 'records'>('tune');
@@ -145,7 +127,23 @@ export default function HomeClient() {
     setDraftSubs([]);
     setPendingKey('');
     setPendingTier(0);
-  }, [cost]);
+    const char = charId !== 'generic' ? CHARACTER_MAP[charId] : undefined;
+    setCharacter(charId, elementKeyOf(char?.element));
+  }, [cost, setCharacter]);
+
+  // 保存したキャラの復元(マウント直後・下書きが空の一度だけ)
+  const restoredCharRef = useRef(false);
+  useEffect(() => {
+    if (restoredCharRef.current || !savedCharId) return;
+    if (savedCharId === selectedCharId) {
+      restoredCharRef.current = true;
+      return;
+    }
+    if (savedCharId === 'generic' || CHARACTER_LIST.some((c) => c.id === savedCharId)) {
+      restoredCharRef.current = true;
+      handleCharacterChange(savedCharId);
+    }
+  }, [savedCharId, selectedCharId, handleCharacterChange]);
 
   const echoOptions = useMemo(() => {
     const char = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
@@ -420,159 +418,45 @@ export default function HomeClient() {
   const plateLabelMin = `${Math.max(plateLabelTop.length, plateLabelMain.length)}em`;
 
   const header = (
-    <header
-      className="flex items-center gap-[6px] h-[46px] pl-[16px] pr-[12px]"
-      style={{ flex: 'none' }}
-    >
-      <div className="flex items-center gap-[6px] mr-auto min-w-0">
-        <EchoIcon size={28} color={theme.accent} bgColor="#101318" />
-        <span className="text-[15px] font-bold whitespace-nowrap truncate min-w-0">
-          {ja ? '厳選サポーター' : 'Selection Supporter'}
-        </span>
-      </div>
-      <div className="flex rounded-[8px] p-[3px] shrink-0" style={{ background: 'var(--hd-raise)' }}>
-        <button
-          type="button"
-          onClick={() => setTab('tune')}
-          className="h-[28px] px-[8px] rounded-[6px] text-[12px] whitespace-nowrap"
-          style={
-            tab === 'tune'
-              ? { background: 'var(--hd-fg)', color: 'var(--hd-bg)', fontWeight: 700 }
-              : { color: 'var(--hd-sub)' }
-          }
-        >
-          {ja ? '強化中' : 'Tuning'}
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab('records')}
-          className="h-[28px] px-[8px] rounded-[6px] text-[12px] whitespace-nowrap"
-          style={
-            tab === 'records'
-              ? { background: 'var(--hd-fg)', color: 'var(--hd-bg)', fontWeight: 700 }
-              : { color: 'var(--hd-sub)' }
-          }
-        >
-          {ja ? '記録' : 'Records'}
-          <em className="hd-num not-italic ml-[4px]">{filteredEntries.length}</em>
-        </button>
-      </div>
-      <button
-        type="button"
-        onClick={toggleLocale}
-        className="grid place-items-center h-[34px] px-[8px] rounded-[8px] text-[12px] shrink-0"
-        style={{ border: '1px solid var(--hd-line)', color: 'var(--hd-sub)' }}
-      >
-        {ja ? 'EN' : 'JA'}
-      </button>
-      <div className="relative shrink-0">
-        <button
-          type="button"
-          onClick={() => setMenuOpen((v) => !v)}
-          className="relative grid place-items-center h-[34px] w-[34px] rounded-[8px]"
-          style={{ border: '1px solid var(--hd-line)', color: 'var(--hd-sub)' }}
-          aria-label={ja ? 'メニュー' : 'Menu'}
-        >
-          <Menu size={16} />
-          {hasNewUpdate && (
-            <span
-              className="absolute -top-[4px] -right-[4px] w-[10px] h-[10px] rounded-full"
-              style={{ background: 'var(--hd-accent)', border: '2px solid var(--hd-bg)' }}
-            />
-          )}
-        </button>
-        {menuOpen && (
-          <>
-            <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-            <div
-              className="absolute right-0 top-full mt-2 z-50 w-52 rounded-xl bg-white overflow-hidden"
-              style={{ border: '1px solid #e5e7eb', boxShadow: 'var(--shadow-3)' }}
-            >
-              <Link
-                href={withLang('/gacha', locale)}
-                onClick={() => setMenuOpen(false)}
-                className={MENU_ITEM}
-              >
-                <span>✦</span>
-                <span>{ja ? 'ガチャ' : 'Gacha'}</span>
-              </Link>
-              <Link
-                href={withLang('/guide', locale)}
-                onClick={() => setMenuOpen(false)}
-                className={MENU_ITEM}
-              >
-                <BookOpen size={14} />
-                <span>{ja ? '使い方ガイド' : 'How to Use'}</span>
-              </Link>
-              <Link
-                href={withLang('/score-formula', locale)}
-                onClick={() => setMenuOpen(false)}
-                className={MENU_ITEM}
-              >
-                <Calculator size={14} />
-                <span>{ja ? 'スコア計算方法' : 'Scoring Method'}</span>
-              </Link>
-              <Link
-                href={withLang('/chardb', locale)}
-                onClick={() => setMenuOpen(false)}
-                className={MENU_ITEM}
-              >
-                <Users size={14} />
-                <span>{ja ? 'キャラ別ビルド' : 'Build Data'}</span>
-              </Link>
-              <Link
-                href={withLang('/news', locale)}
-                onClick={() => setMenuOpen(false)}
-                className={MENU_ITEM}
-              >
-                <Bell size={14} />
-                <span>{ja ? 'お知らせ' : "What's New"}</span>
-                {hasNewUpdate && (
-                  <span className="ml-auto w-2 h-2 rounded-full" style={{ background: 'var(--hd-accent)' }} />
-                )}
-              </Link>
-              <Link
-                href={withLang('/about', locale)}
-                onClick={() => setMenuOpen(false)}
-                className={MENU_ITEM}
-                style={{ borderTop: '1px solid #f3f4f6' }}
-              >
-                <Info size={14} />
-                <span>{ja ? 'このサイトについて' : 'About'}</span>
-              </Link>
-              <Link
-                href={withLang('/privacy', locale)}
-                onClick={() => setMenuOpen(false)}
-                className={MENU_ITEM}
-              >
-                <FileText size={14} />
-                <span>{ja ? 'プライバシーポリシー' : 'Privacy Policy'}</span>
-              </Link>
-              <Link
-                href={withLang('/contact', locale)}
-                onClick={() => setMenuOpen(false)}
-                className={MENU_ITEM}
-              >
-                <Mail size={14} />
-                <span>{ja ? 'お問い合わせ' : 'Contact'}</span>
-              </Link>
-            </div>
-          </>
-        )}
-      </div>
-    </header>
+    <SiteHeader
+      isHome
+      title={ja ? '厳選サポーター' : 'Selection Supporter'}
+      maxWidthClass="max-w-[480px]"
+      hasNewUpdate={hasNewUpdate}
+      center={
+        <div className="flex rounded-[8px] p-[3px] shrink-0" style={{ background: 'var(--hd-raise)' }}>
+          <button
+            type="button"
+            onClick={() => setTab('tune')}
+            className="h-[28px] px-[8px] rounded-[6px] text-[12px] whitespace-nowrap"
+            style={
+              tab === 'tune'
+                ? { background: 'var(--hd-fg)', color: 'var(--hd-bg)', fontWeight: 700 }
+                : { color: 'var(--hd-sub)' }
+            }
+          >
+            {ja ? '強化中' : 'Tuning'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab('records')}
+            className="h-[28px] px-[8px] rounded-[6px] text-[12px] whitespace-nowrap"
+            style={
+              tab === 'records'
+                ? { background: 'var(--hd-fg)', color: 'var(--hd-bg)', fontWeight: 700 }
+                : { color: 'var(--hd-sub)' }
+            }
+          >
+            {ja ? '記録' : 'Records'}
+            <em className="hd-num not-italic ml-[4px]">{filteredEntries.length}</em>
+          </button>
+        </div>
+      }
+    />
   );
 
   return (
-    <div
-      className={`home-dark ${bodyFont.variable} ${numFont.variable} min-h-dvh`}
-      style={{
-        background: 'var(--hd-bg)',
-        ['--hd-accent' as string]: theme.accent,
-        ['--hd-accent-ink' as string]: ACCENT_INK,
-        ['--hd-accent-soft' as string]: `color-mix(in srgb, ${theme.accent} 16%, transparent)`,
-      } as React.CSSProperties}
-    >
+    <div className="home-dark min-h-dvh">
       <h1 className="sr-only">
         {ja ? '音骸スコア厳選サポーター' : 'Echo Score Farming Supporter'}
       </h1>
@@ -596,7 +480,7 @@ export default function HomeClient() {
 
           <BuildBar
             ja={ja}
-            accent={theme.accent}
+            accent={accentHex}
             charName={charName}
             charElement={charElement}
             recommendFor={recommendFor}
@@ -751,7 +635,7 @@ export default function HomeClient() {
                   </b>
                   {ja ? '個' : ' echoes'}
                 </span>
-                <span className="ml-auto font-bold" style={{ color: 'var(--hd-accent)' }}>
+                <span className="ml-auto font-bold" style={{ color: 'var(--hd-accent-text)' }}>
                   {ja ? '記録を見る' : 'Open records'}
                 </span>
               </button>
@@ -806,11 +690,7 @@ export default function HomeClient() {
             <NativeBanner />
             <AdBanner />
           </div>
-          <footer className="border-t py-4" style={{ borderColor: 'var(--hd-line)' }}>
-            <p className="text-center text-xs" style={{ color: 'var(--hd-sub)' }}>
-              {ja ? '© 音骸シミュレーター（非公式ファンツール）' : '© Echo Simulator (unofficial fan tool)'}
-            </p>
-          </footer>
+          <SiteFooter />
         </div>
       )}
 

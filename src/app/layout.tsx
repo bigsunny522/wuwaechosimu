@@ -1,7 +1,23 @@
 import type { Metadata, Viewport } from 'next';
+import { Noto_Sans_JP, Chakra_Petch } from 'next/font/google';
 import './globals.css';
+import { SiteAppearanceProvider } from '@/contexts/SiteAppearanceContext';
 
 const SITE_URL = 'https://wuwaechotools.com';
+
+const bodyFont = Noto_Sans_JP({
+  weight: ['400', '700', '900'],
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-home-body',
+});
+
+const numFont = Chakra_Petch({
+  weight: ['500', '600', '700'],
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-home-num',
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -64,7 +80,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#0275fd',
+  themeColor: '#101318',
 };
 
 /** JSON-LD 構造化データ */
@@ -94,26 +110,41 @@ const SITE_THEME_SCRIPT = `
     if (t === 'blue' || t === 'gold') {
       document.documentElement.dataset.theme = t;
     }
+    var m = localStorage.getItem('wuwa-site-mode');
+    if (m === 'dark' || m === 'light') {
+      document.documentElement.dataset.mode = m;
+    }
+    var el = localStorage.getItem('wuwa-accent-element');
+    if (el === 'fusion' || el === 'glacio' || el === 'electro' || el === 'aero' || el === 'spectro' || el === 'havoc' || el === 'none') {
+      document.documentElement.dataset.element = el;
+    }
   } catch (e) {}
 })();
 `;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ja" className="h-full" data-theme="blue">
+    <html
+      lang="ja"
+      className={`h-full ${bodyFont.variable} ${numFont.variable}`}
+      data-theme="blue"
+      data-mode="dark"
+      data-element="none"
+      suppressHydrationWarning
+    >
       <head>
-        {/* サイトテーマ(Homeページ) — hydration前に反映してFOUCを防ぐ */}
+        {/* サイトテーマ(Homeページ)・ライト/ダーク・属性色 — hydration前に反映してFOUCを防ぐ */}
         <script dangerouslySetInnerHTML={{ __html: SITE_THEME_SCRIPT }} />
         {/* JSON-LD 構造化データ */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        {/* Google Fonts — Inter / Noto Sans JP / IBM Plex Mono / Instrument Serif */}
+        {/* Google Fonts — 日本語の字形(Noto Sans JP) */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=Inter:wght@400;500;600&family=Instrument+Serif&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap"
           rel="stylesheet"
         />
         {/* Google AdSense */}
@@ -123,8 +154,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin="anonymous"
         />
       </head>
-      <body className="min-h-full flex flex-col bg-white text-[#222222]">
-        {children}
+      <body className="min-h-full flex flex-col">
+        <SiteAppearanceProvider>
+          {children}
+        </SiteAppearanceProvider>
       </body>
     </html>
   );

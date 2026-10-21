@@ -1,6 +1,8 @@
 import type { TrackedEntry, Threshold, PredictionResult } from '@/lib/tracker';
 import { RANK_ORDER, probAtLeastOneWithin } from '@/lib/tracker';
 import { RANK_COLORS } from '@/lib/scorer';
+import { rankTextColor } from './elementTheme';
+import { useSiteAppearance } from '@/contexts/SiteAppearanceContext';
 import { SUBSTAT_LABEL_EN } from '@/data/translations';
 
 const RUN_MILESTONES = [5, 10, 20, 50];
@@ -39,6 +41,7 @@ export default function RecordsPanel({
   onDelete,
   onClearAll,
 }: RecordsPanelProps) {
+  const { mode } = useSiteAppearance();
   return (
     <section className="flex flex-col gap-3 rounded-xl p-4" style={{ background: 'var(--hd-plate)' }}>
       <div className="flex items-center justify-end">
@@ -60,7 +63,7 @@ export default function RecordsPanel({
               <span
                 key={r}
                 className="text-[11px] font-semibold px-2 py-1 rounded-full"
-                style={{ background: `${RANK_COLORS[r as keyof typeof RANK_COLORS]}22`, color: RANK_COLORS[r as keyof typeof RANK_COLORS] }}
+                style={{ background: `${RANK_COLORS[r as keyof typeof RANK_COLORS]}22`, color: rankTextColor(r, mode) }}
               >
                 {r} × {rankCounts[r]}
               </span>
@@ -114,7 +117,7 @@ export default function RecordsPanel({
                 <div className="text-[10px] mb-0.5" style={{ color: 'var(--hd-sub)' }}>
                   {ja ? '今後の予測（実測込みの補正確率）' : 'Prediction (rate adjusted with your data)'}
                 </div>
-                <div className="text-lg font-bold" style={{ color: 'var(--hd-accent)' }}>
+                <div className="text-lg font-bold" style={{ color: 'var(--hd-accent-text)' }}>
                   {fmtPct(prediction.posteriorRate)}
                 </div>
                 <div className="text-xs" style={{ color: 'var(--hd-sub)' }}>
@@ -142,7 +145,7 @@ export default function RecordsPanel({
               <div key={e.id} className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg" style={{ background: 'var(--hd-raise)' }}>
                 <span
                   className="text-[10px] font-semibold px-1.5 py-0.5 rounded shrink-0"
-                  style={{ background: `${RANK_COLORS[e.rank]}22`, color: RANK_COLORS[e.rank] }}
+                  style={{ background: `${RANK_COLORS[e.rank]}22`, color: rankTextColor(e.rank, mode) }}
                 >
                   {e.rank}
                 </span>
