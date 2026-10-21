@@ -391,6 +391,24 @@ interface Props {
    - `layout.tsx` から `data-theme="blue"` と、スクリプトの `wuwa-site-theme` の処理を消す。コメント「サイトテーマ(Homeページ)」も新しい中身に合わせる
 6. レイアウト・文言・ガチャの動き(確率・ボーナス・保存)は変えない
 
+### 決めておくこと(段階2で質問が出た点を先に決めた、2026-10-21)
+
+- **淡い固定色の面に色付きの文字を置いている所**(順位・ボーナス・注意の箱など): 段階2のガイドと同じ扱い。面は `var(--hd-raise)` か、その色の半透明(`${hex}1f`)。意味のある色(紫・琥珀・緑・赤など)は枠・アイコン・塗りに残し、**地の上の文字には使わない**(文字は `var(--hd-fg)` / `var(--hd-sub)`)。順位の文字だけは `rankTextColor(rank, mode)`(`src/components/home/elementTheme.ts`)
+- 色付きの塗りの上の白い文字(例: 緑のバッジに白)は、その塗りが意味のある色ならそのまま残してよい
+- ガチャの本文の幅は今のまま(`max-w-2xl`)
+- 角丸の数値は変えない(`.hd-card` を使うときだけ 10px になってよい)
+- ここに書いていない判断が要るときは、止めずに「安全な方(ライト・ダーク両方で読める方)」で進め、最後の報告に「決めたこと」として並べる。止めて質問するのは、機能やレイアウトが変わる判断だけ
+
+### 分け方(1回の依頼で全部やらない)
+
+| 回 | 触るファイル | その回の確認 |
+|---|---|---|
+| 3a | `src/app/gacha/GachaClient.tsx` / `src/app/gacha/page.tsx` | tsc・build。`grep -nE "useSiteTheme\|_BY_THEME\|var\(--home-\|#0275fd\|IBM Plex" src/app/gacha/*.tsx` が0件 |
+| 3b | 上の「ガチャが使う部品」11ファイル | tsc・build。`grep -nE "var\(--home-\|var\(--(accent\|text\|surface\|border\|background\|shadow)\|#0275fd\|IBM Plex" <11ファイル>` が0件 |
+| 3c | `SiteThemeContext.tsx` / `SiteThemeSwitcher.tsx` の削除、`globals.css`、`layout.tsx` | 下の受け入れ条件すべて |
+
+- 3a の時点ではファイルの削除はしない(3c で消す)。`useSiteTheme` を使っているのは `GachaClient.tsx` と、そのメニューで使う `SiteThemeSwitcher.tsx` だけなので、3a で `GachaClient` から両方の利用を消し、`gacha/page.tsx` から `SiteThemeProvider` を外す
+
 ### 段階3の受け入れ条件
 
 - [ ] `npx tsc --noEmit` が通る
