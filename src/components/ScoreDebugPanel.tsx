@@ -35,9 +35,9 @@ export default function ScoreDebugPanel({ echo, score }: Props) {
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs border transition-colors"
         style={{
-          background: '#f7f7f7',
-          borderColor: open ? '#d1d5db' : '#e5e7eb',
-          color: open ? '#222222' : '#9ca3af',
+          background: 'var(--hd-raise)',
+          borderColor: open ? 'var(--hd-sub)' : 'var(--hd-line)',
+          color: open ? 'var(--hd-fg)' : 'var(--hd-sub)',
         }}
       >
         <span className="flex items-center gap-1.5">
@@ -49,18 +49,16 @@ export default function ScoreDebugPanel({ echo, score }: Props) {
 
       {open && (
         <div
-          className="mt-1.5 rounded-xl overflow-hidden text-[11px]"
+          className="hd-num mt-1.5 rounded-xl overflow-hidden text-[11px]"
           style={{
-            background: '#ffffff',
-            border: '1px solid #e5e7eb',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-            fontFamily: '"IBM Plex Mono", monospace',
+            background: 'var(--hd-plate)',
+            border: '1px solid var(--hd-line)',
           }}
         >
           {score.isVariantScore && score.variantLabel && (
             <div
               className="px-3 py-1.5 text-[10px]"
-              style={{ background: '#eef2ff', color: '#4338ca', borderBottom: '1px solid #e5e7eb' }}
+              style={{ background: '#4338ca1f', color: 'var(--hd-fg)', borderBottom: '1px solid var(--hd-line)' }}
             >
               運用バリアント: {score.variantLabel}
             </div>
@@ -71,9 +69,9 @@ export default function ScoreDebugPanel({ echo, score }: Props) {
             className="grid gap-x-2 px-3 py-1.5 text-[10px] uppercase tracking-wider"
             style={{
               gridTemplateColumns: '1fr 5rem 3.5rem 4rem',
-              borderBottom: '1px solid #f3f4f6',
-              color: '#9ca3af',
-              background: '#f7f7f7',
+              borderBottom: '1px solid var(--hd-line)',
+              color: 'var(--hd-sub)',
+              background: 'var(--hd-raise)',
             }}
           >
             <span>{T.debugSubstat}</span>
@@ -97,7 +95,7 @@ export default function ScoreDebugPanel({ echo, score }: Props) {
                 className="grid gap-x-2 px-3 py-1.5 items-center"
                 style={{
                   gridTemplateColumns: '1fr 5rem 3.5rem 4rem',
-                  borderBottom: '1px solid #f9fafb',
+                  borderBottom: '1px solid var(--hd-line)',
                 }}
               >
                 <div className="flex items-center gap-1.5 min-w-0">
@@ -107,16 +105,16 @@ export default function ScoreDebugPanel({ echo, score }: Props) {
                   >
                     {CATEGORY_LABEL[b.category]}
                   </span>
-                  <span className="text-[#222222] truncate">{subLabel}</span>
+                  <span className="text-[var(--hd-fg)] truncate">{subLabel}</span>
                 </div>
                 <div className="text-right">
-                  <span className="text-[#222222]">T{sub.tier}</span>
-                  <span className="text-[#9ca3af] ml-1">({nt.toFixed(3)})</span>
+                  <span className="text-[var(--hd-fg)]">T{sub.tier}</span>
+                  <span className="text-[var(--hd-sub)] ml-1">({nt.toFixed(3)})</span>
                 </div>
-                <div className="text-right font-medium" style={{ color }}>
+                <div className="text-right font-medium" style={{ color: 'var(--hd-fg)' }}>
                   ×{mult.toFixed(1)}
                 </div>
-                <div className="text-right text-[#222222] tabular-nums">
+                <div className="text-right text-[var(--hd-fg)] tabular-nums">
                   {b.points.toFixed(4)}
                 </div>
               </div>
@@ -126,9 +124,9 @@ export default function ScoreDebugPanel({ echo, score }: Props) {
           {/* 計算式まとめ */}
           <div
             className="px-3 py-2.5 flex flex-col gap-1.5"
-            style={{ borderTop: '1px solid #e5e7eb', background: '#f7f7f7' }}
+            style={{ borderTop: '1px solid var(--hd-line)', background: 'var(--hd-raise)' }}
           >
-            <div className="flex justify-between text-[#9ca3af]">
+            <div className="flex justify-between text-[var(--hd-sub)]">
               <span>
                 {T.debugMax}
                 <span className="ml-1 text-[10px]">
@@ -137,27 +135,27 @@ export default function ScoreDebugPanel({ echo, score }: Props) {
                     : `(${SUBSTAT_COUNT[echo.cost]}× ${normalizedTier(REFERENCE_TIER).toFixed(3)} × ${idealMult.toFixed(3)})`}
                 </span>
               </span>
-              <span className="tabular-nums text-[#707070]">{theoreticalMax.toFixed(4)}</span>
+              <span className="tabular-nums text-[var(--hd-sub)]">{theoreticalMax.toFixed(4)}</span>
             </div>
-            <div className="flex justify-between text-[#707070]">
+            <div className="flex justify-between text-[var(--hd-sub)]">
               <span>{T.debugTotal}</span>
-              <span className="tabular-nums text-[#222222]">{rawTotal.toFixed(4)}</span>
+              <span className="tabular-nums text-[var(--hd-fg)]">{rawTotal.toFixed(4)}</span>
             </div>
             <div
               className="flex justify-between font-semibold"
-              style={{ borderTop: '1px solid #e5e7eb', paddingTop: '0.375rem' }}
+              style={{ borderTop: '1px solid var(--hd-line)', paddingTop: '0.375rem' }}
             >
-              <span className="text-[#222222]">
+              <span className="text-[var(--hd-fg)]">
                 {T.debugSubScore}
-                <span className="ml-1 text-[10px] font-normal text-[#9ca3af]">
+                <span className="ml-1 text-[10px] font-normal text-[var(--hd-sub)]">
                   ({rawTotal.toFixed(3)} ÷ {theoreticalMax.toFixed(3)} × 100)
                 </span>
               </span>
-              <span className="tabular-nums text-[#0275fd]">{substatScore.toFixed(2)}</span>
+              <span className="tabular-nums text-[var(--hd-accent-text)]">{substatScore.toFixed(2)}</span>
             </div>
 
             {score.comboBonus !== undefined && score.comboBonus > 0 && (
-              <div className="flex justify-between" style={{ color: '#10b981' }}>
+              <div className="flex justify-between text-[var(--hd-sub)]">
                 <span>{T.debugComboBonus} (×{score.breakdown.filter(b => b.category === 'recommended').length})</span>
                 <span className="tabular-nums">+{score.comboBonus}</span>
               </div>
@@ -166,19 +164,19 @@ export default function ScoreDebugPanel({ echo, score }: Props) {
             {score.isCharacterScore && (
               <>
                 {score.mainstatBonus !== undefined && score.mainstatBonus !== 0 && (
-                  <div className="flex justify-between text-[#ef4444]">
+                  <div className="flex justify-between text-[var(--hd-sub)]">
                     <span>{T.debugMainBonus}</span>
                     <span className="tabular-nums">{score.mainstatBonus > 0 ? '+' : ''}{score.mainstatBonus}</span>
                   </div>
                 )}
                 {score.setBonus !== undefined && score.setBonus !== 0 && (
-                  <div className="flex justify-between text-[#f97316]">
+                  <div className="flex justify-between text-[var(--hd-sub)]">
                     <span>{T.debugSetBonus}</span>
                     <span className="tabular-nums">{score.setBonus > 0 ? '+' : ''}{score.setBonus}</span>
                   </div>
                 )}
                 {score.mainstatBonus === 0 && score.setBonus === 0 && (
-                  <div className="flex justify-between text-[#10b981]">
+                  <div className="flex justify-between text-[var(--hd-sub)]">
                     <span>{T.debugNoBonus}</span>
                     <span>{T.debugNone}</span>
                   </div>
@@ -188,7 +186,7 @@ export default function ScoreDebugPanel({ echo, score }: Props) {
 
             <div
               className="flex justify-between text-sm font-semibold"
-              style={{ borderTop: '1px solid #e5e7eb', paddingTop: '0.375rem', color: '#222222' }}
+              style={{ borderTop: '1px solid var(--hd-line)', paddingTop: '0.375rem', color: 'var(--hd-fg)' }}
             >
               <span>{T.debugFinal}</span>
               <span className="tabular-nums">{score.score} / 100</span>
@@ -196,10 +194,10 @@ export default function ScoreDebugPanel({ echo, score }: Props) {
           </div>
 
           {/* 凡例 */}
-          <div className="px-3 py-2 flex flex-wrap gap-x-3 gap-y-1" style={{ borderTop: '1px solid #f3f4f6' }}>
-            <span className="text-[10px] text-[#9ca3af] w-full mb-0.5">{T.debugMultsLabel}</span>
+          <div className="px-3 py-2 flex flex-wrap gap-x-3 gap-y-1" style={{ borderTop: '1px solid var(--hd-line)' }}>
+            <span className="text-[10px] text-[var(--hd-sub)] w-full mb-0.5">{T.debugMultsLabel}</span>
             {(Object.entries(MULT) as [SubstatCategory, number][]).map(([cat, val]) => (
-              <span key={cat} className="text-[10px]" style={{ color: CATEGORY_COLORS[cat] }}>
+              <span key={cat} className="text-[10px]" style={{ color: 'var(--hd-sub)' }}>
                 {CATEGORY_LABEL[cat]} ×{val.toFixed(1)}
               </span>
             ))}

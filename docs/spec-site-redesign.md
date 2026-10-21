@@ -383,7 +383,7 @@ interface Props {
 3. **キャラの保存**: ガチャの `handleCharacterChange` で `setCharacter(charId, element)` を呼ぶ(ホームと同じ)。マウント後の復元はホームと同じ(1-7)
 4. **共通部品**: 上に挙げた部品の色の直書きを、段階2の表と `--home-*` の対応で置き換える。SVG のグラフ(`ScoreDistributionChart`)の軸・目盛り・文字は `var(--hd-line)` / `var(--hd-sub)`、棒・線は `var(--hd-accent)`
    - `UpdateModal` / `BonusModal` / `SavedResultsModal`: 背景 `var(--hd-plate)`、暗幕 `rgba(0,0,0,.6)`、角丸 16px
-   - `ResultCardVisual`(保存した結果の画像の見た目): 一番外側に `hd-force-dark` を付け、中は変えない(ホームの結果カードと同じ扱い)
+   - `ResultCardVisual`(保存した結果の画像の見た目): 一番外側に `hd-force-dark` を付け、中は変えない(ホームの結果カードと同じ扱い)。例外は2か所だけ: `mono` の定数を `"var(--font-home-num, 'Chakra Petch', sans-serif)"` に(IBM Plex Mono はもう読み込まないため)、ラベルの `color: '#0275fd'` を `'var(--hd-accent)'` に
    - 順位の色を地の上の文字に使っている所は `rankTextColor(rank, mode)`
 5. **古い仕組みの撤去**
    - `SiteThemeContext.tsx` / `SiteThemeSwitcher.tsx` を削除

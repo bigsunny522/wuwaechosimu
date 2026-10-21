@@ -29,18 +29,12 @@ function formatMaxedDate(ts: number): string {
   return `${yyyy}/${mm}/${dd} ${hh}:${min}`;
 }
 
-const COST_COLOR: Record<number, string> = {
-  4: '#e6b800',
-  3: '#a855f7',
-  1: '#0d9488',
-};
-
 export default function EchoCard({ echo, score, cardRef, maxedAt, compact = false }: Props) {
   const { locale } = useLocale();
   const T = TRANSLATIONS[locale];
 
   const isMax      = echo.level === 25;
-  const rankColor  = (score && isMax) ? RANK_COLORS[score.rank] : '#e5e7eb';
+  const rankColor  = (score && isMax) ? RANK_COLORS[score.rank] : 'var(--hd-line)';
   const maxSubs    = SUBSTAT_COUNT[echo.cost];
   const emptyCount = Math.max(0, maxSubs - echo.substats.length);
 
@@ -63,11 +57,8 @@ export default function EchoCard({ echo, score, cardRef, maxedAt, compact = fals
       ref={cardRef}
       className="relative w-full max-w-sm rounded-2xl overflow-hidden"
       style={{
-        background: 'var(--home-card)',
-        border: `1px solid ${score && isMax ? `${rankColor}88` : 'var(--home-border)'}`,
-        boxShadow: score && isMax
-          ? `0 4px 24px ${rankColor}1a, 0 2px 8px rgba(0,0,0,0.06)`
-          : '0 2px 8px rgba(0,0,0,0.06)',
+        background: 'var(--hd-plate)',
+        border: `1px solid ${score && isMax ? `${rankColor}88` : 'var(--hd-line)'}`,
       }}
     >
       {/* Rank stripe */}
@@ -76,20 +67,20 @@ export default function EchoCard({ echo, score, cardRef, maxedAt, compact = fals
       )}
 
       {/* Header */}
-      <div className={`${hPad} ${hPy}`} style={{ borderBottom: '1px solid var(--home-border)' }}>
+      <div className={`${hPad} ${hPy}`} style={{ borderBottom: '1px solid var(--hd-line)' }}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
               <span
-                className="text-[10px] font-semibold tracking-widest uppercase"
-                style={{ color: COST_COLOR[echo.cost], fontFamily: '"IBM Plex Mono", monospace' }}
+                className="hd-num text-[10px] font-semibold tracking-widest uppercase"
+                style={{ color: 'var(--hd-sub)' }}
               >
                 COST {echo.cost}
               </span>
-              <span className="text-[10px]" style={{ color: 'var(--home-card-text-sub)' }}>{T.echoType}</span>
+              <span className="text-[10px]" style={{ color: 'var(--hd-sub)' }}>{T.echoType}</span>
             </div>
             <div className="flex items-center gap-2 flex-wrap mb-0.5">
-              <span className="text-sm font-semibold leading-snug" style={{ color: 'var(--home-card-text)' }}>
+              <span className="text-sm font-semibold leading-snug" style={{ color: 'var(--hd-fg)' }}>
                 {echoDisplayName}
               </span>
               {harmonyDisplay && echo.activeHarmonySet && (() => {
@@ -105,29 +96,29 @@ export default function EchoCard({ echo, score, cardRef, maxedAt, compact = fals
               })()}
             </div>
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-xs" style={{ color: 'var(--home-card-text-sub)' }}>{mainstatLabel}</span>
-              <span className="text-xs font-semibold" style={{ color: COST_COLOR[echo.cost] }}>
+              <span className="text-xs" style={{ color: 'var(--hd-sub)' }}>{mainstatLabel}</span>
+              <span className="text-xs font-semibold" style={{ color: 'var(--hd-fg)' }}>
                 {echo.mainstat.value}{echo.mainstat.unit}
               </span>
             </div>
           </div>
           <div className="text-right shrink-0">
             <div
-              className="text-[10px] uppercase tracking-wider mb-0.5"
-              style={{ fontFamily: '"IBM Plex Mono", monospace', color: 'var(--home-card-text-sub)' }}
+              className="hd-num text-[10px] uppercase tracking-wider mb-0.5"
+              style={{ color: 'var(--hd-sub)' }}
             >
               {T.levelLabel}
             </div>
-            <div className="text-xl font-semibold" style={{ color: 'var(--home-card-text)' }}>+{echo.level}</div>
+            <div className="text-xl font-semibold" style={{ color: 'var(--hd-fg)' }}>+{echo.level}</div>
           </div>
         </div>
 
         {/* Level bar — hidden in compact mode */}
         {!compact && (
-          <div className="mt-2 w-full h-1 rounded-full overflow-hidden" style={{ background: 'var(--home-border)' }}>
+          <div className="mt-2 w-full h-1 rounded-full overflow-hidden" style={{ background: 'var(--hd-line)' }}>
             <div
               className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${(echo.level / 25) * 100}%`, background: 'var(--home-accent)' }}
+              style={{ width: `${(echo.level / 25) * 100}%`, background: 'var(--hd-accent)' }}
             />
           </div>
         )}
@@ -135,13 +126,12 @@ export default function EchoCard({ echo, score, cardRef, maxedAt, compact = fals
 
       {/* Score section */}
       {score && isMax && (
-        <div className={`${hPad} ${sPy}`} style={{ borderBottom: '1px solid var(--home-border)' }}>
+        <div className={`${hPad} ${sPy}`} style={{ borderBottom: '1px solid var(--hd-line)' }}>
           <ScoreBadge result={score} />
           {/* maxedAt date — hidden in compact mode */}
           {!compact && maxedAt && (
             <div
-              className="mt-1.5 text-center text-[10px] text-[#9ca3af] tracking-wide"
-              style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+              className="hd-num mt-1.5 text-center text-[10px] text-[var(--hd-sub)] tracking-wide"
             >
               {T.maxedAt}: {formatMaxedDate(maxedAt)}
             </div>
@@ -152,7 +142,7 @@ export default function EchoCard({ echo, score, cardRef, maxedAt, compact = fals
       {/* Substats */}
       <div className={`${subPad} flex flex-col gap-0.5`}>
         {echo.substats.length === 0 ? (
-          <div className={`text-center text-[#9ca3af] ${compact ? 'text-xs py-3' : 'text-sm py-4'}`}>
+          <div className={`text-center text-[var(--hd-sub)] ${compact ? 'text-xs py-3' : 'text-sm py-4'}`}>
             {T.levelHint}
           </div>
         ) : (
@@ -164,12 +154,12 @@ export default function EchoCard({ echo, score, cardRef, maxedAt, compact = fals
         {Array.from({ length: emptyCount }).map((_, i) => (
           <div
             key={`empty-${i}`}
-            className={`flex items-center gap-2 rounded-lg border border-dashed border-[#e5e7eb] ${compact ? 'px-2 py-1.5' : 'px-3 py-2'}`}
+            className={`flex items-center gap-2 rounded-lg border border-dashed border-[var(--hd-line)] ${compact ? 'px-2 py-1.5' : 'px-3 py-2'}`}
           >
-            <span className={`text-[#d1d5db] ${compact ? 'text-[10px] w-3 text-center' : 'text-xs w-4'}`}>
+            <span className={`text-[var(--hd-sub)] ${compact ? 'text-[10px] w-3 text-center' : 'text-xs w-4'}`}>
               {echo.substats.length + i + 1}
             </span>
-            <span className={`flex-1 text-[#d1d5db] italic ${compact ? 'text-xs' : 'text-sm'}`}>
+            <span className={`flex-1 text-[var(--hd-sub)] italic ${compact ? 'text-xs' : 'text-sm'}`}>
               {T.unlockedSlot}
             </span>
           </div>

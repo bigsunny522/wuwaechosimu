@@ -28,46 +28,45 @@ export default function BonusModal({ title, items, onGrantBonus, onClose }: Prop
   }, [secondsLeft]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm" style={{ background: 'rgba(0,0,0,.6)' }}>
       <div
-        className="w-full max-w-md mx-4 rounded-2xl bg-white shadow-2xl overflow-hidden animate-fadeUp"
-        style={{ border: '1px solid #e5e7eb' }}
+        className="w-full max-w-md mx-4 rounded-2xl overflow-hidden animate-fadeUp"
+        style={{ background: 'var(--hd-plate)', border: '1px solid var(--hd-line)' }}
       >
         {/* ── Top accent stripe ── */}
-        <div className="h-1 w-full" style={{ background: 'linear-gradient(90deg, #0275fd, #60a5fa)' }} />
+        <div className="h-1 w-full" style={{ background: 'var(--hd-accent)' }} />
 
         <div className="p-6">
           {/* Header */}
           <div className="flex items-start justify-between mb-5">
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                <h2 className="flex items-center gap-1.5 text-base font-semibold text-[#222222]">
-                  <Gift size={16} style={{ color: '#0275fd' }} />
+                <h2 className="flex items-center gap-1.5 text-base font-semibold text-[var(--hd-fg)]">
+                  <Gift size={16} style={{ color: 'var(--hd-accent)' }} />
                   {title}
                 </h2>
                 <span
-                  className="px-2 py-0.5 rounded-full text-[10px] font-semibold text-white"
-                  style={{ background: '#0275fd', fontFamily: '"IBM Plex Mono", monospace' }}
+                  className="hd-num px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                  style={{ background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }}
                 >
                   {T.bonusFreeLabel}
                 </span>
               </div>
-              <p className="text-xs text-[#9ca3af]">{T.bonusNote}</p>
+              <p className="text-xs text-[var(--hd-sub)]">{T.bonusNote}</p>
             </div>
             <button
               onClick={onClose}
               aria-label={T.closeBtn}
-              className="text-[#9ca3af] hover:text-[#222222] transition-colors shrink-0 ml-3"
+              className="text-[var(--hd-sub)] hover:text-[var(--hd-fg)] transition-colors shrink-0 ml-3"
             >
               <X size={18} />
             </button>
           </div>
 
           {/* Benefits */}
-          <div className="rounded-xl bg-[#f7f7f7] border border-[#e5e7eb] p-4 mb-5">
+          <div className="rounded-xl bg-[var(--hd-raise)] border border-[var(--hd-line)] p-4 mb-5">
             <p
-              className="text-[10px] uppercase tracking-wider text-[#9ca3af] mb-3"
-              style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+              className="hd-num text-[10px] uppercase tracking-wider text-[var(--hd-sub)] mb-3"
             >
               {T.bonusRewardsTitle}
             </p>
@@ -75,27 +74,26 @@ export default function BonusModal({ title, items, onGrantBonus, onClose }: Prop
               {items.map((item, i) => (
                 <div key={i} className="flex items-start gap-2.5 text-sm">
                   <span
-                    className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white mt-0.5"
-                    style={{ background: '#0275fd' }}
+                    className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5"
+                    style={{ background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }}
                   >
                     <Check size={12} strokeWidth={3} />
                   </span>
-                  <span className="text-[#222222] leading-snug">{item}</span>
+                  <span className="text-[var(--hd-fg)] leading-snug">{item}</span>
                 </div>
               ))}
             </div>
             {/* Duration badge */}
-            <div className="mt-3 pt-3 border-t border-[#e5e7eb] flex items-center gap-1.5">
-              <Clock size={12} className="text-[#9ca3af]" />
-              <span className="text-xs font-medium text-[#0275fd]">{T.bonusValidFor}</span>
+            <div className="mt-3 pt-3 border-t border-[var(--hd-line)] flex items-center gap-1.5">
+              <Clock size={12} className="text-[var(--hd-sub)]" />
+              <span className="text-xs font-medium text-[var(--hd-accent-text)]">{T.bonusValidFor}</span>
             </div>
           </div>
 
           {/* Ad */}
-          <div className="rounded-xl bg-[#f7f7f7] border border-[#e5e7eb] p-3 mb-5">
+          <div className="rounded-xl bg-[var(--hd-raise)] border border-[var(--hd-line)] p-3 mb-5">
             <p
-              className="text-[10px] uppercase tracking-wider text-[#9ca3af] mb-1 text-center"
-              style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+              className="hd-num text-[10px] uppercase tracking-wider text-[var(--hd-sub)] mb-1 text-center"
             >
               {T.bonusAdShowing}
             </p>
@@ -105,7 +103,7 @@ export default function BonusModal({ title, items, onGrantBonus, onClose }: Prop
           <button
             onClick={() => { onGrantBonus(); onClose(); }}
             disabled={secondsLeft > 0}
-            className="w-full py-3 rounded-[500px] text-sm font-semibold text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:opacity-40"
+            className="w-full py-3 rounded-[500px] text-sm font-semibold bg-[var(--hd-accent)] text-[var(--hd-accent-ink)] hover:opacity-80 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:opacity-40"
           >
             {secondsLeft > 0 ? interpolate(T.bonusAdWaiting, [secondsLeft]) : T.bonusCTA}
           </button>

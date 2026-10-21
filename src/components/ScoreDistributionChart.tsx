@@ -3,6 +3,8 @@
 import { useMemo, useRef, useState } from 'react';
 import type { ScoreResult, ScoreRank } from '@/types/echo';
 import { RANK_COLORS } from '@/lib/scorer';
+import { rankTextColor } from '@/components/home/elementTheme';
+import { useSiteAppearance } from '@/contexts/SiteAppearanceContext';
 import { useLocale } from '@/lib/locale';
 import { TRANSLATIONS } from '@/data/translations';
 import { pctAtScore, formatPct } from '@/lib/distribution';
@@ -16,11 +18,12 @@ interface Props {
 // data/rankThresholds.ts の HIST_BIN_WIDTH / HIST_BIN_COUNT と一致させること
 const BIN_WIDTH = 2;
 
-const BAR_COLOR = '#93c5fd';
-const BAR_COLOR_ACTIVE = '#0275fd';
+/** 棒の塗り。アクティブの区別は opacity */
+const BAR_COLOR = 'var(--hd-accent)';
 
 export default function ScoreDistributionChart({ result, compact = false }: Props) {
   const { locale } = useLocale();
+  const { mode } = useSiteAppearance();
   const T = TRANSLATIONS[locale];
   const svgRef = useRef<SVGSVGElement>(null);
   const [hoverBin, setHoverBin] = useState<number | null>(null);
@@ -80,12 +83,12 @@ export default function ScoreDistributionChart({ result, compact = false }: Prop
 
   return (
     <div className="w-full">
-      {!compact && <div className="text-[11px] font-medium text-[#6b7280] mb-1">{T.distTitle}</div>}
+      {!compact && <div className="text-[11px] font-medium text-[var(--hd-sub)] mb-1">{T.distTitle}</div>}
       <svg
         ref={svgRef}
         viewBox={`0 0 ${W} ${H}`}
         className="w-full h-auto"
-        style={{ background: '#fafafa', border: '1px solid #e5e7eb', borderRadius: 8 }}
+        style={{ background: 'var(--hd-raise)', border: '1px solid var(--hd-line)', borderRadius: 8 }}
         onMouseMove={handleMove}
         onMouseLeave={() => setHoverBin(null)}
       >
@@ -114,7 +117,7 @@ export default function ScoreDistributionChart({ result, compact = false }: Prop
             key={f}
             x1={PAD.left} x2={PAD.left + PLOT_W}
             y1={yForFreq(maxFreq * f)} y2={yForFreq(maxFreq * f)}
-            stroke="#e5e7eb" strokeWidth={1}
+            stroke="var(--hd-line)" strokeWidth={1}
           />
         ))}
 
@@ -133,7 +136,7 @@ export default function ScoreDistributionChart({ result, compact = false }: Prop
               width={barWidth}
               height={barH}
               rx={1.5}
-              fill={isActive ? BAR_COLOR_ACTIVE : BAR_COLOR}
+              fill={BAR_COLOR}
               opacity={isActive ? 1 : 0.65}
             />
           );
@@ -154,7 +157,7 @@ export default function ScoreDistributionChart({ result, compact = false }: Prop
               textAnchor="middle"
               fontSize={8}
               fontWeight={700}
-              fill={RANK_COLORS[b.rank]}
+              fill={rankTextColor(b.rank, mode)}
             >
               {b.rank}
             </text>
@@ -164,21 +167,21 @@ export default function ScoreDistributionChart({ result, compact = false }: Prop
         {/* x軸ラベル — コンパクト時は省略 */}
         {!compact && (
           <>
-            <text x={PAD.left} y={H - 4} fontSize={7} fill="#9ca3af">0</text>
-            <text x={PAD.left + PLOT_W} y={H - 4} textAnchor="end" fontSize={7} fill="#9ca3af">100</text>
-            <text x={PAD.left + PLOT_W / 2} y={H - 4} textAnchor="middle" fontSize={7} fill="#9ca3af">{T.distAxisLabel}</text>
+            <text x={PAD.left} y={H - 4} fontSize={7} fill="var(--hd-sub)">0</text>
+            <text x={PAD.left + PLOT_W} y={H - 4} textAnchor="end" fontSize={7} fill="var(--hd-sub)">100</text>
+            <text x={PAD.left + PLOT_W / 2} y={H - 4} textAnchor="middle" fontSize={7} fill="var(--hd-sub)">{T.distAxisLabel}</text>
           </>
         )}
       </svg>
 
       {/* ツールチップ相当（下部に常時表示、ホバーで更新） */}
-      <div className="mt-1 text-[11px] text-[#374151] flex items-center gap-1.5 flex-wrap">
+      <div className="mt-1 text-[11px] text-[var(--hd-fg)] flex items-center gap-1.5 flex-wrap">
         <span
           className="inline-block w-2 h-2 rounded-full"
-          style={{ background: hoverBin !== null ? BAR_COLOR_ACTIVE : RANK_COLORS[result.rank] }}
+          style={{ background: hoverBin !== null ? BAR_COLOR : RANK_COLORS[result.rank] }}
         />
         {compact ? (
-          <span className="tabular-nums font-semibold" style={{ color: '#0275fd' }}>
+          <span className="tabular-nums font-semibold" style={{ color: 'var(--hd-accent-text)' }}>
             {locale === 'ja' ? `ドロップ上位 ${formatPct(activePct)}%` : `Top ${formatPct(activePct)}% of drops`}
           </span>
         ) : (
@@ -188,14 +191,14 @@ export default function ScoreDistributionChart({ result, compact = false }: Prop
                 ? T.distYourScore
                 : `${activeBin * BIN_WIDTH}–${activeBin * BIN_WIDTH + BIN_WIDTH} ${T.distAxisLabel}`}
             </span>
-            <span className="text-[#9ca3af]">→</span>
-            <span className="tabular-nums text-[#6b7280]">
+            <span className="text-[var(--hd-sub)]">→</span>
+            <span className="tabular-nums text-[var(--hd-sub)]">
               {locale === 'ja'
                 ? `出現率 ${(histogram[activeBin] * 100).toFixed(2)}%`
                 : `${(histogram[activeBin] * 100).toFixed(2)}% of drops`}
             </span>
-            <span className="text-[#9ca3af]">/</span>
-            <span className="tabular-nums font-semibold" style={{ color: '#0275fd' }}>
+            <span className="text-[var(--hd-sub)]">/</span>
+            <span className="tabular-nums font-semibold" style={{ color: 'var(--hd-accent-text)' }}>
               {locale === 'ja' ? `上位 ${formatPct(activePct)}%` : `Top ${formatPct(activePct)}%`}
             </span>
           </>
