@@ -28,6 +28,7 @@ import { Menu, BookOpen, Calculator, Users, Bell, Info, FileText, Mail } from 'l
 import BuildBar from '@/components/home/BuildBar';
 import SlotList from '@/components/home/SlotList';
 import ForecastStrip from '@/components/home/ForecastStrip';
+import ResultCard, { type Journey, type JourneyStep } from '@/components/home/ResultCard';
 import InputDock from '@/components/home/InputDock';
 import RecordsPanel from '@/components/home/RecordsPanel';
 import CharacterPicker from '@/components/home/CharacterPicker';
@@ -297,6 +298,18 @@ export default function HomeClient() {
     if (draftSubs.length < MAX_SUBSTATS) return null;
     return scoreEcho(buildDraftEcho(draftSubs), build);
   }, [draftSubs, buildDraftEcho, build]);
+
+  const journey = useMemo<Journey | null>(() => {
+    if (!draftFinalScore) return null;
+    const steps: JourneyStep[] = [];
+    let baseline = 0;
+    for (let n = 1; n <= 4; n++) {
+      const r = simulateCompletion(buildDraftEcho(draftSubs.slice(0, n)), build);
+      if (n === 1) baseline = r.baselineScore;
+      steps.push({ expected: Math.round(r.expectedScore), recommendation: r.recommendation });
+    }
+    return { steps, baseline };
+  }, [draftSubs, buildDraftEcho, build, draftFinalScore]);
 
   const canFinalize = Boolean(draftSubs.length === MAX_SUBSTATS && (!cost4MultiSet || draftHarmonySet) && (cost === 4 || selectedHarmonySet));
 
@@ -613,115 +626,136 @@ export default function HomeClient() {
           <div
             className="flex flex-col gap-[8px] px-[16px] py-[8px] min-h-0 flex-1 overflow-y-auto [@media(max-height:780px)]:gap-[6px] [@media(max-height:780px)]:pt-[6px]"
           >
-            <button
-              type="button"
-              onClick={() => {
-                setPickerOpen(false);
-                setSettingsOpen(true);
-              }}
-              className="flex items-center gap-[12px] w-full h-[44px] rounded-[10px] px-[12px] text-left [@media(max-height:780px)]:h-[36px]"
-              style={{ flex: 'none', background: 'var(--hd-plate)' }}
-            >
-              <span className="min-w-0 flex-1 flex flex-col justify-center">
-                <span className="flex items-baseline gap-[8px]">
-                  <small
-                    className="flex-none text-[11px] leading-[1.2] [@media(max-height:780px)]:text-[10px]"
-                    style={{ color: 'var(--hd-sub)', minWidth: plateLabelMin }}
-                  >
-                    {plateLabelTop}
-                  </small>
-                  <span
-                    className="min-w-0 truncate text-[13px] leading-[1.25] [@media(max-height:780px)]:text-[12px]"
-                    style={{ color: 'var(--hd-fg)' }}
-                  >
-                    {ja ? draftMeta.echoName : draftMeta.echoNameEn}
-                  </span>
-                </span>
-                <span className="flex items-baseline gap-[8px]">
-                  <small
-                    className="flex-none text-[11px] leading-[1.2] [@media(max-height:780px)]:text-[10px]"
-                    style={{ color: 'var(--hd-sub)', minWidth: plateLabelMin }}
-                  >
-                    {plateLabelMain}
-                  </small>
-                  <span
-                    className="min-w-0 truncate text-[13px] leading-[1.25] [@media(max-height:780px)]:text-[12px]"
-                    style={{ color: 'var(--hd-fg)' }}
-                  >
-                    {ja
-                      ? draftMeta.mainstat.label
-                      : (MAINSTAT_LABEL_EN[draftMeta.mainstat.key] ?? draftMeta.mainstat.label)}
-                  </span>
-                  <b
-                    className="hd-num shrink-0 font-bold text-[13px] leading-[1.25] [@media(max-height:780px)]:text-[12px]"
-                    style={{ color: 'var(--hd-fg)' }}
-                  >
-                    {draftMeta.mainstat.unit === '%'
-                      ? `${draftMeta.mainstat.value.toFixed(1)}${draftMeta.mainstat.unit}`
-                      : `${draftMeta.mainstat.value}${draftMeta.mainstat.unit}`}
-                  </b>
-                </span>
-              </span>
-              <span
-                className="flex items-center gap-[4px] whitespace-nowrap text-[12px] shrink-0"
-                style={{ color: 'var(--hd-sub)' }}
+            {!draftFinalScore && (
+              <button
+                type="button"
+                onClick={() => {
+                  setPickerOpen(false);
+                  setSettingsOpen(true);
+                }}
+                className="flex items-center gap-[12px] w-full h-[44px] rounded-[10px] px-[12px] text-left [@media(max-height:780px)]:h-[36px]"
+                style={{ flex: 'none', background: 'var(--hd-plate)' }}
               >
-                {ja ? '変更' : 'Change'}
+                <span className="min-w-0 flex-1 flex flex-col justify-center">
+                  <span className="flex items-baseline gap-[8px]">
+                    <small
+                      className="flex-none text-[11px] leading-[1.2] [@media(max-height:780px)]:text-[10px]"
+                      style={{ color: 'var(--hd-sub)', minWidth: plateLabelMin }}
+                    >
+                      {plateLabelTop}
+                    </small>
+                    <span
+                      className="min-w-0 truncate text-[13px] leading-[1.25] [@media(max-height:780px)]:text-[12px]"
+                      style={{ color: 'var(--hd-fg)' }}
+                    >
+                      {ja ? draftMeta.echoName : draftMeta.echoNameEn}
+                    </span>
+                  </span>
+                  <span className="flex items-baseline gap-[8px]">
+                    <small
+                      className="flex-none text-[11px] leading-[1.2] [@media(max-height:780px)]:text-[10px]"
+                      style={{ color: 'var(--hd-sub)', minWidth: plateLabelMin }}
+                    >
+                      {plateLabelMain}
+                    </small>
+                    <span
+                      className="min-w-0 truncate text-[13px] leading-[1.25] [@media(max-height:780px)]:text-[12px]"
+                      style={{ color: 'var(--hd-fg)' }}
+                    >
+                      {ja
+                        ? draftMeta.mainstat.label
+                        : (MAINSTAT_LABEL_EN[draftMeta.mainstat.key] ?? draftMeta.mainstat.label)}
+                    </span>
+                    <b
+                      className="hd-num shrink-0 font-bold text-[13px] leading-[1.25] [@media(max-height:780px)]:text-[12px]"
+                      style={{ color: 'var(--hd-fg)' }}
+                    >
+                      {draftMeta.mainstat.unit === '%'
+                        ? `${draftMeta.mainstat.value.toFixed(1)}${draftMeta.mainstat.unit}`
+                        : `${draftMeta.mainstat.value}${draftMeta.mainstat.unit}`}
+                    </b>
+                  </span>
+                </span>
                 <span
-                  aria-hidden
-                  className="shrink-0"
-                  style={{
-                    width: 7,
-                    height: 7,
-                    borderRight: '2px solid currentColor',
-                    borderBottom: '2px solid currentColor',
-                    transform: 'rotate(-45deg)',
-                  }}
+                  className="flex items-center gap-[4px] whitespace-nowrap text-[12px] shrink-0"
+                  style={{ color: 'var(--hd-sub)' }}
+                >
+                  {ja ? '変更' : 'Change'}
+                  <span
+                    aria-hidden
+                    className="shrink-0"
+                    style={{
+                      width: 7,
+                      height: 7,
+                      borderRight: '2px solid currentColor',
+                      borderBottom: '2px solid currentColor',
+                      transform: 'rotate(-45deg)',
+                    }}
+                  />
+                </span>
+              </button>
+            )}
+
+            {draftFinalScore && journey ? (
+              <ResultCard
+                ja={ja}
+                echoName={draftMeta.echoName}
+                echoNameEn={draftMeta.echoNameEn}
+                cost={cost}
+                mainstat={draftMeta.mainstat}
+                charName={build ? charName : undefined}
+                finalScore={draftFinalScore}
+                subs={draftSubs}
+                build={build}
+                journey={journey}
+              />
+            ) : (
+              <>
+                <SlotList
+                  ja={ja}
+                  substats={draftSubs}
+                  build={build}
+                  onRemove={removeSubstat}
                 />
-              </span>
-            </button>
 
-            <SlotList
-              ja={ja}
-              substats={draftSubs}
-              build={build}
-              onRemove={removeSubstat}
-            />
+                <ForecastStrip
+                  ja={ja}
+                  advisor={draftAdvisor}
+                  finalScore={draftFinalScore}
+                />
+              </>
+            )}
 
-            <ForecastStrip
-              ja={ja}
-              advisor={draftAdvisor}
-              finalScore={draftFinalScore}
-            />
-
-            <button
-              type="button"
-              onClick={() => setTab('records')}
-              className="flex items-center gap-[14px] px-[12px] py-[8px] rounded-[10px] text-[12px] w-full text-left [@media(max-height:820px)]:hidden"
-              style={{
-                flex: 'none',
-                boxShadow: 'inset 0 0 0 1px var(--hd-line)',
-                color: 'var(--hd-sub)',
-              }}
-            >
-              <span>
-                {ja ? 'これまで' : 'So far'}
-                <b className="hd-num text-[16px] mx-[2px]" style={{ color: 'var(--hd-fg)' }}>
-                  {filteredEntries.length}
-                </b>
-                {ja ? '個' : ' echoes'}
-              </span>
-              <span>
-                {ja ? 'S以上' : 'S or higher'}
-                <b className="hd-num text-[16px] mx-[2px]" style={{ color: 'var(--hd-fg)' }}>
-                  {sPlusCount}
-                </b>
-                {ja ? '個' : ' echoes'}
-              </span>
-              <span className="ml-auto font-bold" style={{ color: 'var(--hd-accent)' }}>
-                {ja ? '記録を見る' : 'Open records'}
-              </span>
-            </button>
+            {!draftFinalScore && (
+              <button
+                type="button"
+                onClick={() => setTab('records')}
+                className="flex items-center gap-[14px] px-[12px] py-[8px] rounded-[10px] text-[12px] w-full text-left [@media(max-height:820px)]:hidden"
+                style={{
+                  flex: 'none',
+                  boxShadow: 'inset 0 0 0 1px var(--hd-line)',
+                  color: 'var(--hd-sub)',
+                }}
+              >
+                <span>
+                  {ja ? 'これまで' : 'So far'}
+                  <b className="hd-num text-[16px] mx-[2px]" style={{ color: 'var(--hd-fg)' }}>
+                    {filteredEntries.length}
+                  </b>
+                  {ja ? '個' : ' echoes'}
+                </span>
+                <span>
+                  {ja ? 'S以上' : 'S or higher'}
+                  <b className="hd-num text-[16px] mx-[2px]" style={{ color: 'var(--hd-fg)' }}>
+                    {sPlusCount}
+                  </b>
+                  {ja ? '個' : ' echoes'}
+                </span>
+                <span className="ml-auto font-bold" style={{ color: 'var(--hd-accent)' }}>
+                  {ja ? '記録を見る' : 'Open records'}
+                </span>
+              </button>
+            )}
           </div>
 
           <InputDock
@@ -731,6 +765,7 @@ export default function HomeClient() {
             onPendingKeyChange={setPendingKey}
             onAdd={addSubstat}
             onReset={resetDraft}
+            onUndoLast={() => removeSubstat(4)}
             finalScore={draftFinalScore}
             canFinalize={canFinalize}
             onFinalize={handleFinalize}

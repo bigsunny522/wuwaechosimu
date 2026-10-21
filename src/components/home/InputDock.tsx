@@ -1,10 +1,8 @@
-import { useState } from 'react';
 import type { ScoreResult, Substat, SubstatKey } from '@/types/echo';
 import type { CharacterBuild } from '@/types/character';
 import { SUBSTAT_DATA, SUBSTAT_MAP } from '@/data/substats';
 import { SUBSTAT_LABEL_EN } from '@/data/translations';
-import { getSubstatCategory, RANK_COLORS } from '@/lib/scorer';
-import ScoreDistributionChart from '@/components/ScoreDistributionChart';
+import { getSubstatCategory } from '@/lib/scorer';
 
 interface InputDockProps {
   ja: boolean;
@@ -13,6 +11,7 @@ interface InputDockProps {
   onPendingKeyChange: (key: string) => void;
   onAdd: (key: SubstatKey, tier: number) => void;
   onReset: () => void;
+  onUndoLast: () => void;
   finalScore: ScoreResult | null;
   canFinalize: boolean;
   onFinalize: () => void;
@@ -33,6 +32,7 @@ export default function InputDock({
   onPendingKeyChange,
   onAdd,
   onReset,
+  onUndoLast,
   finalScore,
   canFinalize,
   onFinalize,
@@ -41,14 +41,16 @@ export default function InputDock({
   savingImage,
   build,
 }: InputDockProps) {
-  const [chartOpen, setChartOpen] = useState(false);
-
   const usedKeys = new Set(draftSubs.map((s) => s.key));
   const pendingEntry = pendingKey ? (SUBSTAT_MAP[pendingKey as SubstatKey] ?? null) : null;
 
   return (
     <section
-      className="flex flex-col h-[calc(248px_+_env(safe-area-inset-bottom,0px))] gap-[8px] pt-[12px] px-[16px] rounded-t-[16px] [@media(max-height:780px)]:h-[calc(216px_+_env(safe-area-inset-bottom,0px))] [@media(max-height:780px)]:gap-[6px] [@media(max-height:780px)]:pt-[10px]"
+      className={`flex flex-col gap-[8px] pt-[12px] px-[16px] rounded-t-[16px] [@media(max-height:780px)]:pt-[10px] ${
+        finalScore
+          ? ''
+          : 'h-[calc(248px_+_env(safe-area-inset-bottom,0px))] [@media(max-height:780px)]:h-[calc(216px_+_env(safe-area-inset-bottom,0px))] [@media(max-height:780px)]:gap-[6px]'
+      }`}
       style={{
         background: 'var(--hd-plate)',
         paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
@@ -57,68 +59,66 @@ export default function InputDock({
     >
       {finalScore ? (
         <>
-          <div className="flex flex-col gap-[10px] min-h-0 flex-1">
-            <div className="flex items-center gap-[14px]">
-              <b
-                className="hd-num text-[52px] leading-none font-bold"
-                style={{ color: RANK_COLORS[finalScore.rank] }}
+          <div className="flex gap-[8px] shrink-0">
+            <button
+              type="button"
+              onClick={onShare}
+              className="flex-1 min-w-0 h-[54px] rounded-[27px] flex items-center justify-center gap-[10px] text-[16px] [@media(max-height:780px)]:h-[48px]"
+              style={{ background: '#FFFFFF', color: '#0B0D11', fontWeight: 900 }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M17.8 3h3.1l-6.8 7.7L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.2-8.3L1.8 3h6.4l4.4 5.8zM16.7 19.2h1.7L7.2 4.7H5.4z"
+                  fill="#0B0D11"
+                ></path>
+              </svg>
+              {ja ? 'X でシェア' : 'Share on X'}
+            </button>
+            <button
+              type="button"
+              onClick={onSaveImage}
+              disabled={savingImage}
+              aria-label={ja ? '画像を保存' : 'Save image'}
+              className="w-[54px] h-[54px] shrink-0 rounded-full flex items-center justify-center disabled:opacity-50 [@media(max-height:780px)]:w-[48px] [@media(max-height:780px)]:h-[48px]"
+              style={{ background: 'var(--hd-raise)', color: 'var(--hd-fg)' }}
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
               >
-                {finalScore.rank}
-              </b>
-              <div className="text-[13px]" style={{ color: 'var(--hd-sub)' }}>
-                {ja ? 'スコア' : 'Score'}
-                <strong
-                  className="hd-num block text-[22px] font-bold"
-                  style={{ color: 'var(--hd-fg)' }}
-                >
-                  {finalScore.score} / 100
-                </strong>
-              </div>
-            </div>
-            <div className="flex items-center">
-              {finalScore.distributionCurve && (
-                <button
-                  type="button"
-                  onClick={() => setChartOpen(true)}
-                  className="text-[12px] font-bold"
-                  style={{ color: 'var(--hd-accent)' }}
-                >
-                  {ja ? 'スコア分布を見る' : 'See score distribution'}
-                </button>
-              )}
-              <div className="flex items-center gap-[8px] ml-auto shrink-0">
-                <button
-                  type="button"
-                  onClick={onSaveImage}
-                  disabled={savingImage}
-                  className="h-[32px] px-[12px] rounded-[16px] text-[12px] font-bold whitespace-nowrap"
-                  style={{ background: 'var(--hd-raise)', color: 'var(--hd-fg)' }}
-                >
-                  {savingImage
-                    ? (ja ? '作成中…' : 'Saving…')
-                    : (ja ? '画像を保存' : 'Save image')}
-                </button>
-                <button
-                  type="button"
-                  onClick={onShare}
-                  className="h-[32px] px-[12px] rounded-[16px] text-[12px] font-bold whitespace-nowrap"
-                  style={{ background: 'var(--hd-raise)', color: 'var(--hd-fg)' }}
-                >
-                  {ja ? '𝕏 でシェア' : 'Share on 𝕏'}
-                </button>
-              </div>
-            </div>
+                <path d="M12 4v11"></path>
+                <path d="M7 10l5 5 5-5"></path>
+                <path d="M5 20h14"></path>
+              </svg>
+            </button>
           </div>
+
           <button
             type="button"
             onClick={onFinalize}
             disabled={!canFinalize}
-            className="w-full h-[52px] shrink-0 rounded-[26px] text-[15px] font-black disabled:opacity-30 disabled:cursor-not-allowed"
-            style={{ background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }}
+            className="w-full h-[46px] shrink-0 rounded-[23px] text-[14px] font-bold disabled:opacity-30 disabled:cursor-not-allowed [@media(max-height:780px)]:h-[40px]"
+            style={{ background: 'var(--hd-raise)', color: 'var(--hd-accent)' }}
           >
             {ja ? 'この結果を記録する' : 'Record this result'}
           </button>
-          <div className="flex items-center justify-center h-[17px] shrink-0 [@media(max-height:780px)]:h-[13px]">
+
+          <div className="flex items-center justify-center gap-[24px] h-[24px] shrink-0 [@media(max-height:780px)]:h-[20px]">
+            <button
+              type="button"
+              onClick={onUndoLast}
+              className="text-[13px] leading-none"
+              style={{ color: 'var(--hd-sub)' }}
+            >
+              {ja ? '1つ戻す' : 'Undo last'}
+            </button>
             <button
               type="button"
               onClick={onReset}
@@ -219,30 +219,6 @@ export default function InputDock({
           )}
 
           <div className="h-[17px] shrink-0 [@media(max-height:780px)]:h-[13px]" />
-        </>
-      )}
-
-      {chartOpen && finalScore && (
-        <>
-          <div
-            className="fixed inset-0 z-40"
-            style={{ background: 'rgba(0, 0, 0, 0.55)' }}
-            onClick={() => setChartOpen(false)}
-          />
-          <div
-            className="fixed bottom-0 left-1/2 -translate-x-1/2 z-50 w-full max-w-[480px] rounded-t-[16px] p-[16px] flex flex-col gap-[12px] max-h-[85vh] overflow-y-auto"
-            style={{ background: 'var(--hd-plate)' }}
-          >
-            <ScoreDistributionChart result={finalScore} />
-            <button
-              type="button"
-              onClick={() => setChartOpen(false)}
-              className="w-full h-[48px] rounded-[24px] text-[15px] font-black"
-              style={{ background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }}
-            >
-              {ja ? '閉じる' : 'Done'}
-            </button>
-          </div>
         </>
       )}
     </section>
