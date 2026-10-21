@@ -324,6 +324,15 @@ interface Props {
 - 見出しや数字で `"IBM Plex Mono"` を使っている所は `hd-num` に(共通の決まり「フォント」)
 - レイアウト(並び・余白・文言)は変えない。色・フォント・ヘッダー/フッターだけ
 
+### 個別の決まり(実装中の質問への回答、2026-10-21)
+
+- **chardb / score-formula の幅**: 本文の幅は今のまま(chardb 1140px・score-formula 860px)。「ページの骨組み」の max-w-2xl にはしない。`SiteHeader` の `maxWidthClass` に同じ幅を渡してヘッダーを揃える。「← ホームへ」などの戻るボタンは消す(ヘッダーにホームへのリンクがあるため)。この2ページにも `SiteFooter` を付ける
+- **ガイドの色付きカード(ランク6枚・ボーナス3枚)**: 淡い固定色の面はやめてモード対応にする
+  - ランクカード: 地は `var(--hd-raise)`、順位の文字は `rankTextColor(rank, mode)`(`src/components/home/elementTheme.ts` から import。ホームと同じ順位色)、ラベル・補足は `var(--hd-sub)`
+  - ボーナスカード: 地はその色の半透明(例 `${hex}1f`)。紫・琥珀の色そのものは枠とアイコンの地に残す(見出しの文字にはしない。ライトで読めないため)。見出しは `var(--hd-fg)`(1枚目だけ `var(--hd-accent-text)`)、本文は `var(--hd-fg)` / `var(--hd-sub)`
+- chardb の属性・ロール・ハーモニーのバッジは、地と文字の色がセットになった小さなチップとしてそのまま残してよい
+- 黒い送信ボタン・CTA ボタンは背景 `var(--hd-accent)` / 文字 `var(--hd-accent-ink)`
+
 ### 段階2の受け入れ条件
 
 - [ ] `npx tsc --noEmit` が通る

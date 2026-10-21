@@ -5,8 +5,9 @@ import Link from 'next/link';
 import { useLocale, withLang } from '@/lib/locale';
 import EchoIcon from '@/components/EchoIcon';
 import CustomSelect from '@/components/CustomSelect';
-
-const ACCENT = '#0275fd';
+import SiteHeader from '@/components/site/SiteHeader';
+import SiteFooter from '@/components/site/SiteFooter';
+import { useSiteAppearance } from '@/contexts/SiteAppearanceContext';
 
 // https://web3forms.com で無料登録して取得したアクセスキーを .env.local に設定してください
 // NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
@@ -92,7 +93,8 @@ const CONTENT = {
 } as const;
 
 export default function ContactClient() {
-  const { locale, toggleLocale } = useLocale();
+  const { locale } = useLocale();
+  const { mode, accentHex } = useSiteAppearance();
   const C = CONTENT[locale];
   const [state, setState] = useState<SubmitState>('idle');
   const [category, setCategory] = useState<string>(C.form.categoryOptions[0]);
@@ -135,40 +137,25 @@ export default function ContactClient() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <header className="sticky top-0 z-30 bg-white" style={{ borderBottom: '1px solid #e5e7eb' }}>
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
-          <Link
-            href={withLang('/', locale)}
-            className="flex items-center gap-1.5 text-xs font-medium text-[#707070] hover:text-[#222222] transition-colors"
-          >
-            {C.backBtn}
-          </Link>
-          <button
-            onClick={toggleLocale}
-            className="px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
-          >
-            {locale === 'ja' ? 'EN' : 'JA'}
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen flex flex-col">
+      <SiteHeader />
 
       <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-10 flex flex-col gap-10">
         <section className="text-center">
           <div
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-white mb-5"
-            style={{ background: 'linear-gradient(90deg, #0275fd, #60a5fa)' }}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-5"
+            style={{ background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }}
           >
-            <EchoIcon size={14} color="white" bgColor="#0275fd" />
+            <EchoIcon size={14} color="#11141A" bgColor={accentHex} />
             <span>{C.tag}</span>
           </div>
-          <h1 className="text-3xl font-semibold text-[#222222] mb-4 leading-snug">{C.title}</h1>
-          <p className="text-sm text-[#707070] max-w-sm mx-auto leading-relaxed">{C.lead}</p>
+          <h1 className="text-3xl font-semibold mb-4 leading-snug" style={{ color: 'var(--hd-fg)' }}>{C.title}</h1>
+          <p className="text-sm max-w-sm mx-auto leading-relaxed" style={{ color: 'var(--hd-sub)' }}>{C.lead}</p>
         </section>
 
-        <section className="rounded-2xl p-6" style={{ background: '#eef9ff' }}>
+        <section className="rounded-2xl p-6" style={{ background: 'var(--hd-accent-soft)' }}>
           {state === 'success' ? (
-            <p className="text-sm font-medium text-center py-6" style={{ color: ACCENT }}>
+            <p className="text-sm font-medium text-center py-6" style={{ color: 'var(--hd-accent-text)' }}>
               ✓ {C.success}
             </p>
           ) : (
@@ -177,7 +164,7 @@ export default function ContactClient() {
               <input type="checkbox" name="botcheck" className="hidden" style={{ display: 'none' }} tabIndex={-1} autoComplete="off" />
 
               <div>
-                <label htmlFor="name" className="block text-xs font-medium text-[#707070] mb-1.5">
+                <label htmlFor="name" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--hd-sub)' }}>
                   {C.form.name}
                 </label>
                 <input
@@ -186,12 +173,17 @@ export default function ContactClient() {
                   type="text"
                   required
                   placeholder={C.form.namePh}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm text-[#222222] bg-white border border-[#e5e7eb] focus:outline-none focus:border-[#0275fd] transition-colors"
+                  className="w-full px-3 py-2.5 rounded-lg text-sm placeholder:text-[var(--hd-sub)] focus:outline-none focus:border-[var(--hd-accent)] transition-colors"
+                  style={{
+                    background: 'var(--hd-raise)',
+                    border: '1px solid var(--hd-line)',
+                    color: 'var(--hd-fg)',
+                  }}
                 />
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-xs font-medium text-[#707070] mb-1.5">
+                <label htmlFor="email" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--hd-sub)' }}>
                   {C.form.email}
                 </label>
                 <input
@@ -200,23 +192,33 @@ export default function ContactClient() {
                   type="email"
                   required
                   placeholder={C.form.emailPh}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm text-[#222222] bg-white border border-[#e5e7eb] focus:outline-none focus:border-[#0275fd] transition-colors"
+                  className="w-full px-3 py-2.5 rounded-lg text-sm placeholder:text-[var(--hd-sub)] focus:outline-none focus:border-[var(--hd-accent)] transition-colors"
+                  style={{
+                    background: 'var(--hd-raise)',
+                    border: '1px solid var(--hd-line)',
+                    color: 'var(--hd-fg)',
+                  }}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#707070] mb-1.5">
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--hd-sub)' }}>
                   {C.form.category}
                 </label>
                 <CustomSelect
                   value={category}
                   onChange={setCategory}
                   options={C.form.categoryOptions.map((opt) => ({ value: opt, label: opt }))}
+                  accentColor={accentHex}
+                  textColor={mode === 'dark' ? '#ECEFF3' : '#161A21'}
+                  background={mode === 'dark' ? '#222833' : '#FFFFFF'}
+                  borderColor={mode === 'dark' ? '#333B47' : '#D3D9E1'}
+                  dropdownBg={mode === 'dark' ? '#222833' : '#FFFFFF'}
                 />
               </div>
 
               <div>
-                <label htmlFor="message" className="block text-xs font-medium text-[#707070] mb-1.5">
+                <label htmlFor="message" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--hd-sub)' }}>
                   {C.form.message}
                 </label>
                 <textarea
@@ -225,7 +227,12 @@ export default function ContactClient() {
                   required
                   rows={5}
                   placeholder={C.form.messagePh}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm text-[#222222] bg-white border border-[#e5e7eb] focus:outline-none focus:border-[#0275fd] transition-colors resize-none"
+                  className="w-full px-3 py-2.5 rounded-lg text-sm placeholder:text-[var(--hd-sub)] focus:outline-none focus:border-[var(--hd-accent)] transition-colors resize-none"
+                  style={{
+                    background: 'var(--hd-raise)',
+                    border: '1px solid var(--hd-line)',
+                    color: 'var(--hd-fg)',
+                  }}
                 />
               </div>
 
@@ -238,8 +245,8 @@ export default function ContactClient() {
               <button
                 type="submit"
                 disabled={state === 'submitting'}
-                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                style={{ background: '#222222' }}
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-50"
+                style={{ background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }}
               >
                 {state === 'submitting' ? C.form.submitting : C.form.submit}
               </button>
@@ -248,11 +255,11 @@ export default function ContactClient() {
         </section>
 
         <section>
-          <h2 className="text-sm font-semibold text-[#222222] mb-3">{C.topicsTitle}</h2>
+          <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--hd-fg)' }}>{C.topicsTitle}</h2>
           <ul className="flex flex-col gap-2">
             {C.topics.map((t) => (
-              <li key={t} className="flex items-start gap-2 text-sm text-[#707070] leading-relaxed">
-                <span style={{ color: ACCENT }}>•</span>
+              <li key={t} className="flex items-start gap-2 text-sm leading-relaxed" style={{ color: 'var(--hd-sub)' }}>
+                <span style={{ color: 'var(--hd-accent-text)' }}>•</span>
                 <span>{t}</span>
               </li>
             ))}
@@ -260,18 +267,14 @@ export default function ContactClient() {
         </section>
 
         <section>
-          <p className="text-xs text-[#9ca3af] leading-relaxed">{C.note}</p>
-          <Link href={withLang('/privacy', locale)} className="inline-block mt-2 text-sm font-medium" style={{ color: ACCENT }}>
+          <p className="text-xs leading-relaxed" style={{ color: 'var(--hd-sub)' }}>{C.note}</p>
+          <Link href={withLang('/privacy', locale)} className="inline-block mt-2 text-sm font-medium" style={{ color: 'var(--hd-accent-text)' }}>
             {C.privacyLink}
           </Link>
         </section>
       </main>
 
-      <footer className="border-t border-[#f3f4f6] py-4">
-        <p className="text-center text-xs text-[#9ca3af]">
-          {locale === 'ja' ? '非公式ファンツール / Unofficial fan tool · 鳴潮 Wuthering Waves' : 'Unofficial Fan Tool · Wuthering Waves'}
-        </p>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

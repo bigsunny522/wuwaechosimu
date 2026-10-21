@@ -10,10 +10,10 @@ import { ELEMENT_EN, WEAPON_EN, ROLE_EN, localizeLabel } from '@/data/charLabels
 import { useLocale, withLang, type Locale } from '@/lib/locale';
 import AdBanner from '@/components/AdBanner';
 import NativeBanner from '@/components/NativeBanner';
+import SiteHeader from '@/components/site/SiteHeader';
+import SiteFooter from '@/components/site/SiteFooter';
 import type { CharacterBuild } from '@/types/character';
 import type { SubstatKey } from '@/types/echo';
-
-const ACCENT = '#0275fd';
 
 const MAINSTAT_JA: Record<string, string> = {
   critRate:     'クリティカル率',
@@ -98,7 +98,7 @@ const COPY = {
 } as const;
 
 function Badge({
-  label, bg = '#f3f4f6', color = '#374151', small = false,
+  label, bg = 'var(--hd-raise)', color = 'var(--hd-fg)', small = false,
 }: {
   label: string; bg?: string; color?: string; small?: boolean;
 }) {
@@ -131,8 +131,8 @@ function SubstatBadge({ statKey, locale, muted = false }: { statKey: string; loc
   return (
     <Badge
       label={label}
-      bg={muted ? '#f9fafb' : '#f3f4f6'}
-      color={muted ? '#9ca3af' : '#374151'}
+      bg="var(--hd-raise)"
+      color={muted ? 'var(--hd-sub)' : 'var(--hd-fg)'}
     />
   );
 }
@@ -145,7 +145,7 @@ function MainstatLine({
   if (keys.length === 0) return null;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' as const }}>
-      <span style={{ fontSize: 11, color: muted ? '#d1d5db' : '#9ca3af', width: 50, flexShrink: 0 }}>
+      <span style={{ fontSize: 11, color: 'var(--hd-sub)', width: 50, flexShrink: 0 }}>
         {label}
       </span>
       {keys.map(k => (
@@ -153,8 +153,8 @@ function MainstatLine({
           key={k}
           style={{
             fontSize: 11,
-            background: muted ? '#fafafa' : '#eff6ff',
-            color: muted ? '#d1d5db' : '#1d4ed8',
+            background: muted ? 'var(--hd-raise)' : 'var(--hd-accent-soft)',
+            color: muted ? 'var(--hd-sub)' : 'var(--hd-accent-text)',
             padding: '1px 6px',
             borderRadius: 4,
             fontWeight: 500,
@@ -169,7 +169,7 @@ function MainstatLine({
 
 function SectionTitle({ children }: { children: string }) {
   return (
-    <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', letterSpacing: '0.05em', marginBottom: 5, textTransform: 'uppercase' as const }}>
+    <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--hd-sub)', letterSpacing: '0.05em', marginBottom: 5, textTransform: 'uppercase' as const }}>
       {children}
     </div>
   );
@@ -177,28 +177,24 @@ function SectionTitle({ children }: { children: string }) {
 
 function CharCard({ char, locale }: { char: CharacterBuild; locale: Locale }) {
   const C = COPY[locale];
-  const elColor = ELEMENT_COLORS[char.element] ?? { bg: '#f3f4f6', text: '#6b7280' };
+  const elColor = ELEMENT_COLORS[char.element] ?? { bg: 'var(--hd-raise)', text: 'var(--hd-sub)' };
   const hasPreferred  = char.substats.preferred.length > 0;
   const hasAcceptable = (char.substats.acceptable ?? []).length > 0;
 
   return (
-    <div style={{
-      border: '1px solid #e5e7eb',
-      borderRadius: 12,
-      background: '#ffffff',
+    <div className="hd-card" style={{
       overflow: 'hidden',
       display: 'flex',
       flexDirection: 'column' as const,
       fontSize: 13,
-      boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
     }}>
       {/* ── カードヘッダー ── */}
-      <div style={{ padding: '12px 16px', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+      <div style={{ padding: '12px 16px', background: 'var(--hd-raise)', borderBottom: '1px solid var(--hd-line)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' as const }}>
           <h2 style={{ fontWeight: 700, fontSize: 16, margin: 0 }}>
             {locale === 'en' && char.nameEn ? char.nameEn : char.name}
           </h2>
-          <span style={{ color: '#9ca3af', fontSize: 12 }}>
+          <span style={{ color: 'var(--hd-sub)', fontSize: 12 }}>
             {locale === 'en' ? char.name : char.nameEn}
           </span>
         </div>
@@ -212,7 +208,7 @@ function CharCard({ char, locale }: { char: CharacterBuild; locale: Locale }) {
               color="#16a34a"
             />
           )}
-          <span style={{ color: '#6b7280', fontSize: 12 }}>
+          <span style={{ color: 'var(--hd-sub)', fontSize: 12 }}>
             {localizeLabel(ROLE_EN, char.role, locale)}
           </span>
         </div>
@@ -225,7 +221,7 @@ function CharCard({ char, locale }: { char: CharacterBuild; locale: Locale }) {
           <SectionTitle>{C.harmonySets}</SectionTitle>
           {char.harmonySets.recommended.length > 0 && (
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' as const, alignItems: 'center', marginBottom: 4 }}>
-              <span style={{ fontSize: 11, color: '#6b7280', width: 30, flexShrink: 0 }}>{C.recommended}</span>
+              <span style={{ fontSize: 11, color: 'var(--hd-sub)', width: 30, flexShrink: 0 }}>{C.recommended}</span>
               {char.harmonySets.recommended.map(s => (
                 <HarmonyBadge key={s} name={s} locale={locale} />
               ))}
@@ -233,7 +229,7 @@ function CharCard({ char, locale }: { char: CharacterBuild; locale: Locale }) {
           )}
           {char.harmonySets.acceptable.length > 0 && (
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' as const, alignItems: 'center' }}>
-              <span style={{ fontSize: 11, color: '#9ca3af', width: 30, flexShrink: 0 }}>{C.alternative}</span>
+              <span style={{ fontSize: 11, color: 'var(--hd-sub)', width: 30, flexShrink: 0 }}>{C.alternative}</span>
               {char.harmonySets.acceptable.map(s => (
                 <HarmonyBadge key={s} name={s} locale={locale} />
               ))}
@@ -265,7 +261,7 @@ function CharCard({ char, locale }: { char: CharacterBuild; locale: Locale }) {
           <SectionTitle>{C.substat}</SectionTitle>
           {char.substats.recommended.length > 0 && (
             <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' as const, alignItems: 'center', marginBottom: hasPreferred || hasAcceptable ? 4 : 0 }}>
-              <span style={{ fontSize: 11, color: '#6b7280', width: 30, flexShrink: 0 }}>{C.recommended}</span>
+              <span style={{ fontSize: 11, color: 'var(--hd-sub)', width: 30, flexShrink: 0 }}>{C.recommended}</span>
               {char.substats.recommended.map(s => (
                 <SubstatBadge key={s.key} statKey={s.key} locale={locale} />
               ))}
@@ -273,7 +269,7 @@ function CharCard({ char, locale }: { char: CharacterBuild; locale: Locale }) {
           )}
           {hasPreferred && (
             <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' as const, alignItems: 'center', marginBottom: hasAcceptable ? 4 : 0 }}>
-              <span style={{ fontSize: 11, color: '#6b7280', width: 30, flexShrink: 0 }}>{C.preferred}</span>
+              <span style={{ fontSize: 11, color: 'var(--hd-sub)', width: 30, flexShrink: 0 }}>{C.preferred}</span>
               {char.substats.preferred.map(s => (
                 <SubstatBadge key={s.key} statKey={s.key} locale={locale} />
               ))}
@@ -281,7 +277,7 @@ function CharCard({ char, locale }: { char: CharacterBuild; locale: Locale }) {
           )}
           {hasAcceptable && (
             <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' as const, alignItems: 'center' }}>
-              <span style={{ fontSize: 11, color: '#9ca3af', width: 30, flexShrink: 0 }}>{C.acceptable}</span>
+              <span style={{ fontSize: 11, color: 'var(--hd-sub)', width: 30, flexShrink: 0 }}>{C.acceptable}</span>
               {(char.substats.acceptable ?? []).map(s => (
                 <SubstatBadge key={s.key} statKey={s.key} locale={locale} muted />
               ))}
@@ -298,8 +294,9 @@ export default function ChardbClient() {
   const C = COPY[locale];
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f3f4f6', padding: '28px 16px 48px' }}>
-      <div style={{ maxWidth: 1140, margin: '0 auto' }}>
+    <div className="min-h-screen flex flex-col">
+      <SiteHeader maxWidthClass="max-w-[1140px]" />
+      <main className="flex-1 w-full mx-auto" style={{ maxWidth: 1140, padding: '28px 16px 48px' }}>
 
         {/* ── ページヘッダー ── */}
         <div style={{
@@ -311,35 +308,17 @@ export default function ChardbClient() {
           gap: 12,
         }}>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: '#111827', margin: 0 }}>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--hd-fg)', margin: 0 }}>
               {C.title}
             </h1>
-            <p style={{ color: '#6b7280', fontSize: 13, lineHeight: 1.8, margin: '6px 0 0', maxWidth: 760 }}>
+            <p style={{ color: 'var(--hd-sub)', fontSize: 13, lineHeight: 1.8, margin: '6px 0 0', maxWidth: 760 }}>
               {C.lead(CHARACTERS.length)}
             </p>
           </div>
-          <Link
-            href={withLang('/', locale)}
-            style={{
-              background: ACCENT,
-              color: '#fff',
-              padding: '9px 18px',
-              borderRadius: 8,
-              fontSize: 13,
-              fontWeight: 600,
-              textDecoration: 'none',
-              flexShrink: 0,
-            }}
-          >
-            {C.back}
-          </Link>
         </div>
 
         {/* ── 凡例 ── */}
-        <div style={{
-          background: '#fff',
-          border: '1px solid #e5e7eb',
-          borderRadius: 8,
+        <div className="hd-card" style={{
           padding: '10px 16px',
           marginBottom: 20,
           display: 'flex',
@@ -347,9 +326,9 @@ export default function ChardbClient() {
           flexWrap: 'wrap' as const,
           alignItems: 'center',
           fontSize: 12,
-          color: '#6b7280',
+          color: 'var(--hd-sub)',
         }}>
-          <span style={{ fontWeight: 600, color: '#374151' }}>{C.legend}</span>
+          <span style={{ fontWeight: 600, color: 'var(--hd-fg)' }}>{C.legend}</span>
           {C.legendItems.map(item => <span key={item}>{item}</span>)}
         </div>
 
@@ -370,12 +349,13 @@ export default function ChardbClient() {
         <AdBanner />
 
         {/* ── フッター ── */}
-        <p style={{ textAlign: 'center' as const, color: '#9ca3af', fontSize: 12, marginTop: 32, lineHeight: 1.8 }}>
+        <p style={{ textAlign: 'center' as const, color: 'var(--hd-sub)', fontSize: 12, marginTop: 32, lineHeight: 1.8 }}>
           {C.note}{' '}
-          <Link href={withLang('/score-formula', locale)} style={{ color: ACCENT }}>{C.noteLink}</Link>
+          <Link href={withLang('/score-formula', locale)} style={{ color: 'var(--hd-accent-text)' }}>{C.noteLink}</Link>
           {' '}{C.noteSuffix}
         </p>
-      </div>
+      </main>
+      <SiteFooter />
     </div>
   );
 }

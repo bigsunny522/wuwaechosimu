@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { useLocale, withLang } from '@/lib/locale';
 import EchoIcon from '@/components/EchoIcon';
-
-const ACCENT = '#0275fd';
+import SiteHeader from '@/components/site/SiteHeader';
+import SiteFooter from '@/components/site/SiteFooter';
+import { useSiteAppearance } from '@/contexts/SiteAppearanceContext';
 
 const CONTENT = {
   ja: {
@@ -92,53 +93,39 @@ const CONTENT = {
 } as const;
 
 export default function PrivacyClient() {
-  const { locale, toggleLocale } = useLocale();
+  const { locale } = useLocale();
+  const { accentHex } = useSiteAppearance();
   const C = CONTENT[locale];
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <header className="sticky top-0 z-30 bg-white" style={{ borderBottom: '1px solid #e5e7eb' }}>
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
-          <Link
-            href={withLang('/', locale)}
-            className="flex items-center gap-1.5 text-xs font-medium text-[#707070] hover:text-[#222222] transition-colors"
-          >
-            {C.backBtn}
-          </Link>
-          <button
-            onClick={toggleLocale}
-            className="px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
-          >
-            {locale === 'ja' ? 'EN' : 'JA'}
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen flex flex-col">
+      <SiteHeader />
 
       <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-10 flex flex-col gap-10">
         <section className="text-center">
           <div
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-white mb-5"
-            style={{ background: 'linear-gradient(90deg, #0275fd, #60a5fa)' }}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-5"
+            style={{ background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }}
           >
-            <EchoIcon size={14} color="white" bgColor="#0275fd" />
+            <EchoIcon size={14} color="#11141A" bgColor={accentHex} />
             <span>{C.tag}</span>
           </div>
-          <h1 className="text-3xl font-semibold text-[#222222] mb-2 leading-snug">{C.title}</h1>
-          <p className="text-xs text-[#9ca3af]">{C.updated}</p>
+          <h1 className="text-3xl font-semibold mb-2 leading-snug" style={{ color: 'var(--hd-fg)' }}>{C.title}</h1>
+          <p className="text-xs" style={{ color: 'var(--hd-sub)' }}>{C.updated}</p>
         </section>
 
         <section className="flex flex-col gap-8">
           {C.sections.map((s) => (
             <div key={s.h}>
-              <h2 className="text-sm font-semibold text-[#222222] mb-2">{s.h}</h2>
-              <p className="text-sm text-[#707070] leading-relaxed whitespace-pre-line">
+              <h2 className="text-sm font-semibold mb-2" style={{ color: 'var(--hd-fg)' }}>{s.h}</h2>
+              <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: 'var(--hd-sub)' }}>
                 {s.body}
               </p>
               {'link' in s && s.link && (
                 <Link
                   href={withLang('/contact', locale)}
                   className="inline-block mt-2 text-sm font-medium"
-                  style={{ color: ACCENT }}
+                  style={{ color: 'var(--hd-accent-text)' }}
                 >
                   {locale === 'ja' ? 'お問い合わせページへ →' : 'Go to contact page →'}
                 </Link>
@@ -148,11 +135,7 @@ export default function PrivacyClient() {
         </section>
       </main>
 
-      <footer className="border-t border-[#f3f4f6] py-4">
-        <p className="text-center text-xs text-[#9ca3af]">
-          {locale === 'ja' ? '非公式ファンツール / Unofficial fan tool · 鳴潮 Wuthering Waves' : 'Unofficial Fan Tool · Wuthering Waves'}
-        </p>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

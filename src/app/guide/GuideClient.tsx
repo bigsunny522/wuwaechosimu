@@ -5,8 +5,13 @@ import { useLocale, withLang } from '@/lib/locale';
 import EchoIcon from '@/components/EchoIcon';
 import AdBanner from '@/components/AdBanner';
 import NativeBanner from '@/components/NativeBanner';
+import SiteHeader from '@/components/site/SiteHeader';
+import SiteFooter from '@/components/site/SiteFooter';
+import { useSiteAppearance } from '@/contexts/SiteAppearanceContext';
+import { rankTextColor } from '@/components/home/elementTheme';
 
-const ACCENT = '#0275fd';
+// ボーナスカードごとの色。0番目はサイトのアクセント色(最後に選んだキャラの属性色)
+const BONUS_COLORS = ['accent', '#a855f7', '#f59e0b'] as const;
 
 // ── Bilingual guide content ──────────────────────────────────────────────────
 const GUIDE = {
@@ -60,12 +65,12 @@ const GUIDE = {
       title: 'ランク評価基準',
       scoreNote: '各サブステータスの数値を最小〜最大の範囲で Tier 評価し、キャラクターごとの重みを掛けて合算します。推奨メインステータスおよび推奨ハーモニーセットに合致しない場合は減点され、良いサブステータスが複数噛み合った場合は加点されます。\n\nランクの区切りは、データが揃っているキャラクターではドロップ分布のパーセンタイルで決まります。たとえば S ランクは「そのキャラクター向けのドロップとして上位5%に入る」という意味です。そのためスコアの絶対値が同じでも、キャラクターによってランクが変わることがあります。下表は、分布データがまだ無いキャラクターに使われる固定の区切りです。',
       ranks: [
-        { rank: 'S+', range: '90〜100',  color: '#f59e0b', bg: '#fef3c7' },
-        { rank: 'S',  range: '75〜89',   color: '#10b981', bg: '#d1fae5' },
-        { rank: 'A',  range: '58〜74',   color: '#3b82f6', bg: '#dbeafe' },
-        { rank: 'B',  range: '42〜57',   color: '#8b5cf6', bg: '#ede9fe' },
-        { rank: 'C',  range: '25〜41',   color: '#6b7280', bg: '#f3f4f6' },
-        { rank: 'D',  range: '0〜24',    color: '#9ca3af', bg: '#f9fafb' },
+        { rank: 'S+', range: '90〜100' },
+        { rank: 'S',  range: '75〜89' },
+        { rank: 'A',  range: '58〜74' },
+        { rank: 'B',  range: '42〜57' },
+        { rank: 'C',  range: '25〜41' },
+        { rank: 'D',  range: '0〜24' },
       ],
     },
     bonusSection: {
@@ -74,17 +79,14 @@ const GUIDE = {
       items: [
         {
           icon: '🔒', title: 'メインステータス固定',
-          color: ACCENT, bg: '#eef9ff',
           body: '次に引く音骸のメインステを好きな値に固定できます。狙ったメインステの音骸だけを効率よく厳選できます。',
         },
         {
           icon: '🎲', title: 'サブステ再抽選（1 回限り）',
-          color: '#a855f7', bg: '#f5f3ff',
           body: '+25 まで強化した音骸のサブステを最大 3 個まで選んで 1 回だけ引き直せます。惜しかった音骸を救済できます。',
         },
         {
           icon: '⚡', title: '一括強化（+25 まで）',
-          color: '#f59e0b', bg: '#fffbeb',
           body: '「⚡ +25 まで強化」ボタンが出現し、ワンタップで一気に +25 まで強化できます。',
         },
       ],
@@ -203,12 +205,12 @@ const GUIDE = {
       title: 'Rank Thresholds',
       scoreNote: 'Each substat value is rated within its possible min-max range and multiplied by character-specific weights. Missing the recommended main stat or Sonata Set costs points, while several strong substats landing together earn a bonus.\n\nFor characters with distribution data, rank cutoffs come from percentiles of the drop distribution. An S rank means "in the top 5% of drops for this character," so the same raw score can land on different ranks for different characters. The table below shows the fixed cutoffs used for characters without distribution data yet.',
       ranks: [
-        { rank: 'S+', range: '90–100', color: '#f59e0b', bg: '#fef3c7' },
-        { rank: 'S',  range: '75–89',  color: '#10b981', bg: '#d1fae5' },
-        { rank: 'A',  range: '58–74',  color: '#3b82f6', bg: '#dbeafe' },
-        { rank: 'B',  range: '42–57',  color: '#8b5cf6', bg: '#ede9fe' },
-        { rank: 'C',  range: '25–41',  color: '#6b7280', bg: '#f3f4f6' },
-        { rank: 'D',  range: '0–24',   color: '#9ca3af', bg: '#f9fafb' },
+        { rank: 'S+', range: '90–100' },
+        { rank: 'S',  range: '75–89' },
+        { rank: 'A',  range: '58–74' },
+        { rank: 'B',  range: '42–57' },
+        { rank: 'C',  range: '25–41' },
+        { rank: 'D',  range: '0–24' },
       ],
     },
     bonusSection: {
@@ -217,17 +219,14 @@ const GUIDE = {
       items: [
         {
           icon: '🔒', title: 'Lock Main Stat',
-          color: ACCENT, bg: '#eef9ff',
           body: "Fix the next echo's main stat to any value you want. Focus only on echoes with the right main stat for your character.",
         },
         {
           icon: '🎲', title: 'Reroll Substats (once per echo)',
-          color: '#a855f7', bg: '#f5f3ff',
           body: 'Select up to 3 substats on a +25 echo and re-draw them once. Great for salvaging a near-perfect roll.',
         },
         {
           icon: '⚡', title: 'One-Click Max Upgrade',
-          color: '#f59e0b', bg: '#fffbeb',
           body: '"⚡ Max to +25" button appears, letting you instantly upgrade to +25 in one tap.',
         },
       ],
@@ -299,44 +298,28 @@ const GUIDE = {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function GuideClient() {
-  const { locale, toggleLocale } = useLocale();
+  const { locale } = useLocale();
+  const { mode, accentHex } = useSiteAppearance();
   const G = GUIDE[locale];
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-
-      {/* ── Header ── */}
-      <header className="sticky top-0 z-30 bg-white" style={{ borderBottom: '1px solid #e5e7eb' }}>
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
-          <Link
-            href={withLang('/', locale)}
-            className="flex items-center gap-1.5 text-xs font-medium text-[#707070] hover:text-[#222222] transition-colors"
-          >
-            {G.backBtn}
-          </Link>
-          <button
-            onClick={toggleLocale}
-            className="px-2 py-1.5 rounded-lg text-xs font-medium transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
-          >
-            {locale === 'ja' ? 'EN' : 'JA'}
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen flex flex-col">
+      <SiteHeader />
 
       <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-10 flex flex-col gap-16">
 
         {/* ── Hero ── */}
         <section className="text-center">
           <div
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-white mb-5"
-            style={{ background: 'linear-gradient(90deg, #0275fd, #60a5fa)' }}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-5"
+            style={{ background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }}
           >
-            <EchoIcon size={14} color="white" bgColor="#0275fd" />
+            <EchoIcon size={14} color="#11141A" bgColor={accentHex} />
             <span>{G.hero.tag}</span>
           </div>
-          <h1 className="text-3xl font-semibold text-[#222222] mb-4 leading-snug whitespace-pre-line">
+          <h1 className="text-3xl font-semibold text-[var(--hd-fg)] mb-4 leading-snug whitespace-pre-line">
             {G.hero.title}
           </h1>
-          <p className="text-sm text-[#707070] max-w-sm mx-auto leading-relaxed">
+          <p className="text-sm text-[var(--hd-sub)] max-w-sm mx-auto leading-relaxed">
             {G.hero.sub}
           </p>
         </section>
@@ -347,7 +330,7 @@ export default function GuideClient() {
           <div className="mt-6 relative">
             {/* Vertical connecting line */}
             <div
-              className="absolute top-5 left-5 w-0.5 bg-[#e5e7eb]"
+              className="absolute top-5 left-5 w-0.5 bg-[var(--hd-line)]"
               style={{ height: 'calc(100% - 40px)' }}
             />
             <div className="flex flex-col gap-0">
@@ -356,8 +339,8 @@ export default function GuideClient() {
                   {/* Step number badge */}
                   <div className="shrink-0 relative z-10">
                     <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm"
-                      style={{ background: ACCENT, fontFamily: '"IBM Plex Mono", monospace' }}
+                      className="hd-num w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold"
+                      style={{ background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }}
                     >
                       {step.num}
                     </div>
@@ -366,15 +349,15 @@ export default function GuideClient() {
                   <div className="flex-1 min-w-0 pt-1.5">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-base leading-none">{step.icon}</span>
-                      <h2 className="text-sm font-semibold text-[#222222]">{step.title}</h2>
+                      <h2 className="text-sm font-semibold text-[var(--hd-fg)]">{step.title}</h2>
                     </div>
-                    <p className="text-sm text-[#707070] leading-relaxed mb-3">{step.body}</p>
+                    <p className="text-sm text-[var(--hd-sub)] leading-relaxed mb-3">{step.body}</p>
                     <div className="flex flex-wrap gap-1.5">
                       {step.chips.map((chip, i) => (
                         <span
                           key={i}
                           className="px-2.5 py-1 rounded-full text-[11px] font-medium"
-                          style={{ background: '#eef9ff', color: ACCENT }}
+                          style={{ background: 'var(--hd-accent-soft)', color: 'var(--hd-accent-text)' }}
                         >
                           {chip}
                         </span>
@@ -393,7 +376,7 @@ export default function GuideClient() {
         <section>
           <SectionLabel>{G.labels.rank}</SectionLabel>
           <div className="mt-6">
-            <h2 className="text-base font-semibold text-[#222222] mb-4">{G.rankSection.title}</h2>
+            <h2 className="text-base font-semibold text-[var(--hd-fg)] mb-4">{G.rankSection.title}</h2>
 
             {/* Rank grid 3×2 */}
             <div className="grid grid-cols-3 gap-2 mb-5">
@@ -401,23 +384,21 @@ export default function GuideClient() {
                 <div
                   key={r.rank}
                   className="rounded-2xl py-3 text-center"
-                  style={{ background: r.bg }}
+                  style={{ background: 'var(--hd-raise)' }}
                 >
-                  <div className="text-2xl font-bold leading-none mb-0.5" style={{ color: r.color }}>
+                  <div className="text-2xl font-bold leading-none mb-0.5" style={{ color: rankTextColor(r.rank, mode) }}>
                     {r.rank}
                   </div>
-                  <div className="text-[11px] text-[#707070] font-medium">{r.range}</div>
+                  <div className="text-[11px] text-[var(--hd-sub)] font-medium">{r.range}</div>
                 </div>
               ))}
             </div>
 
             {/* Visual score bar */}
             <div className="relative h-3 rounded-full overflow-hidden mb-1.5"
-              style={{ background: 'linear-gradient(90deg, #9ca3af 0%, #6b7280 25%, #8b5cf6 40%, #3b82f6 55%, #10b981 70%, #f59e0b 85%)' }}
+              style={{ background: `linear-gradient(90deg, ${rankTextColor('D', mode)} 0%, ${rankTextColor('C', mode)} 25%, ${rankTextColor('B', mode)} 40%, ${rankTextColor('A', mode)} 55%, ${rankTextColor('S', mode)} 70%, ${rankTextColor('S+', mode)} 85%)` }}
             />
-            <div className="flex justify-between text-[10px] text-[#9ca3af] mb-5"
-              style={{ fontFamily: '"IBM Plex Mono", monospace' }}
-            >
+            <div className="hd-num flex justify-between text-[10px] text-[var(--hd-sub)] mb-5">
               <span>0</span>
               <span>25</span>
               <span>40</span>
@@ -429,8 +410,8 @@ export default function GuideClient() {
 
             {/* Note */}
             <div
-              className="rounded-xl p-4 text-xs text-[#707070] leading-relaxed whitespace-pre-line"
-              style={{ background: '#f7f7f7', border: '1px solid #e5e7eb' }}
+              className="rounded-xl p-4 text-xs text-[var(--hd-sub)] leading-relaxed whitespace-pre-line"
+              style={{ background: 'var(--hd-raise)', border: '1px solid var(--hd-line)' }}
             >
               {G.rankSection.scoreNote}
             </div>
@@ -441,31 +422,35 @@ export default function GuideClient() {
         <section>
           <SectionLabel>{G.labels.bonus}</SectionLabel>
           <div className="mt-6">
-            <h2 className="text-base font-semibold text-[#222222] mb-1">{G.bonusSection.title}</h2>
-            <p className="text-xs text-[#9ca3af] mb-4">{G.bonusSection.sub}</p>
+            <h2 className="text-base font-semibold text-[var(--hd-fg)] mb-1">{G.bonusSection.title}</h2>
+            <p className="text-xs text-[var(--hd-sub)] mb-4">{G.bonusSection.sub}</p>
             <div className="flex flex-col gap-3">
-              {G.bonusSection.items.map((item, i) => (
-                <div
-                  key={i}
-                  className="flex gap-4 rounded-2xl p-4"
-                  style={{
-                    background: item.bg,
-                    border: `1px solid ${item.color}22`,
-                    borderLeft: `3px solid ${item.color}`,
-                  }}
-                >
+              {G.bonusSection.items.map((item, i) => {
+                const tone = BONUS_COLORS[i];
+                const c = tone === 'accent' ? accentHex : tone;
+                return (
                   <div
-                    className="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0"
-                    style={{ background: `${item.color}18` }}
+                    key={i}
+                    className="flex gap-4 rounded-2xl p-4"
+                    style={{
+                      background: `${c}1f`,
+                      border: `1px solid ${c}22`,
+                      borderLeft: `3px solid ${c}`,
+                    }}
                   >
-                    {item.icon}
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0"
+                      style={{ background: `${c}18` }}
+                    >
+                      {item.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold mb-1" style={{ color: tone === 'accent' ? 'var(--hd-accent-text)' : 'var(--hd-fg)' }}>{item.title}</p>
+                      <p className="text-xs text-[var(--hd-sub)] leading-relaxed">{item.body}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold mb-1" style={{ color: item.color }}>{item.title}</p>
-                    <p className="text-xs text-[#707070] leading-relaxed">{item.body}</p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>
@@ -474,22 +459,21 @@ export default function GuideClient() {
         <section>
           <SectionLabel>{G.labels.save}</SectionLabel>
           <div className="mt-6">
-            <h2 className="text-base font-semibold text-[#222222] mb-4">{G.saveSection.title}</h2>
+            <h2 className="text-base font-semibold text-[var(--hd-fg)] mb-4">{G.saveSection.title}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {G.saveSection.items.map((item, i) => (
                 <div
                   key={i}
-                  className="rounded-2xl p-4 border border-[#e5e7eb] bg-white flex flex-col gap-2"
-                  style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
+                  className="hd-card p-4 flex flex-col gap-2"
                 >
                   <div
                     className="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0"
-                    style={{ background: '#f3f4f6' }}
+                    style={{ background: 'var(--hd-raise)' }}
                   >
                     {item.icon}
                   </div>
-                  <p className="text-sm font-semibold text-[#222222]">{item.title}</p>
-                  <p className="text-xs text-[#707070] leading-relaxed">{item.body}</p>
+                  <p className="text-sm font-semibold text-[var(--hd-fg)]">{item.title}</p>
+                  <p className="text-xs text-[var(--hd-sub)] leading-relaxed">{item.body}</p>
                 </div>
               ))}
             </div>
@@ -503,14 +487,14 @@ export default function GuideClient() {
             {/* details 要素で開閉する。回答テキストが常にHTMLに含まれるため、
                 クローラーからも本文として読める */}
             {G.faq.items.map((item, i) => (
-              <details key={i} className="rounded-xl border border-[#e5e7eb] overflow-hidden group">
-                <summary className="w-full flex items-center justify-between px-4 py-3.5 text-left text-sm font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors cursor-pointer list-none">
+              <details key={i} className="rounded-xl border border-[var(--hd-line)] overflow-hidden group">
+                <summary className="w-full flex items-center justify-between px-4 py-3.5 text-left text-sm font-medium text-[var(--hd-fg)] hover:bg-[var(--hd-raise)] transition-colors cursor-pointer list-none">
                   <span className="pr-4 leading-snug">{item.q}</span>
-                  <span className="shrink-0 text-[10px] text-[#9ca3af] transition-transform duration-200 group-open:rotate-180">
+                  <span className="shrink-0 text-[10px] text-[var(--hd-sub)] transition-transform duration-200 group-open:rotate-180">
                     ▼
                   </span>
                 </summary>
-                <div className="px-4 pb-4 pt-3 text-sm text-[#707070] leading-relaxed border-t border-[#f3f4f6]">
+                <div className="px-4 pb-4 pt-3 text-sm text-[var(--hd-sub)] leading-relaxed border-t border-[var(--hd-line)]">
                   {item.a}
                 </div>
               </details>
@@ -525,26 +509,26 @@ export default function GuideClient() {
           <div
             className="relative rounded-2xl p-8 text-center overflow-hidden"
             style={{
-              background: 'linear-gradient(135deg, #eef9ff 0%, #f5f0ff 100%)',
-              border: '1px solid #dbeafe',
+              background: 'var(--hd-accent-soft)',
+              border: '1px solid var(--hd-line)',
             }}
           >
             {/* Decorative circles */}
             <div
               className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-20"
-              style={{ background: ACCENT }}
+              style={{ background: 'var(--hd-accent)' }}
             />
             <div
               className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full opacity-10"
               style={{ background: '#a855f7' }}
             />
             <div className="relative z-10">
-              <h2 className="text-lg font-semibold text-[#222222] mb-1">{G.cta.title}</h2>
-              <p className="text-xs text-[#9ca3af] mb-5">{G.cta.sub}</p>
+              <h2 className="text-lg font-semibold text-[var(--hd-fg)] mb-1">{G.cta.title}</h2>
+              <p className="text-xs text-[var(--hd-sub)] mb-5">{G.cta.sub}</p>
               <Link
                 href={withLang('/', locale)}
-                className="inline-block px-8 py-3 rounded-[500px] text-sm font-semibold text-[#f7f7f7] hover:opacity-80 transition-opacity"
-                style={{ background: '#222222' }}
+                className="inline-block px-8 py-3 rounded-[500px] text-sm font-semibold hover:opacity-80 transition-opacity"
+                style={{ background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }}
               >
                 {G.cta.btn}
               </Link>
@@ -554,11 +538,7 @@ export default function GuideClient() {
 
       </main>
 
-      <footer className="border-t border-[#f3f4f6] py-4">
-        <p className="text-center text-xs text-[#9ca3af]">
-          非公式ファンツール / Unofficial fan tool · 鳴潮 Wuthering Waves
-        </p>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
@@ -567,8 +547,7 @@ export default function GuideClient() {
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <p
-      className="text-[10px] font-semibold uppercase tracking-widest text-[#9ca3af]"
-      style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+      className="hd-num text-[10px] font-semibold uppercase tracking-widest text-[var(--hd-sub)]"
     >
       {children}
     </p>
