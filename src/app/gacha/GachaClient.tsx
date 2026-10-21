@@ -1,7 +1,5 @@
 'use client';
 
-/* Hallmark · design-system: DESIGN.md (blue = STUDIO §1-9, gold = §10) */
-
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import type { EchoCost, EchoState, ScoreResult, MainstatInfo } from '@/types/echo';
@@ -25,44 +23,15 @@ import { useLocale, withLang } from '@/lib/locale';
 import { TRANSLATIONS, MAINSTAT_LABEL_EN, interpolate } from '@/data/translations';
 import CustomSelect from '@/components/CustomSelect';
 import EchoIcon from '@/components/EchoIcon';
-import SiteThemeSwitcher from '@/components/SiteThemeSwitcher';
-import { useSiteTheme, type SiteTheme } from '@/contexts/SiteThemeContext';
+import SiteHeader from '@/components/site/SiteHeader';
+import { useSiteAppearance } from '@/contexts/SiteAppearanceContext';
+import { elementKeyOf } from '@/components/home/elementTheme';
 import {
-  Dices, BarChart3, Sparkles, Gift, History, Menu, BookOpen, Bell,
-  Globe, FileText, Mail, Swords, Clock, Check, Loader2, Calculator, Users, Info,
+  Sparkles, Gift, History,
+  Swords, Clock, Check, Loader2,
 } from 'lucide-react';
 
 const COST_OPTIONS: EchoCost[] = [4, 3, 1];
-
-/** サイトテーマごとのアクセント色(hex)。alpha付き文字列連結(`${ACCENT}44`)で
- *  使われる箇所が多いため、CSS変数ではなく実hexで持つ。 */
-const ACCENT_BY_THEME: Record<SiteTheme, string> = {
-  blue: '#0275fd',
-  gold: '#a8823a',
-};
-/** CTAボタンの実際の塗り(グラデーション含む)に近い単色。SVGのfillはグラデーション文字列を
- *  受け付けないため、EchoIconの「背景に溶け込む」用途にはこちらを使う。 */
-const CTA_SOLID_BY_THEME: Record<SiteTheme, string> = {
-  blue: '#222222',
-  gold: '#8a6a2e',
-};
-interface SelectTheme {
-  charAccent: string; charBg: string; charBorder: string;
-  echoAccent: string; echoBg: string; echoBorder: string;
-  text: string; dropdownBg: string;
-}
-const SELECT_ACCENT_BY_THEME: Record<SiteTheme, SelectTheme> = {
-  blue: {
-    charAccent: '#0275fd', charBg: 'linear-gradient(135deg, #f0f7ff 0%, #fafbff 100%)', charBorder: '#bdd4fb',
-    echoAccent: '#783cf0', echoBg: 'linear-gradient(135deg, #f5f0ff 0%, #fafbff 100%)', echoBorder: '#cdbdfb',
-    text: '#222222', dropdownBg: '#ffffff',
-  },
-  gold: {
-    charAccent: '#a8823a', charBg: 'linear-gradient(135deg, #17140d 0%, #0d0b07 100%)', charBorder: '#2e2412',
-    echoAccent: '#8a6a2e', echoBg: 'linear-gradient(135deg, #17140d 0%, #0d0b07 100%)', echoBorder: '#2e2412',
-    text: '#f3ead2', dropdownBg: '#1a160e',
-  },
-};
 
 function getRecommendedEchoId(charId: string): string | null {
   if (charId === 'generic') return null;
@@ -118,18 +87,24 @@ const FOOTER_LINKS = [
 
 type BonusKind = 'bonus' | 'saves';
 
-/** ヘッダーのオーバーフローメニュー1行分の共通スタイル */
+/** SiteHeader のメニューに足す項目の行スタイル(SiteHeader の項目と揃える) */
 const MENU_ITEM =
-  'flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-[#222222] hover:bg-[#f7f7f7] transition-colors';
+  'flex items-center gap-2 px-3 py-2.5 text-xs font-medium transition-colors hover:bg-[var(--hd-raise)]';
 
 
 export default function GachaClient() {
-  const { locale, toggleLocale } = useLocale();
+  const { locale } = useLocale();
   const T = TRANSLATIONS[locale];
-  const { theme } = useSiteTheme();
-  const ACCENT = ACCENT_BY_THEME[theme];
-  const CTA_SOLID = CTA_SOLID_BY_THEME[theme];
-  const SEL = SELECT_ACCENT_BY_THEME[theme];
+  const { mode, setCharacter, savedCharId, accentHex } = useSiteAppearance();
+
+  /** CustomSelect に渡す色(hex が必要なため CSS 変数ではなく実値)。キャラ・音骸とも同じ */
+  const selectColors = {
+    accentColor: accentHex,
+    textColor: mode === 'dark' ? '#ECEFF3' : '#161A21',
+    background: mode === 'dark' ? '#222833' : '#FFFFFF',
+    borderColor: mode === 'dark' ? '#333B47' : '#D3D9E1',
+    dropdownBg: mode === 'dark' ? '#222833' : '#FFFFFF',
+  };
 
   const [cost, setCost]                       = useState<EchoCost>(4);
   const [selectedEchoId, setSelectedEchoId]   = useState<string>(DEFAULT_ECHO_ID[4]);
@@ -201,7 +176,6 @@ export default function GachaClient() {
   const [saveSlots, setSaveSlots]             = useState(0);
   const [savedResults, setSavedResults]       = useState<SavedResult[]>([]);
   const [historyOpen, setHistoryOpen]         = useState(false);
-  const [menuOpen, setMenuOpen]               = useState(false);
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [hasNewUpdate, setHasNewUpdate]       = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
@@ -242,7 +216,23 @@ export default function GachaClient() {
       if (recSet) setSelectedHarmonySet(recSet);
     }
     setLockedMainstatKey(getRecommendedMainstatKey(cost, charId));
-  }, [cost]);
+    const char = charId !== 'generic' ? CHARACTER_MAP[charId] : undefined;
+    setCharacter(charId, elementKeyOf(char?.element));
+  }, [cost, setCharacter]);
+
+  // 保存したキャラの復元(マウント直後・下書きが空の一度だけ)
+  const restoredCharRef = useRef(false);
+  useEffect(() => {
+    if (restoredCharRef.current || !savedCharId) return;
+    if (savedCharId === selectedCharId) {
+      restoredCharRef.current = true;
+      return;
+    }
+    if (savedCharId === 'generic' || CHARACTER_LIST.some((c) => c.id === savedCharId)) {
+      restoredCharRef.current = true;
+      handleCharacterChange(savedCharId);
+    }
+  }, [savedCharId, selectedCharId, handleCharacterChange]);
 
   const harmonySetOptions = useMemo(() => {
     if (cost === 4) return [];
@@ -447,201 +437,60 @@ export default function GachaClient() {
   const showMainstatLock  = bonusActive;
   const formatTime  = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
-  return (
+  /* ── SiteHeader に渡す部品 ─────────────────────────────────── */
+  // ボーナス発動中の残り時間。未発動時はメニューと本文カードから開放する
+  const bonusTimeBadge = bonusActive ? (
     <div
-      className="min-h-screen flex flex-col"
-      style={{ background: 'var(--home-bg)', color: 'var(--home-text)' }}
+      className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium border shrink-0"
+      style={{ borderColor: 'var(--hd-accent)', color: 'var(--hd-accent-text)', background: 'var(--hd-accent-soft)' }}
     >
+      <Sparkles size={13} className="animate-pulse" style={{ color: 'var(--hd-accent)' }} />
+      <span className="hd-num">{formatTime(timeLeft)}</span>
+    </div>
+  ) : null;
 
-      {/* ── Header ────────────────────────────────────────────── */}
-      <header
-        className="sticky top-0 z-30"
-        style={{ background: 'var(--home-bg)', borderBottom: '1px solid var(--home-border)' }}
+  const extraMenuItems = (
+    <>
+      {!bonusActive && (
+        <button
+          type="button"
+          onClick={() => openBonusModal('bonus')}
+          className={`${MENU_ITEM} w-full text-left`}
+          style={{ color: 'var(--hd-accent-text)' }}
+        >
+          <span className="shrink-0" style={{ color: 'var(--hd-accent)' }}><Gift size={14} /></span>
+          <span>{T.bonusBtn}</span>
+        </button>
+      )}
+      <button
+        type="button"
+        onClick={() => setHistoryOpen(true)}
+        className={`${MENU_ITEM} w-full text-left`}
+        style={{ color: 'var(--hd-fg)' }}
       >
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
-          {/* Logo */}
-          <div className="flex items-center gap-2 shrink-0">
-            <EchoIcon size={28} color={ACCENT} />
-            <span
-              className="text-base font-semibold tracking-tight"
-              style={{ color: 'var(--home-text)' }}
-            >
-              {T.appTitle}
-            </span>
-          </div>
+        <span className="shrink-0" style={{ color: 'var(--hd-sub)' }}><History size={14} /></span>
+        <span>{T.historyBtn}</span>
+        {savedResults.length > 0 && (
+          <span
+            className="ml-auto min-w-4 h-4 px-1 rounded-full text-[9px] font-semibold flex items-center justify-center"
+            style={{ background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }}
+          >
+            {savedResults.length}
+          </span>
+        )}
+      </button>
+    </>
+  );
 
-          {/* Nav buttons — 常時出すのはモード切替と ☰ のみ。
-              テーマ・履歴・ボーナス開放は ☰ に集約している */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            {/* Mode switcher: ガチャ（シミュレーター） / 厳選管理（サポーター） */}
-            <div
-              className="flex items-center rounded-lg p-0.5 shrink-0"
-              style={{ background: 'var(--home-surface)' }}
-              title={locale === 'ja' ? 'ゲーム感覚で理論値を試す' : 'Try theoretical odds, game-style'}
-            >
-              <span
-                className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold"
-                style={{ background: 'var(--home-card)', color: ACCENT, boxShadow: '0 1px 2px rgba(0,0,0,0.06)' }}
-              >
-                <Dices size={13} />
-                <span className="hidden sm:inline">{locale === 'ja' ? 'ガチャ' : 'Gacha'}</span>
-              </span>
-              <Link
-                href={withLang('/', locale)}
-                className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors"
-                style={{ color: 'var(--home-text-sub)' }}
-                title={locale === 'ja' ? '実際の厳選を記録・管理する' : 'Log and manage your real pulls'}
-              >
-                <BarChart3 size={13} />
-                <span className="hidden sm:inline">{locale === 'ja' ? '厳選管理' : 'Manage'}</span>
-              </Link>
-            </div>
+  return (
+    <div className="min-h-screen flex flex-col">
 
-            {/* ボーナス発動中の残り時間。未発動時は ☰ と本文カードから開放する */}
-            {bonusActive && (
-              <div
-                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium border"
-                style={{ borderColor: `${ACCENT}44`, color: ACCENT, background: 'var(--home-accent-bg)' }}
-              >
-                <Sparkles size={13} className="animate-pulse" />
-                <span style={{ fontFamily: '"IBM Plex Mono", monospace' }}>
-                  {formatTime(timeLeft)}
-                </span>
-              </div>
-            )}
-
-            {/* Overflow menu */}
-            <div className="relative shrink-0">
-              <button
-                onClick={() => setMenuOpen((v) => !v)}
-                className="relative flex items-center justify-center w-8 h-8 rounded-lg text-sm transition-colors border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db]"
-                aria-label={locale === 'ja' ? 'メニュー' : 'Menu'}
-              >
-                <Menu size={16} />
-                {hasNewUpdate && (
-                  <span
-                    className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-white"
-                    style={{ background: ACCENT }}
-                  />
-                )}
-              </button>
-              {menuOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-                  <div
-                    className="absolute right-0 top-full mt-2 z-50 w-52 rounded-xl bg-white overflow-hidden"
-                    style={{ border: '1px solid #e5e7eb', boxShadow: 'var(--shadow-3)' }}
-                  >
-                    {/* ── 操作 ── */}
-                    {!bonusActive && (
-                      <button
-                        onClick={() => { openBonusModal('bonus'); setMenuOpen(false); }}
-                        className={`${MENU_ITEM} w-full text-left`}
-                        style={{ color: ACCENT }}
-                      >
-                        <Gift size={14} />
-                        <span>{T.bonusBtn}</span>
-                      </button>
-                    )}
-                    <button
-                      onClick={() => { setHistoryOpen(true); setMenuOpen(false); }}
-                      className={`${MENU_ITEM} w-full text-left`}
-                    >
-                      <History size={14} />
-                      <span>{T.historyBtn}</span>
-                      {savedResults.length > 0 && (
-                        <span
-                          className="ml-auto min-w-4 h-4 px-1 rounded-full text-[9px] font-semibold flex items-center justify-center text-white"
-                          style={{ background: ACCENT }}
-                        >
-                          {savedResults.length}
-                        </span>
-                      )}
-                    </button>
-
-                    {/* ── ページ ── */}
-                    <Link
-                      href={withLang('/guide', locale)}
-                      onClick={() => setMenuOpen(false)}
-                      className={MENU_ITEM}
-                      style={{ borderTop: '1px solid #f3f4f6' }}
-                    >
-                      <BookOpen size={14} />
-                      <span>{locale === 'ja' ? '使い方ガイド' : 'How to Use'}</span>
-                    </Link>
-                    <Link
-                      href={withLang('/score-formula', locale)}
-                      onClick={() => setMenuOpen(false)}
-                      className={MENU_ITEM}
-                    >
-                      <Calculator size={14} />
-                      <span>{locale === 'ja' ? 'スコア計算方法' : 'Scoring Method'}</span>
-                    </Link>
-                    <Link
-                      href={withLang('/chardb', locale)}
-                      onClick={() => setMenuOpen(false)}
-                      className={MENU_ITEM}
-                    >
-                      <Users size={14} />
-                      <span>{locale === 'ja' ? 'キャラ別ビルド' : 'Build Data'}</span>
-                    </Link>
-                    <Link
-                      href={withLang('/news', locale)}
-                      onClick={() => setMenuOpen(false)}
-                      className={MENU_ITEM}
-                    >
-                      <Bell size={14} />
-                      <span>{locale === 'ja' ? 'お知らせ' : "What's New"}</span>
-                      {hasNewUpdate && (
-                        <span className="ml-auto w-2 h-2 rounded-full" style={{ background: ACCENT }} />
-                      )}
-                    </Link>
-
-                    {/* ── 表示設定 ── */}
-                    <div style={{ borderTop: '1px solid #f3f4f6' }}>
-                      <SiteThemeSwitcher variant="menu" />
-                    </div>
-                    <button
-                      onClick={() => { toggleLocale(); setMenuOpen(false); }}
-                      className={`${MENU_ITEM} w-full text-left`}
-                    >
-                      <Globe size={14} />
-                      <span>{locale === 'ja' ? 'English に切替' : '日本語に切替'}</span>
-                    </button>
-
-                    {/* ── サイト情報 ── */}
-                    <Link
-                      href={withLang('/about', locale)}
-                      onClick={() => setMenuOpen(false)}
-                      className={MENU_ITEM}
-                      style={{ borderTop: '1px solid #f3f4f6' }}
-                    >
-                      <Info size={14} />
-                      <span>{locale === 'ja' ? 'このサイトについて' : 'About'}</span>
-                    </Link>
-                    <Link
-                      href={withLang('/privacy', locale)}
-                      onClick={() => setMenuOpen(false)}
-                      className={MENU_ITEM}
-                    >
-                      <FileText size={14} />
-                      <span>{locale === 'ja' ? 'プライバシーポリシー' : 'Privacy Policy'}</span>
-                    </Link>
-                    <Link
-                      href={withLang('/contact', locale)}
-                      onClick={() => setMenuOpen(false)}
-                      className={MENU_ITEM}
-                    >
-                      <Mail size={14} />
-                      <span>{locale === 'ja' ? 'お問い合わせ' : 'Contact'}</span>
-                    </Link>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <SiteHeader
+        title={T.appTitle}
+        center={bonusTimeBadge}
+        extraMenuItems={extraMenuItems}
+        hasNewUpdate={hasNewUpdate}
+      />
 
       <main className={`flex-1 max-w-2xl w-full mx-auto px-4 py-8 flex flex-col gap-8 sm:pb-28 ${showAdvisorInBar ? 'pb-56' : 'pb-28'}`}>
 
@@ -650,8 +499,7 @@ export default function GachaClient() {
           <div className="flex items-center justify-center gap-1.5">
             <Swords size={14} />
             <label
-              className="text-xs font-medium uppercase tracking-wider text-[#9ca3af]"
-              style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+              className="hd-num text-xs font-medium uppercase tracking-wider text-[var(--hd-sub)]"
             >
               {T.charLabel}
             </label>
@@ -660,19 +508,14 @@ export default function GachaClient() {
             value={selectedCharId}
             onChange={handleCharacterChange}
             options={charOptions}
-            accentColor={SEL.charAccent}
-            background={SEL.charBg}
-            borderColor={SEL.charBorder}
-            textColor={SEL.text}
-            dropdownBg={SEL.dropdownBg}
+            {...selectColors}
           />
         </div>
 
         {/* Cost selector */}
         <div className="flex flex-col gap-2">
           <label
-            className="text-xs font-medium uppercase tracking-wider text-[#9ca3af] text-center"
-            style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+            className="hd-num text-xs font-medium uppercase tracking-wider text-[var(--hd-sub)] text-center"
           >
             {T.costLabel}
           </label>
@@ -684,8 +527,8 @@ export default function GachaClient() {
                 className="px-6 py-2.5 rounded-[500px] font-medium text-sm transition-all"
                 style={
                   cost === c
-                    ? { background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }
-                    : { background: 'var(--home-surface)', border: '1px solid var(--home-border)', color: 'var(--home-text-sub)' }
+                    ? { background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }
+                    : { background: 'var(--hd-raise)', border: '1px solid var(--hd-line)', color: 'var(--hd-sub)' }
                 }
               >
                 COST {c}
@@ -693,8 +536,7 @@ export default function GachaClient() {
             ))}
           </div>
           <div
-            className="text-center text-xs text-[#9ca3af]"
-            style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+            className="hd-num text-center text-xs text-[var(--hd-sub)]"
           >
             {interpolate(T.costSubstats, [SUBSTAT_COUNT[cost]])}
           </div>
@@ -704,11 +546,11 @@ export default function GachaClient() {
         {showMainstatLock && (
           <div
             className="flex flex-col gap-2 rounded-xl p-4 border"
-            style={{ borderColor: `${ACCENT}44`, background: 'var(--home-accent-bg)' }}
+            style={{ borderColor: 'var(--hd-line)', background: 'var(--hd-accent-soft)' }}
           >
             <div
-              className="text-xs font-medium text-center uppercase tracking-wider"
-              style={{ color: ACCENT, fontFamily: '"IBM Plex Mono", monospace' }}
+              className="hd-num text-xs font-medium text-center uppercase tracking-wider"
+              style={{ color: 'var(--hd-accent-text)' }}
             >
               {T.bonusMainTitle}
             </div>
@@ -716,13 +558,9 @@ export default function GachaClient() {
               value={lockedMainstatKey}
               onChange={setLockedMainstatKey}
               options={mainstatOptions}
-              accentColor={ACCENT}
-              background={SEL.dropdownBg}
-              borderColor={`${ACCENT}44`}
-              textColor={SEL.text}
-              dropdownBg={SEL.dropdownBg}
+              {...selectColors}
             />
-            <p className="text-xs text-center" style={{ color: `${ACCENT}99` }}>{T.bonusMainHint}</p>
+            <p className="text-xs text-center" style={{ color: 'var(--hd-accent-text)' }}>{T.bonusMainHint}</p>
           </div>
         )}
 
@@ -730,10 +568,9 @@ export default function GachaClient() {
         {cost === 4 ? (
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-center gap-1.5">
-              <EchoIcon size={14} color={ACCENT} />
+              <EchoIcon size={14} color={accentHex} />
               <label
-                className="text-xs font-medium uppercase tracking-wider text-[#9ca3af]"
-                style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+                className="hd-num text-xs font-medium uppercase tracking-wider text-[var(--hd-sub)]"
               >
                 {T.echoSelectLabel}
               </label>
@@ -742,20 +579,15 @@ export default function GachaClient() {
               value={selectedEchoId}
               onChange={(v) => { setSelectedEchoId(v); setEcho(null); setScore(null); }}
               options={echoOptions}
-              accentColor={SEL.echoAccent}
-              background={SEL.echoBg}
-              borderColor={SEL.echoBorder}
-              textColor={SEL.text}
-              dropdownBg={SEL.dropdownBg}
+              {...selectColors}
             />
           </div>
         ) : (
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-center gap-1.5">
-              <EchoIcon size={14} color={ACCENT} />
+              <EchoIcon size={14} color={accentHex} />
               <label
-                className="text-xs font-medium uppercase tracking-wider text-[#9ca3af]"
-                style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+                className="hd-num text-xs font-medium uppercase tracking-wider text-[var(--hd-sub)]"
               >
                 {T.harmonySelectLabel}
               </label>
@@ -764,15 +596,10 @@ export default function GachaClient() {
               value={selectedHarmonySet}
               onChange={(v) => { setSelectedHarmonySet(v); setEcho(null); setScore(null); }}
               options={harmonyOptions}
-              accentColor={SEL.echoAccent}
-              background={SEL.echoBg}
-              borderColor={SEL.echoBorder}
-              textColor={SEL.text}
-              dropdownBg={SEL.dropdownBg}
+              {...selectColors}
             />
             <div
-              className="text-center text-xs text-[#9ca3af]"
-              style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+              className="hd-num text-center text-xs text-[var(--hd-sub)]"
             >
               {interpolate(T.harmonyCount, [ECHOES.filter(e => e.cost === cost && e.sets.includes(selectedHarmonySet)).length])}
             </div>
@@ -814,7 +641,7 @@ export default function GachaClient() {
                         } finally { setDownloading(false); }
                       }}
                       disabled={downloading}
-                      className="flex-1 py-2.5 rounded-lg text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors disabled:opacity-50"
+                      className="flex-1 py-2.5 rounded-lg text-sm font-medium border border-[var(--hd-line)] text-[var(--hd-sub)] hover:text-[var(--hd-fg)] hover:border-[var(--hd-sub)] transition-colors disabled:opacity-50"
                     >
                       {downloading ? <Loader2 size={14} className="animate-spin mx-auto" /> : T.imgSave}
                     </button>
@@ -825,7 +652,7 @@ export default function GachaClient() {
                         const text = buildShareText(echo, score, { locale, charName });
                         window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
                       }}
-                      className="flex-1 py-2.5 rounded-lg text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors"
+                      className="flex-1 py-2.5 rounded-lg text-sm font-medium border border-[var(--hd-line)] text-[var(--hd-sub)] hover:text-[var(--hd-fg)] hover:border-[var(--hd-sub)] transition-colors"
                     >
                       {T.shareBtn}
                     </button>
@@ -833,7 +660,7 @@ export default function GachaClient() {
                       <button
                         onClick={handleSave}
                         className="flex-1 py-2.5 rounded-lg text-sm font-medium border transition-colors"
-                        style={{ borderColor: '#10b98144', background: '#f0fdf4', color: '#059669' }}
+                        style={{ borderColor: '#10b98144', background: '#10b9811f', color: 'var(--hd-fg)' }}
                       >
                         {T.saveBtn}
                         <span className="block text-[10px] opacity-70">{interpolate(T.saveSlotsLeft, [saveSlots])}</span>
@@ -844,7 +671,7 @@ export default function GachaClient() {
                     <button
                       onClick={() => openBonusModal('saves')}
                       className="w-full py-2.5 rounded-[500px] text-sm font-medium hover:opacity-80 transition-opacity"
-                      style={{ background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }}
+                      style={{ background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }}
                     >
                       {interpolate(T.saveCTABtn, [SAVE_PER_UNLOCK])}
                     </button>
@@ -852,7 +679,7 @@ export default function GachaClient() {
                   <Link
                     href={withLang('/', locale)}
                     className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-[500px] text-sm font-medium transition-colors"
-                    style={{ background: 'var(--home-accent-bg)', color: ACCENT, border: `1px solid ${ACCENT}33` }}
+                    style={{ background: 'var(--hd-accent-soft)', color: 'var(--hd-accent-text)', border: '1px solid var(--hd-line)' }}
                   >
                     {T.resultTrackerCTA}
                   </Link>
@@ -863,7 +690,7 @@ export default function GachaClient() {
                   <button
                     onClick={() => setShowResultModal(true)}
                     className="sm:hidden w-full py-2.5 rounded-[500px] text-sm font-medium border transition-colors"
-                    style={{ borderColor: `${ACCENT}44`, color: ACCENT }}
+                    style={{ borderColor: 'var(--hd-accent)', color: 'var(--hd-accent-text)' }}
                   >
                     {T.resultShowBtn}
                   </button>
@@ -878,11 +705,11 @@ export default function GachaClient() {
         {showRerollPanel && echo && (
           <div
             className="rounded-xl border p-4 flex flex-col gap-3"
-            style={{ borderColor: `${ACCENT}44`, background: 'var(--home-accent-bg)' }}
+            style={{ borderColor: 'var(--hd-line)', background: 'var(--hd-accent-soft)' }}
           >
             <div
-              className="text-xs font-medium text-center uppercase tracking-wider"
-              style={{ color: ACCENT, fontFamily: '"IBM Plex Mono", monospace' }}
+              className="hd-num text-xs font-medium text-center uppercase tracking-wider"
+              style={{ color: 'var(--hd-accent-text)' }}
             >
               {interpolate(T.rerollPanelTitle, [MAX_REROLL])}
             </div>
@@ -896,19 +723,19 @@ export default function GachaClient() {
                     onClick={() => !disabled && toggleRerollIndex(i)}
                     className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all"
                     style={{
-                      background: selected ? `${ACCENT}0f` : '#ffffff',
-                      border: selected ? `1px solid ${ACCENT}66` : '1px solid #e5e7eb',
+                      background: selected ? 'var(--hd-accent-soft)' : 'var(--hd-plate)',
+                      border: selected ? '1px solid var(--hd-accent)' : '1px solid var(--hd-line)',
                       opacity: disabled ? 0.4 : 1,
                       cursor: disabled ? 'not-allowed' : 'pointer',
                     }}
                   >
-                    <span className="text-[#222222] font-medium">{s.label}</span>
+                    <span className="text-[var(--hd-fg)] font-medium">{s.label}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-[#707070]">{s.value}{s.unit}</span>
+                      <span className="text-[var(--hd-sub)]">{s.value}{s.unit}</span>
                       {selected && (
                         <span
                           className="text-xs font-medium px-1.5 py-0.5 rounded-full"
-                          style={{ background: `${ACCENT}18`, color: ACCENT }}
+                          style={{ background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }}
                         >
                           {T.rerollBadge}
                         </span>
@@ -923,9 +750,8 @@ export default function GachaClient() {
               disabled={rerollIndices.size === 0}
               className="w-full py-2.5 rounded-[500px] font-medium text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               style={{
-                background: rerollIndices.size > 0 ? 'var(--home-cta-bg)' : '#9ca3af',
-                color: rerollIndices.size > 0 ? 'var(--home-cta-text)' : '#f7f7f7',
-                boxShadow: rerollIndices.size > 0 ? 'var(--home-cta-shadow)' : 'none',
+                background: rerollIndices.size > 0 ? 'var(--hd-accent)' : 'var(--hd-raise)',
+                color: rerollIndices.size > 0 ? 'var(--hd-accent-ink)' : 'var(--hd-sub)',
               }}
             >
               {rerollIndices.size > 0
@@ -938,7 +764,7 @@ export default function GachaClient() {
         {bonusActive && echo?.level === 25 && rerollUsed && (
           <div
             className="text-center text-xs"
-            style={{ color: `${ACCENT}80` }}
+            style={{ color: 'var(--hd-accent-text)' }}
           >
             {T.rerollUsed}
           </div>
@@ -948,7 +774,7 @@ export default function GachaClient() {
         {!echo && (
           <div className="flex flex-col items-center gap-6 py-8 text-center">
             <div>
-              <p className="text-[#707070] text-sm max-w-xs leading-relaxed mx-auto" style={{ lineHeight: 1.7 }}>
+              <p className="text-[var(--hd-sub)] text-sm max-w-xs leading-relaxed mx-auto" style={{ lineHeight: 1.7 }}>
                 {T.emptyText}
               </p>
             </div>
@@ -956,19 +782,19 @@ export default function GachaClient() {
             {!bonusActive && (
               <div
                 className="w-full rounded-2xl overflow-hidden animate-fadeUp"
-                style={{ background: 'var(--home-card)', border: '1px solid var(--home-border)', boxShadow: 'var(--shadow-1)' }}
+                style={{ background: 'var(--hd-plate)', border: '1px solid var(--hd-line)' }}
               >
                 {/* Top accent stripe */}
-                <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, ${ACCENT}, ${ACCENT}88)` }} />
+                <div className="h-1 w-full" style={{ background: 'var(--hd-accent)' }} />
                 <div className="p-5">
                   {/* Header */}
                   <div className="flex items-center justify-center gap-2 mb-4">
-                    <span className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: 'var(--home-card-text)' }}>
+                    <span className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: 'var(--hd-fg)' }}>
                       <Gift size={15} /> {T.bonusCardTitle}
                     </span>
                     <span
-                      className="px-2 py-0.5 rounded-full text-[10px] font-semibold text-white shrink-0"
-                      style={{ background: ACCENT }}
+                      className="px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0"
+                      style={{ background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }}
                     >
                       {T.bonusFree}
                     </span>
@@ -978,27 +804,27 @@ export default function GachaClient() {
                     {[T.bonusCardBenefit1, T.bonusCardBenefit2, T.bonusCardBenefit3].map((item, i) => (
                       <div key={i} className="flex items-start gap-2.5 text-sm">
                         <span
-                          className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white mt-0.5"
-                          style={{ background: ACCENT }}
+                          className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5"
+                          style={{ background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }}
                         >
                           <Check size={12} strokeWidth={3} />
                         </span>
-                        <span className="leading-snug" style={{ color: 'var(--home-card-text)' }}>{item}</span>
+                        <span className="leading-snug" style={{ color: 'var(--hd-fg)' }}>{item}</span>
                       </div>
                     ))}
                   </div>
                   {/* Duration badge */}
                   <div className="flex items-center gap-1.5 mb-3">
-                    <Clock size={12} className="text-[#9ca3af]" />
-                    <span className="text-xs font-medium" style={{ color: ACCENT }}>{T.bonusValidFor}</span>
+                    <Clock size={12} className="text-[var(--hd-sub)]" />
+                    <span className="text-xs font-medium" style={{ color: 'var(--hd-accent-text)' }}>{T.bonusValidFor}</span>
                   </div>
                   {/* Ad note */}
-                  <p className="text-xs text-[#9ca3af] mb-4">{T.bonusNote}</p>
+                  <p className="text-xs text-[var(--hd-sub)] mb-4">{T.bonusNote}</p>
                   {/* CTA */}
                   <button
                     onClick={() => openBonusModal('bonus')}
                     className="w-full py-3 rounded-[500px] text-sm font-semibold hover:opacity-80 transition-opacity animate-pulseRing"
-                    style={{ background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }}
+                    style={{ background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }}
                   >
                     {T.bonusCTA}
                   </button>
@@ -1016,8 +842,8 @@ export default function GachaClient() {
       <div
         className="fixed bottom-0 inset-x-0 z-20 backdrop-blur-sm"
         style={{
-          background: 'color-mix(in srgb, var(--home-bg) 95%, transparent)',
-          borderTop: '1px solid var(--home-border)',
+          background: 'color-mix(in srgb, var(--hd-bg) 95%, transparent)',
+          borderTop: '1px solid var(--hd-line)',
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}
       >
@@ -1032,8 +858,7 @@ export default function GachaClient() {
           {/* Progress hint */}
           {echo && !isMaxLevel && echo.level > 0 && (
             <p
-              className="text-[11px] text-[#9ca3af] text-center mb-2"
-              style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+              className="hd-num text-[11px] text-[var(--hd-sub)] text-center mb-2"
             >
               {interpolate(T.untilMax, [(25 - echo.level) / 5])}
             </p>
@@ -1044,9 +869,9 @@ export default function GachaClient() {
             <button
               onClick={handleStart}
               className="w-full py-3 rounded-[500px] font-semibold text-sm hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
-              style={{ background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }}
+              style={{ background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }}
             >
-              <EchoIcon size={15} color="var(--home-cta-text)" bgColor={CTA_SOLID} />
+              <EchoIcon size={15} color="#11141A" bgColor={accentHex} />
               {T.getEcho}
             </button>
           ) : !isMaxLevel ? (
@@ -1055,7 +880,7 @@ export default function GachaClient() {
               <button
                 onClick={handleUpgrade}
                 className="flex-1 py-3 rounded-[500px] font-semibold text-sm hover:opacity-80 transition-opacity"
-                style={{ background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }}
+                style={{ background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }}
               >
                 +5 → +{echo.level + 5}
               </button>
@@ -1063,7 +888,7 @@ export default function GachaClient() {
                 <button
                   onClick={handleMaxUpgrade}
                   className="px-4 py-3 rounded-[500px] font-medium text-sm border hover:opacity-80 transition-opacity shrink-0"
-                  style={{ borderColor: `${ACCENT}66`, color: ACCENT, background: 'var(--home-accent-bg)' }}
+                  style={{ borderColor: 'var(--hd-accent)', color: 'var(--hd-accent-text)', background: 'var(--hd-accent-soft)' }}
                 >
                   {T.maxUpgrade}
                 </button>
@@ -1071,7 +896,7 @@ export default function GachaClient() {
               <button
                 onClick={handleReset}
                 className="px-4 py-3 rounded-[500px] text-sm border hover:opacity-70 transition-colors shrink-0"
-                style={{ color: 'var(--home-text-sub)', borderColor: 'var(--home-border)' }}
+                style={{ color: 'var(--hd-sub)', borderColor: 'var(--hd-line)' }}
               >
                 {T.resetBtn}
               </button>
@@ -1082,15 +907,15 @@ export default function GachaClient() {
               <button
                 onClick={handleStart}
                 className="flex-1 py-3 rounded-[500px] font-semibold text-sm hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
-                style={{ background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }}
+                style={{ background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }}
               >
-                <EchoIcon size={15} color="var(--home-cta-text)" bgColor={CTA_SOLID} />
+                <EchoIcon size={15} color="#11141A" bgColor={accentHex} />
                 {T.getEcho}
               </button>
               <button
                 onClick={handleReset}
                 className="px-4 py-3 rounded-[500px] text-sm border hover:opacity-70 transition-colors shrink-0"
-                style={{ color: 'var(--home-text-sub)', borderColor: 'var(--home-border)' }}
+                style={{ color: 'var(--hd-sub)', borderColor: 'var(--hd-line)' }}
               >
                 {T.resetBtn}
               </button>
@@ -1101,7 +926,7 @@ export default function GachaClient() {
 
       <footer
         className="border-t pt-6 pb-32"
-        style={{ borderColor: 'var(--home-border)' }}
+        style={{ borderColor: 'var(--hd-line)' }}
       >
         <nav className="max-w-2xl mx-auto px-4 flex flex-wrap justify-center gap-x-4 gap-y-2 mb-4">
           {FOOTER_LINKS.map(({ href, ja, en }) => (
@@ -1109,13 +934,13 @@ export default function GachaClient() {
               key={href}
               href={withLang(href, locale)}
               className="text-xs hover:opacity-70 transition-opacity"
-              style={{ color: 'var(--home-text-sub)' }}
+              style={{ color: 'var(--hd-sub)' }}
             >
               {locale === 'ja' ? ja : en}
             </Link>
           ))}
         </nav>
-        <p className="text-center text-xs" style={{ color: 'var(--home-text-sub)' }}>{T.footer}</p>
+        <p className="text-center text-xs" style={{ color: 'var(--hd-sub)' }}>{T.footer}</p>
       </footer>
 
       {updateModalOpen && (
@@ -1152,12 +977,13 @@ export default function GachaClient() {
           onClick={() => setShowResultModal(false)}
         >
           <div
-            className="w-full rounded-t-3xl bg-white shadow-2xl animate-fadeUp max-h-[88vh] overflow-y-auto"
+            className="w-full rounded-t-3xl animate-fadeUp max-h-[88vh] overflow-y-auto"
+            style={{ background: 'var(--hd-plate)' }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drag handle */}
-            <div className="flex justify-center pt-2.5 pb-1 sticky top-0 bg-white">
-              <div className="w-8 h-1 rounded-full bg-[#e5e7eb]" />
+            <div className="flex justify-center pt-2.5 pb-1 sticky top-0" style={{ background: 'var(--hd-plate)' }}>
+              <div className="w-8 h-1 rounded-full bg-[var(--hd-line)]" />
             </div>
 
             <div className="px-4 pt-1 pb-2 flex flex-col gap-1.5">
@@ -1181,7 +1007,7 @@ export default function GachaClient() {
                     }
                   }}
                   disabled={downloading}
-                  className="flex-1 py-1.5 rounded-lg text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors disabled:opacity-50"
+                  className="flex-1 py-1.5 rounded-lg text-sm font-medium border border-[var(--hd-line)] text-[var(--hd-sub)] hover:text-[var(--hd-fg)] hover:border-[var(--hd-sub)] transition-colors disabled:opacity-50"
                 >
                   {downloading ? <Loader2 size={14} className="animate-spin mx-auto" /> : T.imgSave}
                 </button>
@@ -1195,7 +1021,7 @@ export default function GachaClient() {
                       '_blank', 'noopener,noreferrer'
                     );
                   }}
-                  className="flex-1 py-1.5 rounded-lg text-sm font-medium border border-[#e5e7eb] text-[#707070] hover:text-[#222222] hover:border-[#d1d5db] transition-colors"
+                  className="flex-1 py-1.5 rounded-lg text-sm font-medium border border-[var(--hd-line)] text-[var(--hd-sub)] hover:text-[var(--hd-fg)] hover:border-[var(--hd-sub)] transition-colors"
                 >
                   {T.shareBtn}
                 </button>
@@ -1203,7 +1029,7 @@ export default function GachaClient() {
                   <button
                     onClick={() => { handleSave(); setShowResultModal(false); }}
                     className="flex-1 py-1.5 rounded-lg text-sm font-medium border transition-colors"
-                    style={{ borderColor: '#10b98144', background: '#f0fdf4', color: '#059669' }}
+                    style={{ borderColor: '#10b98144', background: '#10b9811f', color: 'var(--hd-fg)' }}
                   >
                     {T.saveBtn}
                     <span className="block text-[10px] opacity-70">{interpolate(T.saveSlotsLeft, [saveSlots])}</span>
@@ -1216,7 +1042,7 @@ export default function GachaClient() {
                 <button
                   onClick={() => { openBonusModal('saves'); setShowResultModal(false); }}
                   className="w-full py-1.5 rounded-[500px] text-sm font-medium hover:opacity-80 transition-opacity"
-                  style={{ background: 'var(--home-cta-bg)', color: 'var(--home-cta-text)', boxShadow: 'var(--home-cta-shadow)' }}
+                  style={{ background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }}
                 >
                   {interpolate(T.saveCTABtn, [SAVE_PER_UNLOCK])}
                 </button>
@@ -1227,7 +1053,7 @@ export default function GachaClient() {
                 href={withLang('/', locale)}
                 onClick={() => setShowResultModal(false)}
                 className="flex items-center justify-center gap-1 w-full py-1.5 rounded-[500px] text-sm font-medium transition-colors"
-                style={{ background: 'var(--home-accent-bg)', color: ACCENT, border: `1px solid ${ACCENT}33` }}
+                style={{ background: 'var(--hd-accent-soft)', color: 'var(--hd-accent-text)', border: '1px solid var(--hd-line)' }}
               >
                 {T.resultTrackerCTA}
               </Link>
@@ -1235,7 +1061,7 @@ export default function GachaClient() {
               {/* Close */}
               <button
                 onClick={() => setShowResultModal(false)}
-                className="w-full py-1.5 rounded-[500px] text-sm text-[#9ca3af] border border-[#e5e7eb] hover:text-[#222222] hover:border-[#d1d5db] transition-colors"
+                className="w-full py-1.5 rounded-[500px] text-sm text-[var(--hd-sub)] border border-[var(--hd-line)] hover:text-[var(--hd-fg)] hover:border-[var(--hd-sub)] transition-colors"
               >
                 {T.closeBtn}
               </button>

@@ -150,7 +150,7 @@ export default function SiteHeader({
               >
                 {extraMenuItems && (
                   <>
-                    {extraMenuItems}
+                    <div onClick={() => setMenuOpen(false)}>{extraMenuItems}</div>
                     <div style={{ borderTop: '1px solid var(--hd-line)' }} />
                   </>
                 )}
