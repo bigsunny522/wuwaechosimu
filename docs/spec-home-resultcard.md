@@ -80,7 +80,7 @@
 #### 裏面(上から)
 
 1. スコア分布(左右 16px、上 14px)
-   - 見出し行: 「スコア分布」13px 太字、右に「{キャラ名}・この運用で強化したとき」/ "If built for {name}" 11px `var(--hd-sub)`
+   - 見出し行: 「スコア分布」/ "Score distribution" 13px 太字、右に「{キャラ名}・この運用で強化したとき」/ "If built for {name}" 11px `var(--hd-sub)`
    - `distributionHistogram` があるとき: 棒グラフの SVG(幅いっぱい、`viewBox` 固定で横に伸ばす、高さ 104px。低い画面は 72px)
      - 棒は `distributionHistogram` の各要素(1本 = 2点ぶん。`ScoreDistributionChart` と同じ `BIN_WIDTH = 2`)。最大値で高さをそろえる
      - 棒の中心の点数が自分の点数以下の棒はランク色(不透明度 .85)、上の棒は `#3A4250`
@@ -88,7 +88,7 @@
      - 下の行: 左「0」、真ん中「この音骸は **上位 {x}%**(色の部分に勝ち)」/ "This echo is **top {x}%** (beats the colored part)"、右「100」。11px
    - ないとき(キャラなし): グラフの代わりに 「キャラを選ぶと、ほかの音骸と比べた位置が出ます」/ "Pick a character to see how this echo compares" を 12px `var(--hd-sub)` で中央に出す。見出しの右側の文字は出さない
 2. 強化の道のり(左右 16px、上 16px、残りの高さ)
-   - 見出し行: 「強化の道のり」13px 太字、右に「各段階の予想スコア」/ "Expected score at each step" 11px `var(--hd-sub)`
+   - 見出し行: 「強化の道のり」/ "Enhancement journey" 13px 太字、右に「各段階の予想スコア」/ "Expected score at each step" 11px `var(--hd-sub)`
    - 物語のラベル(モックの丸いラベルと同じ見た目)。次のどちらかに当てはまるときだけ出す
      - 1〜4段目に `scrap` があり、ランクが B 以上:「破棄推奨から逆転」/ "Came back from Scrap"
      - 上に当てはまらず、最終点が 70 以上:「最初から好調のまま完走」/ "Strong from start to finish"
