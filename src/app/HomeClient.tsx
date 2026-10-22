@@ -7,7 +7,7 @@ import { MAINSTAT_POOLS } from '@/data/mainstats';
 import { ECHOES, ECHOES_BY_COST, DEFAULT_ECHO_ID, HARMONY_SETS, HARMONY_SETS_EN } from '@/data/echoes';
 import { CHARACTER_LIST, CHARACTER_MAP } from '@/data/characters';
 import { scoreEcho } from '@/lib/scorer';
-import { simulateCompletion } from '@/lib/monteCarlo';
+import { simulateCompletion, type AdvisorResult } from '@/lib/monteCarlo';
 import { generateResultCard, buildShareText } from '@/lib/imageGen';
 import {
   type TrackedEntry, type Threshold, type BaselineStats,
@@ -259,6 +259,26 @@ export default function HomeClient() {
     totalCost: ZERO_COST,
   }), [cost, draftMeta]);
 
+  const advisorCacheRef = useRef<Map<string, AdvisorResult>>(new Map());
+
+  const simulateDraft = useCallback((subs: Substat[]) => {
+    const key = [
+      cost,
+      draftMeta.echoId,
+      draftMeta.harmonySet,
+      draftMeta.mainstat.key,
+      build?.id ?? 'generic',
+      subs.map((s) => `${s.key}:${s.tier}`).join(','),
+    ].join('|');
+    const cache = advisorCacheRef.current;
+    const hit = cache.get(key);
+    if (hit) return hit;
+    const r = simulateCompletion(buildDraftEcho(subs), build);
+    if (cache.size >= 64) cache.clear();
+    cache.set(key, r);
+    return r;
+  }, [cost, draftMeta, build, buildDraftEcho]);
+
   const addSubstat = useCallback((key: SubstatKey, tier: number) => {
     setPendingKey(key);
     setPendingTier(tier);
@@ -289,8 +309,8 @@ export default function HomeClient() {
 
   const draftAdvisor = useMemo(() => {
     if (draftSubs.length === 0 || draftSubs.length >= MAX_SUBSTATS) return null;
-    return simulateCompletion(buildDraftEcho(draftSubs), build);
-  }, [draftSubs, buildDraftEcho, build]);
+    return simulateDraft(draftSubs);
+  }, [draftSubs, simulateDraft]);
 
   const draftFinalScore = useMemo(() => {
     if (draftSubs.length < MAX_SUBSTATS) return null;
@@ -302,12 +322,12 @@ export default function HomeClient() {
     const steps: JourneyStep[] = [];
     let baseline = 0;
     for (let n = 1; n <= 4; n++) {
-      const r = simulateCompletion(buildDraftEcho(draftSubs.slice(0, n)), build);
+      const r = simulateDraft(draftSubs.slice(0, n));
       if (n === 1) baseline = r.baselineScore;
       steps.push({ expected: Math.round(r.expectedScore), recommendation: r.recommendation });
     }
     return { steps, baseline };
-  }, [draftSubs, buildDraftEcho, build, draftFinalScore]);
+  }, [draftSubs, simulateDraft, draftFinalScore]);
 
   const canFinalize = Boolean(draftSubs.length === MAX_SUBSTATS && (!cost4MultiSet || draftHarmonySet) && (cost === 4 || selectedHarmonySet));
 
