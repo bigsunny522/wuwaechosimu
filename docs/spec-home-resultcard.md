@@ -218,7 +218,7 @@ ResultCard の中にある `[@media(max-height:780px)]:` はすべてやめ、`C
 - コンテナクエリは `.rc-deal` の子孫にしか効かない。切り替え行(カードの外)には効かない
 - `backface-visibility` は Safari で `-webkit-` が要る。裏面の文字が鏡写しで透けて見えないか確かめる
 - `transform-style: preserve-3d` の子に `overflow: hidden` を付けると立体が平らになる。`overflow: hidden` は各面に付け、回る要素には付けない
-- `simulateCompletion` は乱数を使うので、4個目まで画面に出ていた予想(ForecastStrip)と道のりの数字が少しずれることがある。仕様どおりなので合わせなくてよい
+- (2026-10-22 更新)道のりは `docs/spec-journey-cache.md` で ForecastStrip の計算結果を使い回すようにしたため、数字は一致する
 - `setPointerCapture` の後にボタン(表/裏)が押せなくなる、ということがないよう、切り替えの行はカードの要素の外に置く
 - `draftMeta` の音骸名は COST 3 / 1 ではハーモニー名になる(メインステの板と同じ扱いでよい)
 - `topPercentile` と `distributionHistogram` はキャラなしだと無い。どちらも無い前提で崩れないこと
