@@ -12,6 +12,21 @@ export interface UpdateEntry {
 
 export const UPDATES: UpdateEntry[] = [
   {
+    id: '2026-10-22',
+    date: '2026-10-22',
+    title: { ja: '鎖暝のビルドデータを追加', en: 'Added Build Data for Suoming' },
+    items: [
+      {
+        ja: '鎖暝を追加しました',
+        en: 'Added Suoming',
+      },
+    ],
+    link: {
+      href: '/chardb',
+      label: { ja: 'キャラ別ビルドデータを見る', en: 'View the Build Data' },
+    },
+  },
+  {
     id: '2026-10-03',
     date: '2026-10-03',
     title: { ja: '心のビルドデータと Ver3.7 の新音骸を追加', en: 'Added Build Data for Hsin and Version 3.7 Echoes' },
