@@ -18,6 +18,7 @@ import AdBannerThin from '@/components/AdBannerThin';
 import UpdateModal from '@/components/UpdateModal';
 import { LATEST_UPDATE_ID } from '@/data/updates';
 import { generateResultCard, buildShareText } from '@/lib/imageGen';
+import { buildShareUrl } from '@/lib/shareLink';
 import { useLocale, withLang } from '@/lib/locale';
 import { TRANSLATIONS, MAINSTAT_LABEL_EN, interpolate } from '@/data/translations';
 import SiteHeader from '@/components/site/SiteHeader';
@@ -334,7 +335,15 @@ export default function GachaClient() {
     if (!echo || !score) return;
     const char = selectedCharId !== 'generic' ? CHARACTER_MAP[selectedCharId] : undefined;
     const charName = char ? (locale === 'en' ? char.nameEn : char.name) : undefined;
-    const text = buildShareText(echo, score, { locale, charName });
+    const shareUrl = buildShareUrl(echo, {
+      charId: selectedCharId !== 'generic' ? selectedCharId : undefined,
+      locale,
+    });
+    const text = buildShareText(echo, score, {
+      locale,
+      charName,
+      url: shareUrl ?? undefined,
+    });
     window.open(
       `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
       '_blank', 'noopener,noreferrer',

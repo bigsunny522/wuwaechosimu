@@ -9,6 +9,7 @@ import { CHARACTER_LIST, CHARACTER_MAP } from '@/data/characters';
 import { scoreEcho } from '@/lib/scorer';
 import { simulateCompletion } from '@/lib/monteCarlo';
 import { generateResultCard, buildShareText } from '@/lib/imageGen';
+import { buildShareUrl } from '@/lib/shareLink';
 import {
   type TrackedEntry, type Threshold, type BaselineStats,
   loadEntries, saveEntries, computeBaseline, predict,
@@ -356,9 +357,12 @@ export default function HomeClient() {
     const shareCharName = build
       ? (ja ? build.name : (build.nameEn ?? build.name))
       : undefined;
-    const text = buildShareText(buildDraftEcho(draftSubs), draftFinalScore, {
+    const echo = buildDraftEcho(draftSubs);
+    const shareUrl = buildShareUrl(echo, { charId: build?.id, locale });
+    const text = buildShareText(echo, draftFinalScore, {
       locale,
       charName: shareCharName,
+      url: shareUrl ?? undefined,
     });
     window.open(
       `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,

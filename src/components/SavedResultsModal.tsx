@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import type { EchoState, ScoreResult } from '@/types/echo';
 import { generateResultCard, buildShareText } from '@/lib/imageGen';
+import { buildShareUrl } from '@/lib/shareLink';
+import { CHARACTERS } from '@/data/characters';
 import ResultCardVisual from './ResultCardVisual';
 import { useLocale } from '@/lib/locale';
 import { TRANSLATIONS, interpolate } from '@/data/translations';
@@ -54,9 +56,15 @@ function SavedCard({ result, onClear }: { result: SavedResult; onClear: () => vo
   };
 
   const handleShare = () => {
+    // SavedResult にはキャラ名しかないため、CHARACTERS から名前で ID を探す(見つからなければキャラなし)
+    const charId = result.charName
+      ? CHARACTERS.find((c) => c.name === result.charName || c.nameEn === result.charName)?.id
+      : undefined;
+    const shareUrl = buildShareUrl(result.echo, { charId, locale });
     const text = buildShareText(result.echo, result.score, {
       locale,
       charName: result.charName,
+      url: shareUrl ?? undefined,
     });
     window.open(
       `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,

@@ -30,12 +30,14 @@ export async function generateResultCard(
 interface ShareOptions {
   locale: 'ja' | 'en';
   charName?: string;
+  /** 指定があれば本文の SITE_URL の行をこの URL に置き換える */
+  url?: string;
 }
 
 export function buildShareText(
   echo: EchoState,
   score: ScoreResult,
-  { locale = 'ja', charName }: ShareOptions = { locale: 'ja' },
+  { locale = 'ja', charName, url }: ShareOptions = { locale: 'ja' },
 ): string {
   const echoName = locale === 'en'
     ? (echo.echoNameEn ?? echo.echoName)
@@ -49,12 +51,14 @@ export function buildShareText(
     })
     .join(' / ');
 
+  const linkLine = url ?? SITE_URL;
+
   if (locale === 'en') {
     const charPart = charName ? ` for ${charName}` : '';
     return [
       `[${score.rank}] Score ${score.score}pts — ${echoName}${charPart} complete!`,
       statLine,
-      SITE_URL,
+      linkLine,
       '#WutheringWaves #EchoSimulator',
     ].join('\n');
   }
@@ -63,7 +67,7 @@ export function buildShareText(
   return [
     `【${score.rank}ランク】スコア${score.score}点の${charPart}${echoName}が完成！`,
     statLine,
-    SITE_URL,
+    linkLine,
     '#鳴潮 #音骸シミュレーター',
   ].join('\n');
 }
