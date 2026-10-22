@@ -1,77 +1,100 @@
 @import "tailwindcss";
 
-/* Hallmark · design-system: DESIGN.md (blue) + DESIGN.md § Gold Theme (gold) */
+/* ── サイト全体の配色(--hd-*)。ライト / ダークは data-mode、属性色は data-element ── */
 
-:root {
-  --accent:    #0275fd;
-  --accent-bg: #eef9ff;
-  --background: #ffffff;
-  --surface:   #f7f7f7;
-  --text:      #222222;
-  --text-sub:  #707070;
-  --border:    #e5e7eb;
-
-  /* Elevation scale — DESIGN.md §6 (level 3 added for floating menus/popovers) */
-  --shadow-1: 0 2px 8px rgba(0,0,0,0.08);
-  --shadow-2: 0 4px 16px rgba(0,0,0,0.12);
-  --shadow-3: 0 8px 24px rgba(0,0,0,0.08);
-
-  /* Display pairing — DESIGN.md §3.2 (Instrument Serif, limited/accent use) */
-  --font-display-serif: "Instrument Serif", serif;
-}
-
-/*
- * Home page site theme (switchable). Scoped under --home-* so it never
- * leaks into other routes, which keep the STUDIO-derived vars above.
- * "blue" is the original brand look (default/fallback) — also applied at
- * :root so SSR output matches before the FOUC-prevention script sets data-theme.
- */
 :root,
-:root[data-theme="blue"] {
-  --home-bg:        #ffffff;
-  --home-surface:   #f7f7f7;
-  --home-card:      #ffffff;
-  --home-text:      #222222;
-  --home-text-sub:  #707070;
-  /* カード(--home-card)上のテキスト。blueはページ本文色と同じ */
-  --home-card-text:     #222222;
-  --home-card-text-sub: #707070;
-  --home-accent:    #0275fd;
-  --home-accent-bg: #eef9ff;
-  --home-cta-bg:    #222222;
-  --home-cta-text:  #f7f7f7;
-  --home-cta-shadow: none;
-  --home-border:    #e5e7eb;
+:root[data-mode="dark"] {
+  --hd-bg:      #101318;
+  --hd-plate:   #181C23;
+  --hd-raise:   #222833;
+  --hd-line:    #333B47;
+  --hd-fg:      #ECEFF3;
+  --hd-sub:     #A3ADBA;
+  --hd-go:      #7FD6A4;
+  --hd-great:   #7FD6A4;
+  --hd-borderline: #F0B35A;
+  --hd-scrap:   #FF8A8A;
+  --hd-accent-ink: #11141A;
+  --hd-accent-text: var(--hd-accent);
+  color-scheme: dark;
 }
 
-/*
- * "gold" — 鳴潮公式サイトの黒基調ヘッダー+金アクセントを参照した重厚感テーマ。
- * 参考: wutheringwaves.kurogames.com（黒ナビ+金のアクティブ表示）、
- * 競合ツール wuwa.uk（ほぼ黒の背景 #04070f + ネオンアクセント）
- * 素材感を出すため、黒側も琥珀寄りの暖色にして金と馴染ませ、
- * CTAは単色ではなく多段グラデーションで金属的なハイライトを付ける。
- */
-:root[data-theme="gold"] {
-  --home-bg:        #0d0b07;
-  --home-surface:   #17140d;
-  --home-card:      #1a160e;
-  --home-text:      #f3ead2;
-  --home-text-sub:  #9c8f74;
-  --home-card-text:     #f3ead2;
-  --home-card-text-sub: #9c8f74;
-  --home-accent:    #a8823a;
-  --home-accent-bg: #a8823a22;
-  --home-cta-bg:    linear-gradient(135deg, #d9b76e 0%, #a8823a 30%, #5e4318 65%, #97722f 100%);
-  --home-cta-text:  #1a1204;
-  --home-cta-shadow: 0 4px 22px rgba(168, 130, 58, 0.3);
-  --home-border:    #2e2412;
+:root[data-mode="light"] {
+  --hd-bg:      #F3F5F8;
+  --hd-plate:   #FFFFFF;
+  --hd-raise:   #E9EDF2;
+  --hd-line:    #D3D9E1;
+  --hd-fg:      #161A21;
+  --hd-sub:     #596374;
+  --hd-go:      #1E7F4C;
+  --hd-great:   #1E7F4C;
+  --hd-borderline: #9A6200;
+  --hd-scrap:   #C43C3C;
+  color-scheme: light;
+}
+
+/* 属性色(塗り・線・アイコンは --hd-accent、地の上の文字は --hd-accent-text) */
+:root,
+:root[data-element="none"] { --hd-accent: #A9B6C8; }
+:root[data-element="fusion"]  { --hd-accent: #FF8A5B; }
+:root[data-element="glacio"]  { --hd-accent: #6CC8F0; }
+:root[data-element="electro"] { --hd-accent: #B18CFF; }
+:root[data-element="aero"]    { --hd-accent: #5FD8A8; }
+:root[data-element="spectro"] { --hd-accent: #F2D16B; }
+:root[data-element="havoc"]   { --hd-accent: #E86AA8; }
+
+:root { --hd-accent-soft: color-mix(in srgb, var(--hd-accent) 16%, transparent); }
+
+/* ライトの --hd-accent-text は濃い色。ダークは var(--hd-accent) のまま */
+:root[data-mode="light"] { --hd-accent-text: #56627A; }
+:root[data-mode="light"][data-element="none"]    { --hd-accent-text: #56627A; }
+:root[data-mode="light"][data-element="fusion"]  { --hd-accent-text: #B4481B; }
+:root[data-mode="light"][data-element="glacio"]  { --hd-accent-text: #0E6A94; }
+:root[data-mode="light"][data-element="electro"] { --hd-accent-text: #6A42D0; }
+:root[data-mode="light"][data-element="aero"]    { --hd-accent-text: #11744F; }
+:root[data-mode="light"][data-element="spectro"] { --hd-accent-text: #806200; }
+:root[data-mode="light"][data-element="havoc"]   { --hd-accent-text: #A3306A; }
+
+/* 中だけダークの値に戻す(結果カードなど。ライトでも暗いまま)。--hd-accent は :root から継承 */
+.hd-force-dark {
+  --hd-bg:      #101318;
+  --hd-plate:   #181C23;
+  --hd-raise:   #222833;
+  --hd-line:    #333B47;
+  --hd-fg:      #ECEFF3;
+  --hd-sub:     #A3ADBA;
+  --hd-go:      #7FD6A4;
+  --hd-great:   #7FD6A4;
+  --hd-borderline: #F0B35A;
+  --hd-scrap:   #FF8A8A;
+  --hd-accent-text: var(--hd-accent);
+  color: var(--hd-fg);
+  color-scheme: dark;
+}
+
+.hd-card {
+  background: var(--hd-plate);
+  border-radius: 10px;
+}
+
+:root[data-mode="light"] .hd-card {
+  border: 1px solid var(--hd-line);
+}
+
+html {
+  background: var(--hd-bg);
 }
 
 body {
-  background: var(--background);
-  color: var(--text);
-  font-family: Inter, 'Noto Sans JP', ui-sans-serif, system-ui, sans-serif;
+  background: var(--hd-bg);
+  color: var(--hd-fg);
+  font-family: var(--font-home-body), 'Noto Sans JP', sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+.hd-num {
+  font-family: var(--font-home-num, 'Chakra Petch', sans-serif);
+  font-variant-numeric: tabular-nums;
 }
 
 @keyframes fadeSlideIn {
@@ -99,9 +122,9 @@ body {
 }
 
 @keyframes pulseRing {
-  0%   { box-shadow: 0 0 0 0   rgba(2,117,253,0.45); }
-  70%  { box-shadow: 0 0 0 7px rgba(2,117,253,0); }
-  100% { box-shadow: 0 0 0 0   rgba(2,117,253,0); }
+  0%   { box-shadow: 0 0 0 0   color-mix(in srgb, var(--hd-accent) 45%, transparent); }
+  70%  { box-shadow: 0 0 0 7px transparent; }
+  100% { box-shadow: 0 0 0 0   transparent; }
 }
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(10px); }
@@ -140,7 +163,7 @@ button:not(:disabled):active {
 }
 
 button:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--hd-accent);
   outline-offset: 2px;
 }
 
@@ -158,6 +181,6 @@ button:focus-visible {
 }
 
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #f7f7f7; }
-::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+::-webkit-scrollbar-track { background: var(--hd-bg); }
+::-webkit-scrollbar-thumb { background: var(--hd-line); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--hd-sub); }

@@ -25,7 +25,7 @@ export default function CustomSelect({
   value,
   onChange,
   options,
-  accentColor = '#0275fd',
+  accentColor = '#A9B6C8',
   background = 'linear-gradient(135deg, #f0f7ff 0%, #fafbff 100%)',
   borderColor = '#bdd4fb',
   textColor = '#222222',

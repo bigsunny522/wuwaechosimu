@@ -27,16 +27,22 @@ function tierBg(tier: number): string {
   return 'transparent';
 }
 
+/** バーの塗り。意味のある色はそのまま、不要ステは両モードで見える灰色 */
 function resolveColor(tier: number, category: SubstatCategory | undefined): string {
-  if (!category) return tierColor(tier);
-  if (category === 'unnecessary') return '#d1d5db';
-  return CATEGORY_COLORS[category];
+  if (category === 'unnecessary') return 'var(--hd-sub)';
+  if (category) return CATEGORY_COLORS[category];
+  return tierColor(tier);
 }
 
 function resolveBg(tier: number, category: SubstatCategory | undefined): string {
   if (!category) return tierBg(tier);
   if (category === 'unnecessary') return 'transparent';
   return tierBg(tier);
+}
+
+/** 数値の文字色。地の上の色付き文字はやめ、不要ステだけ薄くする */
+function resolveTextColor(category: SubstatCategory | undefined): string {
+  return category === 'unnecessary' ? 'var(--hd-sub)' : 'var(--hd-fg)';
 }
 
 export default function SubstatRow({ substat, index, animated = true, category, compact = false }: Props) {
@@ -60,13 +66,13 @@ export default function SubstatRow({ substat, index, animated = true, category, 
           borderLeft,
         }}
       >
-        <span className="text-[10px] text-[#9ca3af] w-3 shrink-0 select-none text-center">
+        <span className="text-[10px] text-[var(--hd-sub)] w-3 shrink-0 select-none text-center">
           {index + 1}
         </span>
-        <span className="text-xs font-medium text-[#222222] flex-1 min-w-0 leading-snug">
+        <span className="text-xs font-medium text-[var(--hd-fg)] flex-1 min-w-0 leading-snug">
           {label}
         </span>
-        <div className="w-12 shrink-0 h-1 bg-[#e5e7eb] rounded-full overflow-hidden">
+        <div className="w-12 shrink-0 h-1 bg-[var(--hd-line)] rounded-full overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-500"
             style={{ width: `${pct}%`, background: color }}
@@ -74,7 +80,7 @@ export default function SubstatRow({ substat, index, animated = true, category, 
         </div>
         <span
           className="text-xs font-semibold tabular-nums w-12 text-right shrink-0 leading-none"
-          style={{ color }}
+          style={{ color: resolveTextColor(category) }}
         >
           {substat.value}{substat.unit}
         </span>
@@ -94,14 +100,14 @@ export default function SubstatRow({ substat, index, animated = true, category, 
     >
       {/* Index */}
       <div className="flex items-center w-4 shrink-0">
-        <span className="text-xs text-[#9ca3af] select-none">{index + 1}</span>
+        <span className="text-xs text-[var(--hd-sub)] select-none">{index + 1}</span>
       </div>
 
       {/* Label + bar + value */}
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium text-[#222222] leading-snug mb-1">{label}</div>
+        <div className="text-sm font-medium text-[var(--hd-fg)] leading-snug mb-1">{label}</div>
         <div className="flex items-center gap-2">
-          <div className="flex-1 h-1 bg-[#e5e7eb] rounded-full overflow-hidden">
+          <div className="flex-1 h-1 bg-[var(--hd-line)] rounded-full overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-500"
               style={{ width: `${pct}%`, background: color }}
@@ -109,7 +115,7 @@ export default function SubstatRow({ substat, index, animated = true, category, 
           </div>
           <span
             className="text-sm font-semibold tabular-nums shrink-0 min-w-[3.5rem] text-right"
-            style={{ color }}
+            style={{ color: resolveTextColor(category) }}
           >
             {substat.value}{substat.unit}
           </span>

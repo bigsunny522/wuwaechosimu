@@ -17,12 +17,12 @@ export default function HomeExplainer() {
   return (
     <section
       className="mt-4 pt-8 border-t"
-      style={{ borderColor: 'var(--home-border)' }}
+      style={{ borderColor: 'var(--hd-line)' }}
       aria-label={C.sectionLabel}
     >
       <p
-        className="text-[10px] uppercase tracking-wider mb-6"
-        style={{ color: 'var(--home-text-sub)', fontFamily: '"IBM Plex Mono", monospace' }}
+        className="hd-num text-[10px] uppercase tracking-wider mb-6"
+        style={{ color: 'var(--hd-sub)' }}
       >
         {C.sectionLabel}
       </p>
@@ -32,7 +32,7 @@ export default function HomeExplainer() {
           <article key={block.heading}>
             <h2
               className="text-lg mb-3"
-              style={{ color: 'var(--home-text)' }}
+              style={{ color: 'var(--hd-fg)' }}
             >
               {block.heading}
             </h2>
@@ -41,7 +41,7 @@ export default function HomeExplainer() {
               <p
                 key={i}
                 className="text-sm leading-7 mb-3"
-                style={{ color: 'var(--home-text-sub)' }}
+                style={{ color: 'var(--hd-sub)' }}
               >
                 {p}
               </p>
@@ -53,15 +53,15 @@ export default function HomeExplainer() {
                   <div
                     key={b.term}
                     className="rounded-xl p-4"
-                    style={{ background: 'var(--home-card)', border: '1px solid var(--home-border)' }}
+                    style={{ background: 'var(--hd-plate)', border: '1px solid var(--hd-line)' }}
                   >
                     <dt
                       className="text-sm font-semibold mb-1.5"
-                      style={{ color: 'var(--home-card-text)' }}
+                      style={{ color: 'var(--hd-fg)' }}
                     >
                       {b.term}
                     </dt>
-                    <dd className="text-sm leading-7" style={{ color: 'var(--home-text-sub)' }}>
+                    <dd className="text-sm leading-7" style={{ color: 'var(--hd-sub)' }}>
                       {b.desc}
                     </dd>
                   </div>
@@ -75,7 +75,7 @@ export default function HomeExplainer() {
         <article>
           <h2
             className="text-lg mb-4"
-            style={{ color: 'var(--home-text)', fontFamily: 'var(--font-display-serif)' }}
+            style={{ color: 'var(--hd-fg)' }}
           >
             {C.faqHeading}
           </h2>
@@ -84,11 +84,11 @@ export default function HomeExplainer() {
               <details
                 key={item.q}
                 className="rounded-xl px-4 py-3 group"
-                style={{ background: 'var(--home-card)', border: '1px solid var(--home-border)' }}
+                style={{ background: 'var(--hd-plate)', border: '1px solid var(--hd-line)' }}
               >
                 <summary
                   className="text-sm font-medium cursor-pointer list-none flex items-start gap-2"
-                  style={{ color: 'var(--home-card-text)' }}
+                  style={{ color: 'var(--hd-fg)' }}
                 >
                   <ChevronRight
                     size={15}
@@ -98,7 +98,7 @@ export default function HomeExplainer() {
                 </summary>
                 <p
                   className="text-sm leading-7 mt-2.5 pl-[23px]"
-                  style={{ color: 'var(--home-text-sub)' }}
+                  style={{ color: 'var(--hd-sub)' }}
                 >
                   {item.a}
                 </p>
@@ -113,7 +113,7 @@ export default function HomeExplainer() {
         <article>
           <h2
             className="text-lg mb-4"
-            style={{ color: 'var(--home-text)', fontFamily: 'var(--font-display-serif)' }}
+            style={{ color: 'var(--hd-fg)' }}
           >
             {C.moreHeading}
           </h2>
@@ -123,16 +123,16 @@ export default function HomeExplainer() {
                 key={link.href}
                 href={withLang(link.href, locale)}
                 className="rounded-xl p-4 transition-opacity hover:opacity-70"
-                style={{ background: 'var(--home-card)', border: '1px solid var(--home-border)' }}
+                style={{ background: 'var(--hd-plate)', border: '1px solid var(--hd-line)' }}
               >
                 <span
                   className="flex items-center gap-1 text-sm font-semibold mb-1"
-                  style={{ color: 'var(--home-card-text)' }}
+                  style={{ color: 'var(--hd-fg)' }}
                 >
                   {link.label}
                   <ChevronRight size={14} />
                 </span>
-                <span className="block text-xs leading-6" style={{ color: 'var(--home-text-sub)' }}>
+                <span className="block text-xs leading-6" style={{ color: 'var(--hd-sub)' }}>
                   {link.desc}
                 </span>
               </Link>

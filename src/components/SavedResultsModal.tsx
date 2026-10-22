@@ -39,7 +39,11 @@ function SavedCard({ result, onClear }: { result: SavedResult; onClear: () => vo
   const handleDownload = async () => {
     setDownloading(true);
     try {
-      const dataUrl = await generateResultCard(result.echo, result.score, locale, result.maxedAt);
+      const dataUrl = await generateResultCard(result.echo, result.score, locale, {
+        source: 'gacha',
+        maxedAt: result.maxedAt,
+        charName: result.charName,
+      });
       const a = document.createElement('a');
       a.href = dataUrl;
       a.download = `echo-${result.score.rank}-${result.score.score}pt.png`;
@@ -63,8 +67,7 @@ function SavedCard({ result, onClear }: { result: SavedResult; onClear: () => vo
   return (
     <div className="flex flex-col items-center gap-2">
       <div
-        className="text-[10px] text-[#9ca3af]"
-        style={{ fontFamily: '"IBM Plex Mono", monospace' }}
+        className="hd-num text-[10px] text-[var(--hd-sub)]"
       >
         {interpolate(T.savedDateLabel, [formatDate(result.maxedAt)])}
       </div>
@@ -77,19 +80,19 @@ function SavedCard({ result, onClear }: { result: SavedResult; onClear: () => vo
         <button
           onClick={handleDownload}
           disabled={downloading}
-          className="flex-1 py-1.5 rounded-lg text-xs font-medium text-[#f7f7f7] bg-[#222222] hover:opacity-80 transition-opacity disabled:opacity-40"
+          className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-[var(--hd-accent)] text-[var(--hd-accent-ink)] hover:opacity-80 transition-opacity disabled:opacity-40"
         >
           {downloading ? '⏳' : T.savedSaveBtn}
         </button>
         <button
           onClick={handleShare}
-          className="flex-1 py-1.5 rounded-lg text-xs font-medium text-[#707070] border border-[#e5e7eb] hover:border-[#d1d5db] hover:text-[#222222] transition-colors"
+          className="flex-1 py-1.5 rounded-lg text-xs font-medium text-[var(--hd-sub)] border border-[var(--hd-line)] hover:border-[var(--hd-sub)] hover:text-[var(--hd-fg)] transition-colors"
         >
           𝕏
         </button>
         <button
           onClick={onClear}
-          className="px-3 py-1.5 rounded-lg text-xs text-[#9ca3af] hover:text-[#ef4444] border border-[#e5e7eb] hover:border-[#fca5a5] transition-colors"
+          className="px-3 py-1.5 rounded-lg text-xs text-[var(--hd-sub)] hover:text-[#ef4444] border border-[var(--hd-line)] hover:border-[#fca5a5] transition-colors"
         >
           ✕
         </button>
@@ -104,20 +107,21 @@ export default function SavedResultsModal({ results, onClear, onClose }: Props) 
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
+      style={{ background: 'rgba(0,0,0,.6)' }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="w-full max-w-lg mx-4 rounded-2xl bg-white shadow-2xl flex flex-col"
-        style={{ maxHeight: '85vh', border: '1px solid #e5e7eb' }}
+        className="w-full max-w-lg mx-4 rounded-2xl flex flex-col"
+        style={{ maxHeight: '85vh', background: 'var(--hd-plate)', border: '1px solid var(--hd-line)' }}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#f3f4f6]">
-          <h2 className="text-base font-semibold text-[#222222]">{T.savedTitle}</h2>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--hd-line)]">
+          <h2 className="text-base font-semibold text-[var(--hd-fg)]">{T.savedTitle}</h2>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-[#9ca3af]">{interpolate(T.savedCount, [results.length])}</span>
+            <span className="text-xs text-[var(--hd-sub)]">{interpolate(T.savedCount, [results.length])}</span>
             <button
               onClick={onClose}
-              className="text-[#9ca3af] hover:text-[#222222] text-xl leading-none transition-colors"
+              className="text-[var(--hd-sub)] hover:text-[var(--hd-fg)] text-xl leading-none transition-colors"
             >
               ✕
             </button>
@@ -126,7 +130,7 @@ export default function SavedResultsModal({ results, onClear, onClose }: Props) 
 
         <div className="overflow-y-auto flex-1 p-4">
           {results.length === 0 ? (
-            <div className="text-center py-12 text-[#9ca3af] text-sm">
+            <div className="text-center py-12 text-[var(--hd-sub)] text-sm">
               {T.savedEmpty}
             </div>
           ) : (

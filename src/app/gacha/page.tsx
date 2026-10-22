@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import GachaClient from './GachaClient';
 import { LocaleProvider } from '@/lib/locale';
-import { SiteThemeProvider } from '@/contexts/SiteThemeContext';
 import { resolveLocale, resolveExplicitLocale } from '@/lib/locale-utils';
 import { buildMetadata, buildBreadcrumbJsonLd } from '@/lib/seo';
 import { buildFaqJsonLd } from '@/data/homeExplainer';
@@ -40,9 +39,7 @@ export default async function GachaPage({ searchParams }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <LocaleProvider initialLocale={initialLocale}>
-        <SiteThemeProvider>
-          <GachaClient />
-        </SiteThemeProvider>
+        <GachaClient />
       </LocaleProvider>
     </>
   );

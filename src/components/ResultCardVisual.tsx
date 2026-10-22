@@ -57,11 +57,12 @@ export default function ResultCardVisual({ echo, score, cardRef, maxedAt }: Prop
     : '';
 
   const sans = 'Inter, "Noto Sans JP", -apple-system, BlinkMacSystemFont, sans-serif';
-  const mono = '"IBM Plex Mono", ui-monospace, "Courier New", monospace';
+  const mono = "var(--font-home-num, 'Chakra Petch', sans-serif)";
 
   return (
     <div
       ref={cardRef}
+      className="hd-force-dark"
       style={{
         width: '320px',
         borderRadius: '16px',
@@ -91,7 +92,7 @@ export default function ResultCardVisual({ echo, score, cardRef, maxedAt }: Prop
             </span>
             {harmonyDisplay && (
               <span style={{
-                fontSize: '11px', fontWeight: 600, color: '#0275fd',
+                fontSize: '11px', fontWeight: 600, color: 'var(--hd-accent)',
                 background: '#eef9ff', padding: '2px 8px', borderRadius: '100px', lineHeight: '1.6',
               }}>
                 {harmonyDisplay}
