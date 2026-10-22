@@ -81,6 +81,78 @@ export const CHARACTERS: CharacterBuild[] = [
   // ── 5★ キャラクター（実装降順）────────────────────────────────────────
 
   {
+    id: 'suoming', name: '鎖暝', nameEn: 'Suoming', element: '電導', weapon: '迅刀',
+    role: 'サブアタッカー/メインアタッカー',
+    roleTemplate: 'SubDPS',
+    scalingStat: 'atk',
+    // 要検証: Lv90基礎ステータスは2026/10/22時点で prydwen・Game8・GameWith のいずれにも
+    // 掲載がなく、同じ★5攻撃力型の心・緋雪・清宵と同じ値を暫定で入れている。
+    baseStats90: { atk: 462, hp: 10300, def: 1112 },
+    motifWeaponId: 'suoming',
+    // v2: 2026/10/22実装。攻撃タイプ別ダメージ配分は prydwen.gg の Calculations タブにある
+    // S0火力シミュレーションの内訳から算出（Unison=心・ショアキーパー編成、DPS=単体アタッカー）。
+    // typeShares は Basic/Heavy/Skill/Liberation の実ダメージ内訳を再正規化した値
+    // （Intro/Outro/Echo は対応する攻撃タイプ別ダメ%サブステが存在しないため除外）。
+    // 銜夢照世の心は両運用で使うが、同じセットを両バリアントの recommended に置けないため
+    // main 側に置き、sub 側は月を窺う軽雲で判定する（docs/spec-suoming.md 1-2）。
+    // selfAtkBuffPercent は固有スキル(小ステ)の攻撃力+12%。
+    variants: [
+      {
+        id: 'sub',
+        role: 'sub',
+        label: 'サブアタッカー運用',
+        harmonySets: { recommended: [SET.MOONLIT], acceptable: [] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'], acceptable: ['atkPercent'] },
+          cost3: { recommended: ['ElectroDmg'],           acceptable: ['atkPercent'] },
+          cost1: { recommended: ['atkPercent'],           acceptable: [] },
+        },
+        erRequirement: 1.20,
+        damageProfile: {
+          typeShares: { basic: 0.769, heavy: 0, skill: 0, lib: 0.231 },
+          selfAtkBuffPercent: 0.12,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.70,
+        },
+      },
+      {
+        id: 'main',
+        role: 'main',
+        label: 'メインアタッカー運用',
+        harmonySets: { recommended: [SET.SWORN_VIGIL], acceptable: [] },
+        mainstat: {
+          cost4: { recommended: ['critRate', 'critDmg'], acceptable: ['atkPercent'] },
+          cost3: { recommended: ['ElectroDmg'],           acceptable: ['atkPercent'] },
+          cost1: { recommended: ['atkPercent'],           acceptable: [] },
+        },
+        erRequirement: 1.15,
+        damageProfile: {
+          typeShares: { basic: 0.918, heavy: 0, skill: 0, lib: 0.082 },
+          selfAtkBuffPercent: 0.12,
+          baselineCritRate: 0.70,
+          baselineCritDmg: 2.70,
+        },
+      },
+    ],
+    substats: {
+      recommended: [
+        { key: 'critRate' },
+        { key: 'critDmg' },
+        { key: 'atkPercent' },
+        { key: 'basicAttackDmg' },
+      ],
+      preferred:   [{ key: 'energyRegen' }],
+      acceptable:  [{ key: 'atkFlat' }],
+    },
+    mainstat: {
+      cost4: { recommended: ['critRate', 'critDmg'], acceptable: ['atkPercent'] },
+      cost3: { recommended: ['ElectroDmg'],           acceptable: ['atkPercent'] },
+      cost1: { recommended: ['atkPercent'],           acceptable: [] },
+    },
+    harmonySets: { recommended: [SET.SWORN_VIGIL], acceptable: [SET.MOONLIT] },
+  },
+
+  {
     id: 'hsin', name: '心', nameEn: 'Hsin', element: '電導', weapon: '増幅器',
     role: 'メインアタッカー（共鳴スキル重視）',
     roleTemplate: 'DPS',
