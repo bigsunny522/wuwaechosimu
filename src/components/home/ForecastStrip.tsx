@@ -7,6 +7,8 @@ interface ForecastStripProps {
   ja: boolean;
   advisor: AdvisorResult | null;
   finalScore: ScoreResult | null;
+  /** 予測が無いときの文言(省略時は「サブステを1個入れると予測が出ます」) */
+  emptyHint?: string;
 }
 
 const RECOMMENDATION: Record<
@@ -25,7 +27,7 @@ const PROB_ROWS = [
   { ja: 'S+以上', en: 'S+', key: 'probSStarPlus' },
 ] as const;
 
-export default function ForecastStrip({ ja, advisor, finalScore }: ForecastStripProps) {
+export default function ForecastStrip({ ja, advisor, finalScore, emptyHint }: ForecastStripProps) {
   const { mode } = useSiteAppearance();
   return (
     <div
@@ -124,7 +126,7 @@ export default function ForecastStrip({ ja, advisor, finalScore }: ForecastStrip
         </div>
       ) : (
         <div className="text-[13px] min-w-0" style={{ color: 'var(--hd-sub)' }}>
-          {ja ? 'サブステを1個入れると予測が出ます' : 'Add a substat to see the forecast'}
+          {emptyHint ?? (ja ? 'サブステを1個入れると予測が出ます' : 'Add a substat to see the forecast')}
         </div>
       )}
     </div>

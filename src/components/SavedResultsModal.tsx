@@ -39,7 +39,11 @@ function SavedCard({ result, onClear }: { result: SavedResult; onClear: () => vo
   const handleDownload = async () => {
     setDownloading(true);
     try {
-      const dataUrl = await generateResultCard(result.echo, result.score, locale, result.maxedAt);
+      const dataUrl = await generateResultCard(result.echo, result.score, locale, {
+        source: 'gacha',
+        maxedAt: result.maxedAt,
+        charName: result.charName,
+      });
       const a = document.createElement('a');
       a.href = dataUrl;
       a.download = `echo-${result.score.rank}-${result.score.score}pt.png`;

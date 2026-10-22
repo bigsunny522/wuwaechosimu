@@ -9,7 +9,8 @@ interface SlotListProps {
   ja: boolean;
   substats: Substat[];
   build?: CharacterBuild;
-  onRemove: (index: number) => void;
+  /** 省略時は ✕ ボタンを出さない */
+  onRemove?: (index: number) => void;
 }
 
 export default function SlotList({ ja, substats, build, onRemove }: SlotListProps) {
@@ -49,7 +50,9 @@ export default function SlotList({ ja, substats, build, onRemove }: SlotListProp
             key={i}
             className="grid items-center gap-[8px]"
             style={{
-              gridTemplateColumns: '34px minmax(0, 1fr) auto 28px 28px',
+              gridTemplateColumns: onRemove
+                ? '34px minmax(0, 1fr) auto 28px 28px'
+                : '34px minmax(0, 1fr) auto 28px',
               padding: '0 12px',
               borderRadius: 8,
               maxHeight: 44,
@@ -98,26 +101,28 @@ export default function SlotList({ ja, substats, build, onRemove }: SlotListProp
             >
               {sub ? `T${sub.tier}` : ''}
             </span>
-            {sub ? (
-              <button
-                type="button"
-                onClick={() => onRemove(i)}
-                aria-label={ja ? '削除' : 'Remove'}
-                style={{
-                  width: 28,
-                  height: 28,
-                  display: 'grid',
-                  placeItems: 'center',
-                  fontSize: 12,
-                  color: 'var(--hd-sub)',
-                  borderRadius: 8,
-                }}
-              >
-                ✕
-              </button>
-            ) : (
-              <span />
-            )}
+            {onRemove ? (
+              sub ? (
+                <button
+                  type="button"
+                  onClick={() => onRemove(i)}
+                  aria-label={ja ? '削除' : 'Remove'}
+                  style={{
+                    width: 28,
+                    height: 28,
+                    display: 'grid',
+                    placeItems: 'center',
+                    fontSize: 12,
+                    color: 'var(--hd-sub)',
+                    borderRadius: 8,
+                  }}
+                >
+                  ✕
+                </button>
+              ) : (
+                <span />
+              )
+            ) : null}
           </div>
         );
       })}

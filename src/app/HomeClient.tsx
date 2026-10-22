@@ -337,7 +337,11 @@ export default function HomeClient() {
     if (!draftFinalScore) return;
     setSavingImage(true);
     try {
-      const dataUrl = await generateResultCard(buildDraftEcho(draftSubs), draftFinalScore, locale);
+      const dataUrl = await generateResultCard(buildDraftEcho(draftSubs), draftFinalScore, locale, {
+        source: 'supporter',
+        charName: build ? (ja ? build.name : (build.nameEn ?? build.name)) : undefined,
+        build,
+      });
       const a = document.createElement('a');
       a.href = dataUrl;
       a.download = `echo-${draftFinalScore.rank}-${draftFinalScore.score}pt.png`;
@@ -345,7 +349,7 @@ export default function HomeClient() {
     } finally {
       setSavingImage(false);
     }
-  }, [draftFinalScore, buildDraftEcho, draftSubs, locale]);
+  }, [draftFinalScore, buildDraftEcho, draftSubs, locale, build, ja]);
 
   const handleShare = useCallback(() => {
     if (!draftFinalScore) return;

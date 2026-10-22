@@ -31,6 +31,10 @@ interface BuildBarProps {
   draftMainstatKey: string;
   onMainstatChange: (key: string) => void;
   mainstatChoices: MainstatChoice[];
+  /** メインステの小見出し(省略時は「メインステータス(+25 の値)」) */
+  mainstatTitle?: string;
+  /** シートの見出し(省略時は「音骸とメインステータス」) */
+  sheetTitle?: string;
   cost4MultiSet: boolean;
   multiSetOptions: SelectOption[];
   draftHarmonySet: string;
@@ -57,6 +61,8 @@ export default function BuildBar({
   draftMainstatKey,
   onMainstatChange,
   mainstatChoices,
+  mainstatTitle,
+  sheetTitle,
   cost4MultiSet,
   multiSetOptions,
   draftHarmonySet,
@@ -158,47 +164,51 @@ export default function BuildBar({
             style={{ background: 'var(--hd-plate)' }}
           >
             <h2 className="text-[16px] font-bold">
-              {ja ? '音骸とメインステータス' : 'Echo & main stat'}
+              {sheetTitle ?? (ja ? '音骸とメインステータス' : 'Echo & main stat')}
             </h2>
-            <h3 className="text-[12px] font-bold" style={{ color: 'var(--hd-sub)' }}>
-              {ja ? 'メインステータス(+25 の値)' : 'Main stat (value at +25)'}
-            </h3>
-            <div className="grid grid-cols-3 gap-[8px]">
-              {mainstatChoices.map((c) => {
-                const selected = c.key === draftMainstatKey;
-                return (
-                  <button
-                    key={c.key}
-                    type="button"
-                    aria-pressed={selected}
-                    onClick={() => onMainstatChange(c.key)}
-                    className="flex flex-col items-center justify-center gap-[2px] h-[56px] rounded-[8px] px-[6px] text-center"
-                    style={
-                      selected
-                        ? { background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }
-                        : { background: 'var(--hd-raise)', color: 'var(--hd-fg)' }
-                    }
-                  >
-                    {/* 改行は「ダメージ」「アップ」の手前だけで起こす(「アッ/プ」のような割れ方を防ぐ) */}
-                    <span className="w-full text-[12px] leading-[1.25] line-clamp-2 [word-break:keep-all]">
-                      {c.name.split(/(?=ダメージ|アップ)/).map((part, i) => (
-                        <Fragment key={i}>{i > 0 && <wbr />}{part}</Fragment>
-                      ))}
-                    </span>
-                    <span className="hd-num text-[13px] font-bold">
-                      {c.recommended && (
-                        <span className="mr-[2px]" style={{ color: selected ? undefined : 'var(--hd-accent-text)' }}>★</span>
-                      )}
-                      {c.valueText}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-            {recommendFor && (
-              <p className="text-[11px]" style={{ color: 'var(--hd-sub)' }}>
-                {ja ? `★ は ${recommendFor} のおすすめ` : `★ = recommended for ${recommendFor}`}
-              </p>
+            {mainstatChoices.length > 0 && (
+              <>
+                <h3 className="text-[12px] font-bold" style={{ color: 'var(--hd-sub)' }}>
+                  {mainstatTitle ?? (ja ? 'メインステータス(+25 の値)' : 'Main stat (value at +25)')}
+                </h3>
+                <div className="grid grid-cols-3 gap-[8px]">
+                  {mainstatChoices.map((c) => {
+                    const selected = c.key === draftMainstatKey;
+                    return (
+                      <button
+                        key={c.key}
+                        type="button"
+                        aria-pressed={selected}
+                        onClick={() => onMainstatChange(c.key)}
+                        className="flex flex-col items-center justify-center gap-[2px] h-[56px] rounded-[8px] px-[6px] text-center"
+                        style={
+                          selected
+                            ? { background: 'var(--hd-accent)', color: 'var(--hd-accent-ink)' }
+                            : { background: 'var(--hd-raise)', color: 'var(--hd-fg)' }
+                        }
+                      >
+                        {/* 改行は「ダメージ」「アップ」の手前だけで起こす(「アッ/プ」のような割れ方を防ぐ) */}
+                        <span className="w-full text-[12px] leading-[1.25] line-clamp-2 [word-break:keep-all]">
+                          {c.name.split(/(?=ダメージ|アップ)/).map((part, i) => (
+                            <Fragment key={i}>{i > 0 && <wbr />}{part}</Fragment>
+                          ))}
+                        </span>
+                        <span className="hd-num text-[13px] font-bold">
+                          {c.recommended && (
+                            <span className="mr-[2px]" style={{ color: selected ? undefined : 'var(--hd-accent-text)' }}>★</span>
+                          )}
+                          {c.valueText}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {recommendFor && (
+                  <p className="text-[11px]" style={{ color: 'var(--hd-sub)' }}>
+                    {ja ? `★ は ${recommendFor} のおすすめ` : `★ = recommended for ${recommendFor}`}
+                  </p>
+                )}
+              </>
             )}
             <h3 className="text-[12px] font-bold" style={{ color: 'var(--hd-sub)' }}>
               {cost === 4 ? (ja ? '音骸' : 'Echo') : (ja ? 'ハーモニー' : 'Set')}

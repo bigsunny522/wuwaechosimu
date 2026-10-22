@@ -40,4 +40,4 @@
 ## 決まっている例外
 
 - ファビコン(`src/app/icon.svg`)は青(`#0275fd`)のまま。属性色に追従できないため
-- X シェア用の画像(`src/lib/cardCanvas.ts`)と保存画像の中身(`ResultCardVisual`)は白地の固定デザイン
+- 保存画像(`src/lib/cardCanvas.ts`)は、ライト/ダークや属性に関係なく暗い固定デザイン。3D カード(`home/ResultCard.tsx`)の表面を写し、上の帯にツール名(厳選サポーター / ガチャシミュレーター)を出す。ガチャの画像には琥珀の「SIMULATION」ラベルを付ける

@@ -1,17 +1,29 @@
 import type { EchoState, ScoreResult } from '@/types/echo';
+import type { Locale } from '@/lib/locale-utils';
 import { SUBSTAT_LABEL_EN } from '@/data/translations';
-import { renderCardToCanvas } from './cardCanvas';
+import {
+  renderCardToCanvas,
+  resolveCanvasFonts,
+  type ResultCardImageOptions,
+} from './cardCanvas';
 
 const SITE_URL = 'https://wuwaechotools.com';
+
+export type { ResultCardImageOptions };
 
 export async function generateResultCard(
   echo: EchoState,
   score: ScoreResult,
-  locale: 'ja' | 'en',
-  maxedAt?: number,
+  locale: Locale,
+  opts: ResultCardImageOptions,
 ): Promise<string> {
   await document.fonts.ready;
-  const canvas = renderCardToCanvas(echo, score, locale, maxedAt);
+  const { sans, num } = resolveCanvasFonts();
+  await Promise.all([
+    document.fonts.load(`700 16px ${sans}`).catch(() => undefined),
+    document.fonts.load(`700 16px ${num}`).catch(() => undefined),
+  ]);
+  const canvas = renderCardToCanvas(echo, score, locale, opts);
   return canvas.toDataURL('image/png');
 }
 
