@@ -89,6 +89,7 @@ export function decodeShareQuery(
   - `h` が `HARMONY_SETS` のキー
   - `s` が1〜5個、各 key が `SUBSTAT_MAP` にあり、tier が `0`〜`(values.length - 1)` の整数、key の重複なし
   - `ch` があるときは `CHARACTER_MAP` にある(なければ `null` ではなくキャラなし扱いにする)
+  - `SUBSTAT_MAP` / `CHARACTER_MAP` / `HARMONY_SETS` を引くときは、必ず `Object.hasOwn` で自前のキーか確かめる(`toString` や `constructor` のようなキーでプロトタイプの値を拾わないため)
   - `e` があるときは `ECHOES` にある(なければ省いた扱いにする)
 - 復元する `EchoState`:
   - `substats`: `SUBSTAT_MAP` から HomeClient の `addSubstat` と同じ形で作る(`value = values[tier]`、`maxValue = values[values.length - 1]`)
@@ -106,7 +107,7 @@ export function decodeShareQuery(
 - レイアウト(Satori は flex のみ。grid 不可。すべての div に `display: 'flex'` を付ける):
   - 背景: `#101318`(サイトのダーク地。`layout.tsx` の themeColor)。枠や罫線は `#2A2F3A` 程度
   - 左側(幅 約 420px): ランク(`RANK_COLORS[rank]` の色、大きく 160px 前後)、その下に点数(`<score> pt`、数字は Chakra Petch)
-  - 右側: 1行目に音骸名(EN は `echoNameEn`)、2行目にメインステ名とセット名(小さく、補足色 `#9AA3B2` 程度)、その下にサブステを1行ずつ(ラベル左・値右。ラベルは EN なら `SUBSTAT_LABEL_EN`)。`score.breakdown` の `category` で値の色を `CATEGORY_COLORS` にする
+  - 右側: 1行目に音骸名(EN は `echoNameEn`)、2行目にメインステ名とセット名(小さく、補足色 `#9AA3B2` 程度)。音骸が不明(`echoId` が空)で1行目がセット名のときは、2行目はメインステ名だけにする(セット名を2回出さない)、その下にサブステを1行ずつ(ラベル左・値右。ラベルは EN なら `SUBSTAT_LABEL_EN`)。`score.breakdown` の `category` で値の色を `CATEGORY_COLORS` にする
   - キャラがあるとき: 右上に「<キャラ名>用」/ "for <nameEn>"
   - 下端: サイト名「音骸シミュレーター」/ "Echo Simulator" と `wuwaechotools.com`
 - フォント: 実行時に Google Fonts から取る(バンドルに入れない。500KB 制限のため)
@@ -123,7 +124,7 @@ export function decodeShareQuery(
   - `decodeShareQuery` が成功したら、`buildMetadata({ path: '/share', locale, ja, en, robotsIndex: false })` の結果に対して `openGraph.images` と `twitter.images` を `${SITE_URL}/api/og?<encodeShareQuery と同じクエリ>` (width 1200 / height 630)に差し替える。`openGraph.url` と `alternates.canonical` は `${SITE_URL}/share?<クエリ>` にする
   - タイトル: ja「【<rank>】スコア<score>点の<キャラ名>用<音骸名> | 音骸シミュレーター」(キャラなしは「用」以下のキャラ部分を省く)/ en「[<rank>] <score>pts <echoNameEn> for <nameEn> | Echo Simulator」
   - description: ja「鳴潮の音骸シミュレーターで出た結果です。自分の音骸のスコアも計算できます。」/ en "A result from the Wuthering Waves Echo Simulator. Score your own echoes too."
-  - 失敗したら、普通の `buildMetadata`(静的 OG 画像、`robotsIndex: false`)
+  - 失敗したら、普通の `buildMetadata`(静的 OG 画像、`robotsIndex: false`)。title は ja「シェアされた結果 | 音骸シミュレーター」/ en "Shared Result | Echo Simulator"、description は成功時と同じ文言
 - ページ本体: `<LocaleProvider initialLocale={resolveExplicitLocale(sp)}>` で `ShareClient` を包む。復元結果を props で渡す。`EchoState` と `ScoreResult` はプレーンなオブジェクトなのでそのまま渡せる。`CharacterBuild` は渡さず、キャラ名(`name` / `nameEn`)だけ渡す
 
 `src/app/share/ShareClient.tsx`(`'use client'`):
