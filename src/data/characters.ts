@@ -40,6 +40,7 @@ const SET = {
   EVILS_PURGE: HS.HEART_OF_EVILS_PURGE,
   LAMP:        HS.LAMP_OF_NETHER_ROAD,
   SWORN_VIGIL: HS.HEART_OF_SWORN_VIGIL,
+  FLOWER:      HS.FLOWER_OF_TINGED_YEARNING,
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -79,6 +80,59 @@ const SET = {
 export const CHARACTERS: CharacterBuild[] = [
 
   // ── 5★ キャラクター（実装降順）────────────────────────────────────────
+  {
+    id: 'lily', name: 'リリー', nameEn: 'Lily', element: '回折', weapon: '拳銃',
+    role: '耐久・回復サポート',
+    scalingStat: 'hp',
+    // Lv90基礎ステータスは Game8(EN) の値。ショアキーパーと同じ★5 HP型サポートの値。
+    baseStats90: { atk: 287, hp: 16712, def: 1099 },
+    motifWeaponId: 'lily',
+    // v2: 2026/11 Ver3.8実装。HP参照の回復＋同奏/音骸スキル編成のバッファー。
+    // 自身のダメージもHP参照で出すが、重撃フィニッシュ・永咲きのクリは共鳴効率から
+    // 最大+80%/+160%供給されるため、damageProfileは付けず純ヒーラーとして扱う
+    // （付けるとクリ・重撃ダメ%がHP%以上の重みになり攻略サイトの優先順位と食い違う）。
+    // erConversions はチーム全体に効く変換のみ（190%超: 攻撃力 1%につき+0.1%、
+    // 音骸スキルのクリ率 0.7%につき+0.1%・クリダメ 0.7%につき+0.2%、260%で頭打ち）。
+    // 同奏編成（フラワー・レミニセンス）と通常編成（喧騒に隠す回光）は重みが同じため
+    // 1バリアントにまとめる（docs/spec-lily.md 1-2）。
+    variants: [
+      {
+        id: 'main',
+        role: 'healer',
+        label: '回復・バフ運用',
+        harmonySets: { recommended: [SET.FLOWER, SET.HEALER], acceptable: [] },
+        mainstat: {
+          cost4: { recommended: ['healingBonus', 'hpPercent'], acceptable: ['critDmg'] },
+          cost3: { recommended: ['Resonanceeff'],              acceptable: ['hpPercent'] },
+          cost1: { recommended: ['hpPercent'],                 acceptable: [] },
+        },
+        erRequirement: 2.60,
+        healProfile: {
+          assumedExistingScalingPercent: 0.9,
+          erConversions: [
+            { ratePerErPercent: 0.1,   baselineErPercent: 190, capErPercent: 260 }, // チーム攻撃力
+            { ratePerErPercent: 0.143, baselineErPercent: 190, capErPercent: 260 }, // 音骸スキルのクリ率
+            { ratePerErPercent: 0.286, baselineErPercent: 190, capErPercent: 260 }, // 音骸スキルのクリダメ
+          ],
+        },
+      },
+    ],
+    substats: {
+      recommended: [
+        { key: 'energyRegen' },
+        { key: 'hpPercent' },
+        { key: 'hpFlat' },
+      ],
+      preferred:   [{ key: 'critDmg' }],
+      acceptable:  [{ key: 'critRate' }],
+    },
+    mainstat: {
+      cost4: { recommended: ['healingBonus', 'hpPercent'], acceptable: ['critDmg'] },
+      cost3: { recommended: ['Resonanceeff'],              acceptable: ['hpPercent'] },
+      cost1: { recommended: ['hpPercent'],                 acceptable: [] },
+    },
+    harmonySets: { recommended: [SET.FLOWER, SET.HEALER], acceptable: [] },
+  },
 
   {
     id: 'suoming', name: '鎖暝', nameEn: 'Suoming', element: '電導', weapon: '迅刀',

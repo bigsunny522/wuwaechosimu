@@ -10,6 +10,16 @@ import type { WeaponData } from '@/types/weapon';
 //  未登録のキャラは scorer.ts 側で従来のカテゴリベース採点にフォールバックする。
 // ═══════════════════════════════════════════════════════════════════════════
 export const MOTIF_WEAPONS: Record<string, WeaponData> = {
+  lily: {
+    id: 'lily',
+    name: 'ララバイ',
+    nameEn: 'Lullaby',
+    class: '拳銃',
+    baseAtk90: 412,
+    substatKey: 'energyRegen',
+    substatValue90: 77.0,
+    sourceConfidence: 'high',
+  },
   suoming: {
     id: 'suoming',
     name: '沈冥',

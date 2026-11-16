@@ -12,6 +12,21 @@ export interface UpdateEntry {
 
 export const UPDATES: UpdateEntry[] = [
   {
+    id: '2026-11-16',
+    date: '2026-11-16',
+    title: { ja: 'リリーのビルドデータを追加', en: 'Added Build Data for Lily' },
+    items: [
+      {
+        ja: 'リリーを追加しました',
+        en: 'Added Lily',
+      },
+    ],
+    link: {
+      href: '/chardb',
+      label: { ja: 'キャラ別ビルドデータを見る', en: 'View the Build Data' },
+    },
+  },
+  {
     id: '2026-10-22',
     date: '2026-10-22',
     title: { ja: '鎖暝のビルドデータを追加', en: 'Added Build Data for Suoming' },
